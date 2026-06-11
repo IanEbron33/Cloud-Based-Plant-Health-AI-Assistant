@@ -1,0 +1,1734 @@
+{
+  "Talong": {
+    "local_name": "Talong",
+    "scientific_name": "Solanum melongena",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water 2-3 times a week, avoid wetting leaves)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Eggplant (in North American, Australian, and Philippine English), aubergine (in British, Irish, and New Zealand English), brinjal (in Indian, Bangladeshi, Pakistani, Singapore, Malaysian, South African, and Sri Lankan English), or baigan (in Caribbean English) is a plant species in the nightshade family Solanaceae. Solanum melongena is grown worldwide for its edible fruit, typically used as a vegetable in cooking. Most commonly purple, the spongy, absorbent fruit is used in several cuisines. It is a berry by botanical definition. As a member of the genus Solanum, it is related to the tomato, chili pepper, and potato, although those are of the Americas region while the eggplant is of the Eurasia region. Like the tomato, its skin and seeds can be eaten, but it is usually eaten cooked. Eggplant is nutritionally low in macronutrient and micronutrient content, but the capability of the fruit to absorb oils and flavors into its flesh through cooking expands its use in the culinary arts.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Used extensively in staple Filipino dishes, most famously grilled and beaten with eggs to make Tortang Talong, or added to stews like Pinakbet and Kare-Kare.",
+    "health_statuses": {
+      "Talong___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Green leaves, strong stems, normal blossoms, and shiny dark purple fruits.",
+        "severity": "None",
+        "organic_treatment": "No treatment needed. Keep maintaining watering schedule.",
+        "preventive_measures": "Weed regularly and check underneath leaves for early insect arrivals."
+      },
+      "Talong___Bacterial_Wilt": {
+        "condition_name": "Bacterial Wilt (Layong Bakterya)",
+        "symptoms": "Rapid wilting starting from the top, even when soil is wet. Stem interior turns brown.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "No organic cure exists. Immediately uproot and burn/bury the plant to prevent soil contamination.",
+        "preventive_measures": "Practice strict crop rotation. Improve soil drainage."
+      }
+    }
+  },
+  "Ampalaya": {
+    "local_name": "Ampalaya",
+    "scientific_name": "Momordica charantia",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water daily during dry periods, maintain drainage)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Momordica charantia (commonly called bitter melon, gouya, cerassee, goya, bitter apple, bitter gourd, bitter squash, balsam-pear, karela, karavila and many more names listed below) is a tropical and subtropical vine of the family Cucurbitaceae, widely grown in Asia, Africa, and the Caribbean for its edible fruit. Its many varieties differ substantially in the shape and bitterness of the fruit. Bitter melon originated in Africa, where it was a dry-season staple food of ǃKung hunter-gatherers. Wild or semi-domesticated variants spread across Asia in prehistory, and it was likely fully domesticated in Southeast Asia. It is widely used in the cuisines of East Asia, South Asia, and Southeast Asia.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Widely harvested for everyday savory home cooking, serving as a core ingredient in traditional dishes like Pinakbet or famously sautéed with eggs (Gisang Ampalaya).",
+    "health_statuses": {
+      "Ampalaya___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Vigorous crawling vines, bright yellow flowers, and textured green bitter melons.",
+        "severity": "None",
+        "organic_treatment": "None. Ensure trellis support is sturdy.",
+        "preventive_measures": "Consistent watering helps reduce extreme bitterness in the harvest."
+      },
+      "Ampalaya___Downy_Mildew": {
+        "condition_name": "Downy Mildew (Amag sa Dahon)",
+        "symptoms": "Yellow angular spots on top of leaves; gray/purplish mold layer underneath leaves.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Prune infected leaves to open up airflow. Spray with baking soda or wood ash solution.",
+        "preventive_measures": "Avoid planting cucurbits too close to one another."
+      }
+    }
+  },
+  "Kamatis": {
+    "local_name": "Kamatis",
+    "scientific_name": "Solanum lycopersicum",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Keep soil evenly moist, avoid waterlogging)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The tomato (US: /təˈmeɪtoʊ/, UK: /təˈmɑːtoʊ/; Solanum lycopersicum) is a plant whose fruit is an edible berry that is eaten as a vegetable. The tomato is a member of the nightshade family that includes tobacco, potato, and chili peppers. It originated from western South America, and may have been domesticated there, in Mexico, or in Central America. The Spanish introduced tomatoes to Eurasia in the Columbian exchange in the 16th century. Tomato plants are vines, largely annual, and vulnerable to frost, though sometimes living longer in greenhouses. The flowers can self-fertilize. Modern varieties have been bred to ripen uniformly red, in a process that has impaired the fruit's sweetness and flavor. There are thousands of cultivars, varying in size, color, shape, and flavor. Tomatoes are attacked by many insect pests and nematodes and are subject to diseases caused by viruses, mildew, and blight fungi.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "A crucial souring and savory base sautéed in everyday dishes (Gisa), served raw as a side salad with salted egg (Itlog na Maalat), or added to Sinigang.",
+    "health_statuses": {
+      "Kamatis___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Robust green leaves, sturdy hair-covered stems, yellow flowers, and firm round fruits.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Mulch the soil surface to keep rain from splashing soil-borne fungi onto foliage."
+      },
+      "Kamatis___Late_Blight": {
+        "condition_name": "Late Blight (Pesteng Kulot / Amag)",
+        "symptoms": "Dark brown patches on leaves; fuzzy white mold growth under leaves in humid mornings.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Remove infected foliage. Spray with copper sulfate solution or baking soda mixture.",
+        "preventive_measures": "Water at the roots; keep leaves dry."
+      },
+      "Kamatis___Yellow_Leaf_Curl": {
+        "condition_name": "Tomato Yellow Leaf Curl Virus (Kulot na Dahon)",
+        "symptoms": "Upward curling and yellowing leaf edges; stunted plant; no fruit setting.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Control whiteflies using neem oil or soap spray. Uproot infected plants to prevent spread.",
+        "preventive_measures": "Plant marigolds nearby to repel insect vectors."
+      }
+    }
+  },
+  "Sili": {
+    "local_name": "Sili",
+    "scientific_name": "Capsicum frutescens",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water when topsoil is dry, drought-tolerant once established)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Capsicum frutescens is a wild chili pepper that has genetic proximity to the cultivated pepper Capsicum chinense. It is native to Central and South America as well as Mexico. Pepper cultivars of C. frutescens can be annual or short-lived perennial plants. The flowers of Capsicum frutescens are white, with a greenish white or greenish yellow corolla. They are either insect or self-pollinated.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Harvested as an indispensable culinary spice, aromatic, or hot condiment to add signature heat and flavor enhancement to local dipping sauces, stews, and sizzling dishes.",
+    "health_statuses": {
+      "Sili___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Lush green foliage, small white flowers, and firm upright or hanging peppers.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Provide full sun and avoid waterlogging."
+      },
+      "Sili___Anthracnose": {
+        "condition_name": "Anthracnose (Sunog-sili)",
+        "symptoms": "Sunken circular dark spots on fruits; fruits rot and dry up on the branch.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Remove and burn affected fruits immediately. Spray with garlic/neem solution.",
+        "preventive_measures": "Only save seeds from completely healthy fruits."
+      }
+    }
+  },
+  "Kalabasa": {
+    "local_name": "Kalabasa",
+    "scientific_name": "Cucurbita moschata",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Requires steady watering at the base, 1-2 inches per week)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Cucurbita moschata is a species originating in the tropical Americas which is cultivated for edible flesh, flowers, greens, and seeds. It includes cultivars known in English as squash or pumpkin. Cultivars of C. moschata are generally more tolerant of hot, humid weather than squash of other domesticated species. C. moschata also exhibit a greater resistance to certain disease and insects, notably including to the squash vine borer. Commercially-made pumpkin pie mix is most often made from varieties of C. moschata. All species of squashes and pumpkins are native to the Western Hemisphere, and the ancestral members of the genus Cucurbita were present in the Americas before humans. Squash are important food plants of the original people of the region, ranking next to maize and beans in many precolonial American economies.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Highly valued for sweetening and thickening local stews, commonly paired with sitaw in Ginisang Kalabasa at Sitaw, or cooked in coconut milk (Ginataang Kalabasa).",
+    "health_statuses": {
+      "Kalabasa___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Large trailing vines, huge yellow flowers, and heavy firm squashes.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure soil is rich in organic compost."
+      },
+      "Kalabasa___Powdery_Mildew": {
+        "condition_name": "Powdery Mildew (Puting Amag)",
+        "symptoms": "White powder spots on leaves, leading to yellowing and premature leaf fall.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Spray with 1:9 milk-water mixture or baking soda spray. Expose to full sun.",
+        "preventive_measures": "Prune overlapping leaves to allow airflow."
+      }
+    }
+  },
+  "Okra": {
+    "local_name": "Okra",
+    "scientific_name": "Abelmoschus esculentus",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Drought-tolerant, but waters every 2-3 days for high yield)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Okra (US: /ˈoʊkrə/, UK: /ˈɒkrə/), Abelmoschus esculentus, known in some English-speaking countries as lady's fingers, is a flowering plant in the mallow family native to East Africa. Cultivated in tropical, subtropical, and warm temperate regions around the world for its edible green (red in some cultivars) seed pods, okra is used in the cuisines of many countries. The species is a perennial, often cultivated as an annual in temperate climates, often growing to around 2 metres (6 ft 7 in) tall. As a member of the Malvaceae, it is related to such species as cotton, cocoa, and hibiscus. The leaves are 10–20 centimetres (4–8 in) long and broad, palmately lobed with 5–7 lobes. The flowers are 4–8 cm (1+5⁄8–3+1⁄8 in) in diameter, with five white to yellow petals, often with a red or purple spot at the base. The pollen grains are spherical and approximately 188 microns in diameter. The fruit is a capsule up to 18 cm (7 in) long with pentagonal cross-section, containing numerous seeds.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Provides a characteristic thick, mucilaginous texture to traditional boiled vegetable stews such as Pinakbet, Dinengdeng, and Sinigang.",
+    "health_statuses": {
+      "Okra___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Tall erect stem, cream flowers, and green pods pointing upwards.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Harvest pods every 2 days to encourage continuous fruiting."
+      },
+      "Okra___Yellow_Vein_Mosaic": {
+        "condition_name": "Yellow Vein Mosaic (Paninilaw ng Ugat)",
+        "symptoms": "Bright yellow leaf veins; stunted yellow leaves; tough, pale pods.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Control whitefly vectors using neem oil. Pull out infected plants.",
+        "preventive_measures": "Keep garden free of weeds that host insect pests."
+      }
+    }
+  },
+  "Pechay": {
+    "local_name": "Pechay",
+    "scientific_name": "Brassica rapa subsp. chinensis",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "High (Needs consistent soil moisture, water daily)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "Bok choy (American English, Canadian English, and Australian English), pak choi (British English, South African English, and Caribbean English) or pok choi is a type of Chinese cabbage (Brassica rapa subsp. chinensis) cultivated as a leaf vegetable to be used as food. Varieties do not form heads and have green leaf blades with lighter bulbous bottoms instead, forming a cluster reminiscent of mustard greens. Its flavor is described as being between spinach and water chestnuts but slightly sweeter, with a mildly peppery undertone. The green leaves have a stronger flavor than the white bulb. Chinensis varieties are popular in southern China, East Asia, and Southeast Asia. Originally classified as Brassica chinensis by Carl Linnaeus, they are now considered a subspecies of Brassica rapa. They are a member of the family Brassicaceae.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Its crisp stalks and tender green leaves are commonly added at the end of cooking in savory beef and pork broths like Nilaga, Bulalo, and Pochero.",
+    "health_statuses": {
+      "Pechay___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Crisp green leaves with broad white stems growing in a tight cluster.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Use garden netting to protect leaves from caterpillars."
+      },
+      "Pechay___Black_Rot": {
+        "condition_name": "Black Rot (Bulok-itim)",
+        "symptoms": "V-shaped yellow leaf margins; black leaf veins; foul-smelling rot at the base.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "None. Remove and discard affected crops. Disinfect soil.",
+        "preventive_measures": "Ensure excellent drainage; avoid planting in waterlogged soils."
+      }
+    }
+  },
+  "Kangkong": {
+    "local_name": "Kangkong",
+    "scientific_name": "Ipomoea aquatica",
+    "category": "Vegetable",
+    "ecological_status": "Native/Aquatic",
+    "watering_needs": {
+      "frequency": "High (Grows in water or muddy soil, keep saturated)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "Ipomoea aquatica, commonly known as water spinach or kangkung, is a semi-aquatic, tropical plant grown as a vegetable for its tender shoots. I. aquatica is generally believed to have been first domesticated in Southeast Asia. It is widely cultivated in Southeast Asia, East Asia, and South Asia. It grows abundantly near waterways and requires little to no care. Ipomoea aquatica grows in water or on moist soil. Its stems are 2–3 metres (7–10 ft) or longer, rooting at the nodes. The hollow cavity within the stem makes the plant buoyant. The leaves vary from typically sagittate (arrowhead-shaped) to lanceolate, 5–15 cm (2–6 in) long and 2–8 cm (0.8–3 in) broad. The flowers are trumpet-shaped, 3–5 cm (1–2 in) in diameter, and usually white in colour with a mauve centre. Propagation is either by planting cuttings of the stem shoots, which will root along nodes, or by planting the seeds from flowers that produce seed pods.",
+    "habitat_ecology": "Thrives in marshes, flooded muddy banks, waterways, and wetland gardens across the Philippine islands.",
+    "uses": "A versatile leafy green frequently sautéed with garlic and soy sauce (Adobong Kangkong), fried crisp as an appetizer, or floated in sour Sinigang broth.",
+    "health_statuses": {
+      "Kangkong___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Hollow green trailing stems and narrow leaves growing aggressively.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Harvest frequently by cutting tips."
+      },
+      "Kangkong___White_Rust": {
+        "condition_name": "White Rust (Puting Kalawang)",
+        "symptoms": "White chalky pustules underneath leaves; leaves curl, deform, and drop.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Remove infected leaves. Spray with dilute baking soda solution.",
+        "preventive_measures": "Keep planting area clear of debris; water roots directly."
+      }
+    }
+  },
+  "Sitaw": {
+    "local_name": "Sitaw",
+    "scientific_name": "Vigna unguiculata subsp. sesquipedalis",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water at base when soil feels dry)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The asparagus bean (Vigna unguiculata subsp. sesquipedalis) is a legume cultivated for its edible green pods containing immature seeds, like the green bean. It is also known as yardlong bean, pea bean, long-podded cowpea, Chinese long bean, snake bean, bodi, borboti, and bora. Despite the common name of \"yardlong\", the pods are actually only about half a yard long, so the subspecies name sesquipedalis (one-and-a-half-foot-long; 1.5 feet (0.50 yd)) is a more accurate approximation. A variety of the cowpea, the asparagus bean is grown primarily for its strikingly long (35 to 75 centimetres (1.15 to 2.46 ft)) immature green pods and has uses very similar to those of the green bean. This plant is in a different genus from the common bean. The different colors of seeds usually distinguish the many varieties. It is a vigorous climbing annual vine. The plant is subtropical/tropical and most widely grown in the warmer parts of South Asia, Southeast Asia, and southern China.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "A classic Bahay Kubo long bean used in Pinakbet, Ginataang Kalabasa, or sautéed with soy sauce and pork in Adobong Sitaw.",
+    "health_statuses": {
+      "Sitaw___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Climbing green vines, purple flowers, and long slender green hanging bean pods.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Regularly monitor shoot tips for aphid infestations."
+      },
+      "Sitaw___Rust": {
+        "condition_name": "Rust (Kalawang sa Dahon)",
+        "symptoms": "Small reddish-brown powdery spots underneath leaves, causing early drying and shedding.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Spray with sulfur dust or neem oil. Prune lower infested leaves.",
+        "preventive_measures": "Avoid working around plants when they are wet."
+      }
+    }
+  },
+  "Kamote": {
+    "local_name": "Kamote",
+    "scientific_name": "Ipomoea batatas",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Drought-resistant, water weekly during dry spells)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The sweet potato or sweetpotato (Ipomoea batatas) is a dicotyledonous plant in the morning glory family, Convolvulaceae. Its sizeable, starchy, sweet-tasting tuberous roots are used as a root vegetable, which is a staple food in parts of the world. Cultivars of the sweet potato have been bred to bear tubers with flesh and skin of various colors. Moreover, the young shoots and leaves are occasionally eaten as greens. The sweet potato and the potato are only distantly related, both being in the order Solanales. Although darker sweet potatoes are often known as yams in parts of North America, they are even more distant from actual yams, which are monocots in the order Dioscoreales. The sweet potato is native to the tropical regions of South America in modern Ecuador. Of the approximately 50 genera and more than 1,000 species of Convolvulaceae, I. batatas is the only crop plant of major importance—some others are used locally (e.g., I. aquatica 'kangkong' as a green vegetable), but many are poisonous. The genus Ipomoea that contains the sweet potato also includes several garden flowers called morning glories, but that term is not usually extended to I. batatas. Some cultivars of I. batatas are grown as ornamental plants under the name tuberous morning glory and sometimes used in a horticultural context. Sweet potatoes can also be called yams in North America.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Its starchy tubers are boiled, fried, and caramelized into popular street snacks like Kamote Cue, while the young leaves (Talbos ng Kamote) are boiled for salads.",
+    "health_statuses": {
+      "Kamote___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Vibrant heart-shaped creeping vines; robust underground sweet potato tubers.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Add soil around the base (hilling-up) to support tuber growth."
+      },
+      "Kamote___Feathered_Mottle": {
+        "condition_name": "Feathered Mottle (Kamote Virus)",
+        "symptoms": "Faint purple feather-like patterns along leaf veins; smaller tuber yields.",
+        "severity": "Low to Moderate",
+        "organic_treatment": "Control aphids with soap spray. Prune symptomatic vines.",
+        "preventive_measures": "Propagate using clean, virus-free cuttings."
+      }
+    }
+  },
+  "Gabi": {
+    "local_name": "Gabi",
+    "scientific_name": "Colocasia esculenta",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "High (Likes swampy or highly damp soil)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "Taro (/ˈtɑːroʊ, ˈtær-/; Colocasia esculenta) is a root vegetable. It is the most widely cultivated species of several plants in the family Araceae that are used as vegetables for their corms, leaves, stems and petioles. Taro corms are a food staple in African, Caribbean, Oceanian, East Asian, Southeast Asian and South Asian cultures (similar to yams). Colocasia esculenta is a perennial, tropical plant primarily grown as a root vegetable for its edible, starchy corm. The plant has rhizomes of different shapes and sizes. Leaves are up to 40 by 25 centimetres (15+1⁄2 by 10 inches) and sprout from the rhizome. They are dark green above and light green beneath. They are triangular-ovate, sub-rounded and mucronate at the apex, with the tip of the basal lobes rounded or sub-rounded. The petiole is .8–1.2 metres (2+1⁄2–4 feet) high. The path can be up to 25 cm (10 in) long. The spadix is about three fifths as long as the spathe, with flowering parts up to 8 millimetres (3⁄8 in) in diameter. The female portion is at the fertile ovaries intermixed with sterile white ones. Neuters grow above the females, and are rhomboid or irregular orium lobed, with six or eight cells. The appendage is shorter than the male portion.",
+    "habitat_ecology": "Thrives in marshes, flooded muddy banks, waterways, and wetland gardens across the Philippine islands.",
+    "uses": "The starchy corm is simmered to thicken and flavor Sinigang broth, while the leaves and stalks are famously shredded and cooked in coconut milk to make Laing.",
+    "health_statuses": {
+      "Gabi___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Large elephant-ear leaves, upright green petioles, healthy underground corms.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure constant soil moisture but avoid stagnant pooling."
+      },
+      "Gabi___Leaf_Blight": {
+        "condition_name": "Leaf Blight (Sunog-gabi)",
+        "symptoms": "Large purple-brown water-soaked spots on leaves; yellow fluid oozes from lesions.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune infected leaves. Spray copper fungicide or baking soda solution.",
+        "preventive_measures": "Use disease-free corms. Space out plants to reduce humidity."
+      }
+    }
+  },
+  "Ubi": {
+    "local_name": "Ubi",
+    "scientific_name": "Dioscorea alata",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Keep moist during early growth, dry out before harvest)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Dioscorea alata – also called ube, ubi, uwhi, purple yam, or greater yam, among many other names – is a species of yam (a tuber). The tubers are usually a vivid violet-purple to bright lavender (hence the common name), but some range from creamy-white to plain white. Although it is sometimes confused with taro and the Okinawa sweet potato beniimo (紅芋) (Ipomoea batatas 'Ayamurasaki'), D. alata is also grown in Okinawa. Its origins are in the Asian and Oceanian tropics. Some varieties attain to great size. A \"Mambatap\" greater yam grown in Maprik, East Sepik District, Papua New Guinea around 1939 was 3.5 m (11 ft) in length. The name ube is derived from Tagalog in the Philippines while uwhi derives from Māori in New Zealand; both are doublets ultimately from Proto-Austronesian *qubi.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Almost exclusively boiled, mashed, and cooked with condensed milk and butter to make Halaya, serving as a signature flavoring for local pastries and ice cream.",
+    "health_statuses": {
+      "Ubi___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Climbing green heart-shaped vines, normal leaf growth, healthy purple tubers.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure strong trellising and loose soil for root expansion."
+      },
+      "Ubi___Anthracnose": {
+        "condition_name": "Anthracnose (Sunog-ubi)",
+        "symptoms": "Black spots on leaves and vines; vines die back rapidly, leading to small rotten tubers.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune and destroy infected leaves. Spray copper fungicide or neem oil.",
+        "preventive_measures": "Avoid overhead watering; clean trellis structures."
+      }
+    }
+  },
+  "Bawang": {
+    "local_name": "Bawang",
+    "scientific_name": "Allium sativum",
+    "category": "Vegetable/Spice",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Low (Prefers dry, sandy soil; stop watering when leaves yellow)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Garlic (Allium sativum) is a species of bulbous flowering plants in the genus Allium. Its close relatives include the onion, shallot, leek, chives, Welsh onion, and Chinese onion. Garlic is native to Central Asia, northeastern Iran and the foothills of Himalayas. It has naturalized in many other parts of the world, including Mediterranean Europe and China. There are two subspecies and hundreds of varieties of garlic. Garlic has been used for thousands of years as a seasoning, culinary ingredient, and traditional medical remedy. It was known in many ancient civilizations, including the Babylonians, Egyptians, Jews, Romans, and Chinese, and remains significant in many cuisines and folk treatments, especially across the Mediterranean and Asia. Sulfur compounds give garlic its pungent odor and flavor. There is insufficient clinical evidence to indicate that consuming garlic has any health benefits.",
+    "habitat_ecology": "Found across various open fields, agricultural plots, and forest areas in the Philippines.",
+    "uses": "An indispensable aromatic sauté base for almost all Filipino dishes, and famously fried golden-brown to top garlic fried rice (Sinangag).",
+    "health_statuses": {
+      "Bawang___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Erect blue-green leaves, healthy garlic bulb swelling underground.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Limit watering as harvest time approaches to prevent bulb rot."
+      },
+      "Bawang___Purple_Blotch": {
+        "condition_name": "Purple Blotch (Balingas / Lila na Batik)",
+        "symptoms": "Oval purple lesions on leaves; spots expand and dry out leaves, preventing bulb development.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune dry leaves. Spray wood ash wash or organic copper spray.",
+        "preventive_measures": "Ensure excellent soil drainage and avoid overwatering."
+      }
+    }
+  },
+  "Sibuyas": {
+    "local_name": "Sibuyas",
+    "scientific_name": "Allium cepa",
+    "category": "Vegetable/Spice",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water weekly; stop watering 2 weeks before harvest)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The onion (Allium cepa L., from Latin cepa), also known as the bulb onion or common onion, is a vegetable that is the most widely cultivated species of the genus Allium. The shallot is a botanical variety of the onion which was classified as a separate species until 2011. The onion's close relatives include garlic, scallion, leek, and chives. The genus contains several other species cultivated for food, such as the Japanese bunching onion Allium fistulosum, the tree onion Allium × proliferum, and the Canada onion Allium canadense. The name wild onion is applied to a number of Allium species, but A. cepa is exclusively known from cultivation. Its ancestral wild original form is not known, although escapes from cultivation have become established in some regions. The onion is most frequently a biennial or a perennial plant, but is usually treated as an annual and harvested in its first growing season.",
+    "habitat_ecology": "Found across various open fields, agricultural plots, and forest areas in the Philippines.",
+    "uses": "An indispensable aromatic base used in almost all savory Filipino dishes, stews, and sautéed meals.",
+    "health_statuses": {
+      "Sibuyas___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Hollow green upright tubular leaves, clean red or white onion bulbs.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Mulch beds to maintain soil temperature and suppress weeds."
+      },
+      "Sibuyas___Purple_Blotch": {
+        "condition_name": "Purple Blotch (Lila na Batik)",
+        "symptoms": "Water-soaked spots on leaves that turn purple with yellow halos, causing leaves to collapse.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Remove infected leaves. Spray with neem extract or copper fungicide.",
+        "preventive_measures": "Practice crop rotation with non-allium crops."
+      }
+    }
+  },
+  "Singkamas": {
+    "local_name": "Singkamas",
+    "scientific_name": "Pachyrhizus erosus",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Needs consistent moisture to keep tubers sweet)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Pachyrhizus erosus, commonly known as jícama (/ˈhɪkəmə/ or /dʒɪˈkɑːmə/; Spanish: jícama ; from Nahuatl languages: xīcamatl ) or Mexican turnip, is a native Mesoamerican vine, although the name jícama most commonly refers to the plant's edible tuberous root.It is in the pea family (Fabaceae). Pachyrhizus tuberosus and Pachyrhizus ahipa are the other two cultivated species in the genus. The naming of this group of edible plants can sometimes be confusing, with much overlap of similar, or the same, common names. Flowers, either blue or white, and pods similar to peas, are produced on fully developed plants. Several species of Pachyrhizus are known as jícama, but the one found in many markets is P. erosus. The two cultivated forms of P. erosus are jícama de agua and jícama de leche, both named for the consistency of their juice. The leche form has an elongated root and milky juice, while the agua form has a top-shaped to oblate root and a more watery, translucent juice and is the preferred form for the market.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Eaten fresh and raw as a crisp, refreshing snack with rock salt or vinegar, and widely used as a structural filling in fresh or fried Lumpia.",
+    "health_statuses": {
+      "Singkamas___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Creeping green vines, white/blue flowers, sweet crisp tubers underground.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Pinch off flower buds to redirect energy into tuber development."
+      },
+      "Singkamas___Mosaic_Virus": {
+        "condition_name": "Bean Mosaic Virus (Kanser sa Singkamas)",
+        "symptoms": "Mottled yellow-green mosaic patterns on leaves; deformed, curled leaves; small woody tubers.",
+        "severity": "Moderate to High",
+        "organic_treatment": "Spray soap solution to control aphid carriers. Uproot infected vines.",
+        "preventive_measures": "Use certified seed sources and weed surrounding plots."
+      }
+    }
+  },
+  "Labanos": {
+    "local_name": "Labanos",
+    "scientific_name": "Raphanus sativus",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Keep soil evenly moist to avoid woody texture)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The radish (Raphanus sativus or Raphanus raphanistrum subsp. sativus) is a flowering plant in the mustard family, Brassicaceae. Its large taproot is commonly used as a root vegetable, although the entire plant is edible and its leaves are sometimes used as a leaf vegetable. Originally domesticated in Asia, radishes are now grown and consumed globally. The radish is sometimes considered to form a species complex with the wild radish and instead treated as the subspecies Raphanus raphanistrum subsp. sativus. Radishes are often used raw as a crunchy salad vegetable with a pungent, slightly spicy flavor, varying in intensity depending on its growing environment. There are numerous varieties varying in size, flavor, color, and length of time they take to mature. Radishes owe their sharp flavor to the various chemical compounds produced by the plants, including glucosinolate, myrosinase, and isothiocyanate. They are sometimes grown as companion plants and suffer from few pests and diseases. They germinate quickly and grow rapidly, common smaller varieties being ready for consumption within a month, while larger daikon varieties take several weeks. Being relatively easy to grow and quick to harvest, radishes are often planted by novice gardeners. Another use of radish is as a cover or catch crop in winter, or as a forage crop. Some radishes are grown for their seeds; others, such as daikon, may be grown for oil production. Others are used for sprouting.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Harvested for its crisp, pungent white taproot, serving as an essential souring companion in savory dishes like Sinigang.",
+    "health_statuses": {
+      "Labanos___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Lush green lobed leaves radiating from a central white radish bulb.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Keep soil moist to avoid spicy, woody, and split radishes."
+      },
+      "Labanos___Clubroot": {
+        "condition_name": "Clubroot (Bulok-ugat)",
+        "symptoms": "Wilting during hot days; radish roots become swollen, deformed, and rot with a bad smell.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Uproot and discard. Apply wood ash/lime to the soil to raise pH above 7.2.",
+        "preventive_measures": "Avoid planting brassicas in the same spot for at least 3 years."
+      }
+    }
+  },
+  "Mustasa": {
+    "local_name": "Mustasa",
+    "scientific_name": "Brassica juncea",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "High (Water daily; water stress makes leaves very bitter)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "Brassica juncea, commonly mustard greens, brown mustard, Chinese mustard, Indian mustard, Japanese mustard, Korean green mustard, leaf mustard, Oriental mustard and vegetable mustard, is a species of mustard plant. Brassica juncea cultivars can be divided into four major subgroups: integrifolia, juncea, napiformis, and tsatsai.",
+    "habitat_ecology": "Thrives in the cool, high-altitude climates of the Philippines, heavily cultivated in agricultural regions like Benguet (Baguio) and high-elevation zones of Mindanao.",
+    "uses": "Commonly fermented into Burong Mustasa, served as a tangy side dish for grilled fish, or cooked in fish broth (Sinigang sa Miso).",
+    "health_statuses": {
+      "Mustasa___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Broad, crinkled green leaves growing in a robust rosette.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Provide light shade during extremely hot afternoons."
+      },
+      "Mustasa___DBM_Caterpillar": {
+        "condition_name": "Diamondback Moth Damage (Uod sa Mustasa)",
+        "symptoms": "Numerous small holes on leaves; leaves resemble lace; small green caterpillars visible under leaves.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Hand-pick caterpillars. Spray with homemade chili-garlic extract or soapy water.",
+        "preventive_measures": "Use insect-proof netting or plant companion onions/garlic."
+      }
+    }
+  },
+  "Sayote": {
+    "local_name": "Sayote",
+    "scientific_name": "Sicyos edulis",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water 2-3 times a week; requires excellent drainage)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Chayote (/tʃaɪˈoʊteɪ/; previously placed in the obsolete genus Sechium, now in the genus Sicyos, as Sicyos edulis), also known as christophine, mirliton, güisquil, and choko, is an edible plant belonging to the gourd family, Cucurbitaceae. This fruit was first cultivated in Mesoamerica between southern Mexico and Honduras, with the most genetic diversity available in both Mexico and Guatemala. It is one among dozens of foods introduced to the Old World during the Columbian Exchange. At that time, the plant spread to other parts of the Americas, ultimately causing it to be integrated into the cuisine of many Latin American nations. When cooked, chayote is usually handled like summer squash; it is generally lightly cooked to retain the crispy consistency. Raw chayote may be added to salads or salsas, most often marinated with lemon or lime juice, or eaten raw. Whether raw or cooked, chayote is a good source of Vitamin C.",
+    "habitat_ecology": "Thrives in the cool, high-altitude climates of the Philippines, heavily cultivated in agricultural regions like Benguet (Baguio) and high-elevation zones of Mindanao.",
+    "uses": "Used as an affordable, mild-flavored filler in sautéed chicken dishes like Tinola, or sliced and stir-fried with garlic and pork.",
+    "health_statuses": {
+      "Sayote___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Vigorous vines crawling over overhead trellises, hanging pear-shaped green chayotes.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Prune old vines after harvest to promote new shoots."
+      },
+      "Sayote___Fruit_Fly": {
+        "condition_name": "Fruit Fly Infestation (Bulate sa Sayote)",
+        "symptoms": "Brown puncture marks on fruit; fruit oozes sap, turns yellow prematurely, and rots internally with small larvae.",
+        "severity": "Moderate to High",
+        "organic_treatment": "Wrap young fruit in paper bags. Hang yellow sticky traps nearby.",
+        "preventive_measures": "Collect and bury fallen fruits at least 2 feet deep."
+      }
+    }
+  },
+  "Alugbati": {
+    "local_name": "Alugbati",
+    "scientific_name": "Basella alba",
+    "category": "Vegetable",
+    "ecological_status": "Native/Cultivated",
+    "watering_needs": {
+      "frequency": "High (Water frequently to maintain tender leaf growth)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "Basella alba is a perennial vine in the family Basellaceae. It is also known by common names including Malabar spinach, vine spinach, Ceylon spinach, alugbati and Indian spinach. The plant is native to Indian subcontinent, Southeast Asia, and New Guinea and naturalized elsewhere. It has a number of culinary uses.",
+    "habitat_ecology": "Thrives in marshes, flooded muddy banks, waterways, and wetland gardens across the Philippine islands.",
+    "uses": "Its thick, mucilage-rich leaves and purple stems are commonly added to soupy mung bean stews (Ginisang Monggo) or vegetable soup (Utan/Laswa).",
+    "health_statuses": {
+      "Alugbati___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Thick red or green fleshy stems, glossy heart-shaped leaves climbing vigorously.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Prune tips regularly to encourage lateral branching and tender growth."
+      },
+      "Alugbati___Leaf_Spot": {
+        "condition_name": "Leaf Spot (Batik sa Alugbati)",
+        "symptoms": "Circular grayish spots with reddish-purple margins on leaves, causing them to dry up.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Prune infected leaves. Spray with dilute baking soda solution.",
+        "preventive_measures": "Avoid wetting foliage; improve air circulation."
+      }
+    }
+  },
+  "Patola": {
+    "local_name": "Patola",
+    "scientific_name": "Luffa acutangula",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water regularly, especially during fruit production)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Luffa acutangula is a cucurbitaceous vine commercially grown for its unripe fruits as a vegetable. Mature fruits are used as natural cleaning sponges. Its fruit slightly resembles a cucumber or zucchini with ridges. It is native to South Asia and has been naturalised in other regions. It is also grown as a houseplant in places with colder climates. English common English names include angled luffa, Chinese okra, dish cloth gourd, ridged gourd, sponge gourd, vegetable gourd, strainer vine, ribbed loofah, silky gourd, and silk gourd. The young fruits of some Luffa cultivars are used as cooked vegetables, pickled or eaten raw, and the shoots and flowers are sometimes also used. Like Luffa aegyptiaca, the mature fruits are harvested when dry and processed to remove all but the fruit fibre, which can then be used as a sponge or as fibre for making hats.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Its spongy flesh absorbs flavors beautifully, making it the primary vegetable in Misua soup cooked with meatballs and thin flour noodles.",
+    "health_statuses": {
+      "Patola___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Crawling green vines, yellow flowers, straight long gourds.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Allow fruits to hang freely from the trellis to prevent curved fruits."
+      },
+      "Patola___Fruit_Fly": {
+        "condition_name": "Fruit Fly (Uod sa Patola)",
+        "symptoms": "Curved deformed gourds with entry wounds; yellow rot inside with tiny wiggling maggots.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Bag the patola fruits in newspaper bags right after flower drop. Use pheromone traps.",
+        "preventive_measures": "Dispose of all infected fruits away from the garden."
+      }
+    }
+  },
+  "Malunggay": {
+    "local_name": "Malunggay",
+    "scientific_name": "Moringa oleifera",
+    "category": "Medicinal/Food Tree",
+    "ecological_status": "Native/Naturalized",
+    "watering_needs": {
+      "frequency": "Low to Moderate (Very drought-tolerant once established)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Moringa oleifera is a short-lived, fast-growing, drought-resistant tree of the family Moringaceae, native to northern India and used extensively in South and Southeast Asia. Common names include moringa, drumstick tree (from the long, slender, triangular seed-pods), horseradish tree (from the taste of the roots, which resembles horseradish), ben tree (for its oil), or malunggay (as known in maritime or archipelagic areas in Asia). It is widely cultivated for its young seed pods and leaves, used as vegetables and for traditional herbal medicine. It is also used for water purification.",
+    "habitat_ecology": "Found across various open fields, agricultural plots, and forest areas in the Philippines.",
+    "uses": "Harvested for its highly nutritious leaves, commonly added to soups like Tinola, or utilized for its traditional herbal properties.",
+    "health_statuses": {
+      "Malunggay___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Lush compound leaflets with small white flowers, long hanging green seed pods.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Prune taller branches to maintain a bushy shrub height for easy harvesting."
+      },
+      "Malunggay___Twig_Borer": {
+        "condition_name": "Twig Borer Damage (Uod sa Malunggay)",
+        "symptoms": "Dying twigs and shoots; sawdust-like powder at boreholes on branches; foliage turns yellow and falls.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Prune off and burn affected branches. Spray neem oil on pruning wounds.",
+        "preventive_measures": "Ensure proper tree spacing and clean orchard floor."
+      }
+    }
+  },
+  "Luya": {
+    "local_name": "Luya",
+    "scientific_name": "Zingiber officinale",
+    "category": "Spice/Medicinal",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Requires constant humidity but well-draining soil)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Ginger (Zingiber officinale) is a flowering plant whose rhizome, ginger root or ginger, is widely used as a spice and a folk medicine. It is an herbaceous perennial that grows annual pseudostems (false stems made of the rolled bases of leaves) about one meter tall, bearing narrow leaf blades. The inflorescences bear flowers having pale yellow petals with purple edges, and arise directly from the rhizome on separate shoots. Ginger is in the family Zingiberaceae, which also includes turmeric (Curcuma longa), cardamom (Elettaria cardamomum), and galangal. Ginger originated in Maritime Southeast Asia and was likely domesticated first by the Austronesian peoples. It was transported with them throughout the Indo-Pacific during the Austronesian expansion (c. 5,000 BP), reaching as far as Hawaii. Ginger is one of the first spices to have been exported from Asia, arriving in Europe with the spice trade, and was used by ancient Greeks and Romans. The distantly related dicots in the genus Asarum are commonly called wild ginger because of their similar taste.",
+    "habitat_ecology": "Found across various open fields, agricultural plots, and forest areas in the Philippines.",
+    "uses": "Provides a warm, pungent flavor base for chicken soup (Tinola), fish stew (Paksiw), and is boiled to make traditional wellness ginger tea (Salabat).",
+    "health_statuses": {
+      "Luya___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Erect reed-like green stems, narrow leaves, healthy spicy ginger rhizomes underground.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Water regularly but keep soil extremely well-drained."
+      },
+      "Luya___Bacterial_Wilt": {
+        "condition_name": "Bacterial Wilt (Layo sa Luya)",
+        "symptoms": "Sudden yellowing and wilting of shoots; ginger rhizomes turn brown, soft, and ooze foul fluid.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "No cure. Immediately uproot and burn/bury infected clumps to isolate the soil.",
+        "preventive_measures": "Always plant disease-free ginger seed pieces. Rotate crops."
+      }
+    }
+  },
+  "Upo": {
+    "local_name": "Upo",
+    "scientific_name": "Lagenaria siceraria",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Requires trellis, water every 2-3 days)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Calabash (/ˈkæləbæʃ/; Lagenaria siceraria), also known as bottle gourd, white-flowered gourd, long melon, birdhouse gourd, New Guinea bean, New Guinea butter bean, Tasmania bean, zucca melon and opo squash, is a vine which is grown for its fruit. It belongs to the family Cucurbitaceae, is native to tropical Africa, and cultivated across the tropics. It can be either harvested young to be consumed as a vegetable, or harvested mature to be dried and used as a kitchen utensil (typically as a ladle or bowl), beverage container or a musical instrument. When it is fresh, the fruit has a light green smooth skin and white flesh. Calabash fruits have a variety of shapes: they can be huge and rounded, small and bottle-shaped, or slim and serpentine, and they can grow to be over a metre long. Rounder varieties are typically called calabash gourds (L. s. var. depressa) . Calabash gourds can grow to great size. One grown in Taylorsvlle, Kentucky in 2001 weighed 111.5 kg (246 lb). The gourd was one of the world's first cultivated plants grown not primarily for food, but for use as containers. The bottle gourd may have been carried from Asia to Africa, Europe, and the Americas in the course of human migration, or by seeds floating across the oceans inside the gourd. It has been proven to have been globally domesticated (and existed in the New World) during the Pre-Columbian era.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Commonly sautéed with ground pork or canned sardines (Ginisang Upo) to create an easy, budget-friendly everyday family meal.",
+    "health_statuses": {
+      "Upo___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Crawling vines with velvety heart-shaped leaves, white flowers, smooth green bottle gourds.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure strong overhead trellis to bear the heavy weight of gourds."
+      },
+      "Upo___Fruit_Fly": {
+        "condition_name": "Fruit Fly (Uod sa Upo)",
+        "symptoms": "Sunken brown holes on gourds oozing sap; gourds turn yellow and rot from the inside with small worms.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Bag young fruits in newspaper. Use yellow sticky pheromone cards.",
+        "preventive_measures": "Bury all damaged gourds deeply."
+      }
+    }
+  },
+  "Sigarilyas": {
+    "local_name": "Sigarilyas",
+    "scientific_name": "Psophocarpus tetragonolobus",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Enjoys full sun; water twice a week)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The winged bean (Psophocarpus tetragonolobus), also known as cigarillas, Goa bean, four-angled bean, four-cornered bean, manila bean, princess bean, star bean, kamrangi bean, pea, or dragon bean, is a tropical herbaceous legume plant. Winged bean is widely recognised by consumers and farmers in South Asia and South East Asia for its variety of uses and disease resistance. Winged bean is nutrient-rich and all parts of the plant are edible. The leaves can be eaten like spinach, flowers can be used in salads, tubers can be eaten raw or cooked, and seeds can be used in similar ways as the soybean. The winged bean is an underutilised species but has the potential to become a major multi-use food crop in the tropics of Asia, Africa, and Latin America.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Its unique four-angled pods are valued for their crunchy texture, often cooked in coconut milk with chili (Ginataang Sigarilyas) or added to Pinakbet.",
+    "health_statuses": {
+      "Sigarilyas___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Climbing green vine with blue flowers and green four-winged bean pods.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Provide full sunlight and strong trellis netting."
+      },
+      "Sigarilyas___Leaf_Spot": {
+        "condition_name": "Leaf Spot (Batik sa Sigarilyas)",
+        "symptoms": "Circular dark spots on leaves with yellow borders, causing premature leaf drying.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Prune affected leaves. Spray with dilute baking soda solution.",
+        "preventive_measures": "Avoid overhead watering; space plants to reduce moisture build-up."
+      }
+    }
+  },
+  "Repolyo": {
+    "local_name": "Repolyo",
+    "scientific_name": "Brassica oleracea",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate to High (Requires consistent moisture, likes cool weather)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Cabbage, comprising several cultivars of Brassica oleracea, is a leafy green, red (purple), or white (pale green) biennial plant grown as an annual vegetable crop for its dense-leaved heads. It is descended from the wild cabbage (B. oleracea var. oleracea), and belongs to the \"cole crops\" or brassicas, meaning it is closely related to broccoli and cauliflower (var. botrytis); Brussels sprouts (var. gemmifera); and Savoy cabbage (var. sabauda). A cabbage generally weighs between 500 and 1,000 grams (1 and 2 lb). Smooth-leafed, firm-headed green cabbages are the most common, with smooth-leafed purple cabbages and crinkle-leafed savoy cabbages of both colours being rarer. Under conditions of long sunny days, such as those found at high northern latitudes in summer, cabbages can grow quite large. As of 2012, the heaviest cabbage was 62.71 kilograms (138 lb 4 oz). Cabbage heads are generally picked during the first year of the plant's life cycle, but plants intended for seed are allowed to grow a second year and must be kept separate from other cole crops to prevent cross-pollination. Cabbage is prone to several nutrient deficiencies, as well as to multiple pests, and bacterial and fungal diseases.",
+    "habitat_ecology": "Thrives in the cool, high-altitude climates of the Philippines, heavily cultivated in agricultural regions like Benguet (Baguio) and high-elevation zones of Mindanao.",
+    "uses": "A highland staple shredded and used as a major component in stir-fried noodles (Pancit Canton/Bihon) or boiled in meaty stews like Nilaga.",
+    "health_statuses": {
+      "Repolyo___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Tight, firm cabbage head of overlapping blue-green thick crisp leaves.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Mulch soil to preserve moisture and cool root temperatures."
+      },
+      "Repolyo___Black_Rot": {
+        "condition_name": "Black Rot (Bulok sa Repolyo)",
+        "symptoms": "V-shaped yellow leaf margins; black veins; cabbage head becomes soft, black, and foul-smelling.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "None. Remove and discard infected cabbages immediately.",
+        "preventive_measures": "Avoid overhead watering; enforce strict sanitation."
+      }
+    }
+  },
+  "Karot": {
+    "local_name": "Karot",
+    "scientific_name": "Daucus carota",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Keep soil damp; deep watering promotes straight roots)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The carrot (Daucus carota subsp. sativus) is a root vegetable in the umbellifer family Apiaceae. Carrots are typically orange in colour due to their beta-carotene content, which makes them a rich source of vitamin A. Heirloom variants may be white, yellow, red, purple, or black. They are biennial plants. The vegetable is a domesticated form of the wild carrot, native to Europe and Southwestern Asia. The domesticated plant probably originated in Iran where it was cultivated for its leaves and seeds. In 2022, world production of carrots (combined with turnips) topped 42 million tonnes, with China producing 44% of the total.",
+    "habitat_ecology": "Thrives in the cool, high-altitude climates of the Philippines, heavily cultivated in agricultural regions like Benguet (Baguio) and high-elevation zones of Mindanao.",
+    "uses": "Cultivated for food consumption, ornamental landscaping, or traditional agricultural uses.",
+    "health_statuses": {
+      "Karot___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Feathery green leaf clusters, healthy tapering orange carrot root swelling underground.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure soil is completely loose and free of rocks to prevent crooked carrots."
+      },
+      "Karot___Leaf_Blight": {
+        "condition_name": "Leaf Blight (Sunog-dahon ng Karot)",
+        "symptoms": "Dark brown spots on leaf margins; leaf tips turn yellow, dry up, and die back, weakening carrot growth.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Prune damaged foliage. Spray with copper sulfate solution.",
+        "preventive_measures": "Water at the soil level; space out plantings."
+      }
+    }
+  },
+  "Baguio_Beans": {
+    "local_name": "Baguio Beans",
+    "scientific_name": "Phaseolus vulgaris",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water regularly at the base; avoid muddy leaves)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Phaseolus vulgaris, the common bean, is a herbaceous annual plant. Its botanical classification, along with other Phaseolus species, is as a member of the legume family, Fabaceae. It forms a green-leaved vine which produces beans inside of pods. The common bean has a long history of cultivation. All wild members of the species have a climbing habit, but many cultivars are classified either as bush beans or climbing beans, depending on their style of growth. In 2022, 28 million tonnes of dry common beans were produced worldwide, led by India with 23% of the total.",
+    "habitat_ecology": "Thrives in the cool, high-altitude climates of the Philippines, heavily cultivated in agricultural regions like Benguet (Baguio) and high-elevation zones of Mindanao.",
+    "uses": "Regularly sautéed with garlic, onions, and carrots (Gisang Baguio Beans) or chopped into local vegetable egg rolls (Lumpiang Togue/Sariwa).",
+    "health_statuses": {
+      "Baguio_Beans___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Erect bushy structure or short climber, clean leaves, bunches of straight green bean pods.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure good drainage; avoid high nitrogen fertilizer."
+      },
+      "Baguio_Beans___Anthracnose": {
+        "condition_name": "Anthracnose (Sunog-dahon ng Beans)",
+        "symptoms": "Dark brown sunken spots on bean pods and leaves; veins under leaves turn purple-black.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Remove infected branches. Spray with copper sulfate solution or neem wash.",
+        "preventive_measures": "Only save seeds from disease-free bean pods."
+      }
+    }
+  },
+  "Kundol": {
+    "local_name": "Kundol",
+    "scientific_name": "Benincasa hispida",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Drought-resistant once established, prefers full sun)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Benincasa hispida, the wax gourd, also called ash gourd, white gourd, winter gourd, winter melon, tallow gourd, ash pumpkin, dongah or Chinese preserving melon, is a species of vine. The wax gourd is native to South and Southeast Asia. It is grown, especially in Asia, for its very large fruit, eaten as a vegetable when mature. One variety of the plant, called chi qua (Benincasa hispida var. chieh-qua), is commonly used in Asian cuisine.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Traditionally candied into sweet preserves (Hopia Kundol filling) or simmered in comforting chicken broths and Chinese-Filipino soups.",
+    "health_statuses": {
+      "Kundol___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Climbing fuzzy green vines, yellow flowers, large oblong gourds covered in a powdery white wax layer.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure strong trellises to support the heavy wax gourds."
+      },
+      "Kundol___Downy_Mildew": {
+        "condition_name": "Downy Mildew (Amag sa Kundol)",
+        "symptoms": "Angular yellow spots on leaves; gray fuzzy mold layer underneath leaves in damp weather.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Prune old lower foliage. Spray wood ash mixture or baking soda spray.",
+        "preventive_measures": "Expose plot to full sun; avoid dense planting."
+      }
+    }
+  },
+  "Bataw": {
+    "local_name": "Bataw",
+    "scientific_name": "Lablab purpureus",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Requires trellis, water when soil dries)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Lablab purpureus is a species of bean in the family Fabaceae. It is native to sub-Saharan Africa and it is cultivated throughout the tropics for food. English language common names include hyacinth bean, lablab-bean bonavist bean/pea, dolichos bean, seim or sem bean, lablab bean, Egyptian kidney bean, Indian bean, bataw and Australian pea. Lablab is a monotypic genus. The name lablab which is also capitalized as its genus name is given by Robert Sweet from the previous name of Dolichos lablab by Carl Linnaeus, its epithet comes from Arabic: لَبْلَاب, romanized: lablāb.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "A classic Bahay Kubo legume whose flat pods are added to regional boiled vegetable dishes like Dinengdeng or Pinakbet.",
+    "health_statuses": {
+      "Bataw___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Creeping green vines, purple or white flower clusters, purple-bordered flat green bean pods.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Prune regularly to control vine spreading."
+      },
+      "Bataw___Pod_Borer": {
+        "condition_name": "Pod Borer Damage (Uod sa Bataw)",
+        "symptoms": "Small holes in bean pods; pods contain fecal deposits inside; seeds are eaten; pods rot.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune and destroy bored pods. Spray with chili-garlic extract or soap-water solution.",
+        "preventive_measures": "Rotate crops with non-legumes."
+      }
+    }
+  },
+  "Patani": {
+    "local_name": "Patani",
+    "scientific_name": "Phaseolus lunatus",
+    "category": "Vegetable",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Low to Moderate (Highly resilient to heat and drought)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "A lima bean (Phaseolus lunatus), also commonly known as butter bean, sieva bean, double bean or Madagascar bean, is a legume grown for its edible seeds or beans. Although lima beans and butter beans are the same species, they are sometimes considered distinct in culinary use, the former being small and green, the latter large and yellow. In areas where both are considered to be lima beans, the green variety may be labeled as \"baby\" (and less commonly \"junior\") limas.",
+    "habitat_ecology": "Commonly cultivated in lowland backyard gardens, open fields, and household plots throughout the Philippines.",
+    "uses": "Its starchy seeds are boiled and added to traditional vegetable medleys like Bulanglang, or cooked with coconut milk.",
+    "health_statuses": {
+      "Patani___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Resilient crawling vines, white-green flowers, broad flat green pods containing crescent-shaped beans.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Very drought-resistant; water sparingly once established."
+      },
+      "Patani___Pod_Borer": {
+        "condition_name": "Pod Borer (Uod sa Patani)",
+        "symptoms": "Entry holes on pods; internal seeds are consumed; pods exhibit mold and drop early.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Harvest and destroy infested pods. Spray with neem extract.",
+        "preventive_measures": "Enforce field sanitation."
+      }
+    }
+  },
+  "Mangga": {
+    "local_name": "Mangga",
+    "scientific_name": "Mangifera indica",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Water young trees regularly; mature trees are drought-tolerant)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "A mango is an edible stone fruit produced by the tropical tree Mangifera indica. It originated in the northeastern part of the Indian subcontinent, in what is now Bangladesh, northeastern India and Myanmar. M. indica has been cultivated in South and Southeast Asia since ancient times, resulting in two modern mango cultivar lineages: the \"Indian\" and the \"Southeast Asian\" types. Other species in the genus Mangifera also produce edible fruits called \"mangoes,\" most of which are found in the Malesian ecoregion. There are several hundred cultivars of mango worldwide. Depending on the cultivar, mango fruit varies in size, shape, sweetness, skin colour, and flesh colour, which may be pale yellow, gold, green, or orange. Mango is the national fruit of India, Pakistan, and the Philippines, while the mango tree is the national tree of Bangladesh.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten ripe as a sweet dessert, blended into shakes, or eaten unripe and sour (Green Mango) with salty shrimp paste (Bagoong).",
+    "health_statuses": {
+      "Mangga___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Clean, lanceolate dark green leaves; dense green canopy; clean maturing mangoes.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Prune inner branches to let sunlight sterilize the tree center."
+      },
+      "Mangga___Anthracnose": {
+        "condition_name": "Anthracnose (Sunog-mangga)",
+        "symptoms": "Black spots on leaves and flowers; developing mangoes exhibit dark sunken lesions and fall early.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune affected shoots. Spray copper fungicide before flowering. Perform hot water treatment on harvested fruit.",
+        "preventive_measures": "Maintain orchard hygiene by removing fallen leaves and twigs."
+      }
+    }
+  },
+  "Saging": {
+    "local_name": "Saging",
+    "scientific_name": "Musa acuminata",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "High (Needs abundant water; water daily in dry season)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "A banana is an elongated, edible fruit that is botanically a berry produced by several kinds of large treelike herbaceous flowering plants in the genus Musa. In some countries, cooking bananas are called plantains, distinguishing them from dessert bananas. The fruit is variable in size, color and firmness, but is usually elongated and curved, with soft flesh rich in starch covered with a peel, which may have a variety of colors when ripe. It grows upward in clusters near the top of the plant. Almost all modern edible seedless (parthenocarp) cultivated bananas come from two wild species – Musa acuminata and Musa balbisiana, or their hybrids. Musa species are native to tropical Indomalaya and Australia; they were probably domesticated in New Guinea. They are grown in 135 countries, primarily for their fruit, and to a lesser extent to make banana paper and textiles, while some are grown as ornamental plants. The world's largest producers of bananas in 2022 were India and China, which together accounted for approximately 26% of total production. Bananas are eaten raw or cooked in recipes varying from curries to banana chips, fritters, fruit preserves, or simply baked or steamed.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten fresh as a table fruit, or cooked (particularly the Saba variety) into street foods like Banana Cue, Turon, or sweetened Minatamis na Saging.",
+    "health_statuses": {
+      "Saging___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Broad erect green leaves, thick pseudostem, clean banana bunch with banana heart.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Provide potassium-rich organic fertilizers like wood ash."
+      },
+      "Saging___Panama_Disease": {
+        "condition_name": "Panama Disease / Fusarium Wilt (Lanta sa Saging)",
+        "symptoms": "Yellowing of leaf margins; leaves bend down and hang like a skirt; pseudostem splits at base.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "No cure. Destroy infected plant and isolate the spot. Do not move suckers.",
+        "preventive_measures": "Use tissue-cultured disease-free planting materials."
+      }
+    }
+  },
+  "Papaya": {
+    "local_name": "Papaya",
+    "scientific_name": "Carica papaya",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Water moderately; sensitive to root rot if waterlogged)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The papaya (/pəˈpaɪə/, US: /pəˈpɑːjə/) is the plant species Carica papaya, one of the 21 accepted species in the genus Carica of the family Caricaceae. It was first domesticated in Mesoamerica, within modern-day southern Mexico and Central America. It is grown in several countries in regions with a tropical climate. In 2024, India was the leading producer, accounting for 36% of the world total.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Unripe green papaya is shredded for pickled Atchara or added to Tinola soup; ripe papaya is eaten fresh as a sweet, digestive-friendly breakfast fruit.",
+    "health_statuses": {
+      "Papaya___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Crown of large lobed leaves; clean trunk with clusters of green/yellow fruits.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure soil is highly draining to prevent root rot."
+      },
+      "Papaya___Ring_Spot": {
+        "condition_name": "Papaya Ringspot (Ringspot / Batik-batik)",
+        "symptoms": "Yellow mosaic patches on leaves; dark green oil-spots on trunk; circular rings on papaya fruits.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "No organic cure. Uproot and burn infected trees immediately to contain the virus.",
+        "preventive_measures": "Control aphid vectors using soapy water spray."
+      }
+    }
+  },
+  "Niyog": {
+    "local_name": "Niyog",
+    "scientific_name": "Cocos nucifera",
+    "category": "Fruit Tree",
+    "ecological_status": "Native/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Highly adaptable, prefers sandy loam with high humidity)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The coconut (Cocos nucifera) is a member of the palm family (Arecaceae) and the only living species of the genus Cocos. The term \"coconut\" (or the archaic \"cocoanut\") can denote the whole coconut palm tree or the large hard fruit. Originally native to the Central Indo-Pacific, they are ubiquitous in coastal tropical regions. The coconut tree provides food, fuel, cosmetics, folk medicine and building materials. The inner flesh of the mature fruit forms a regular part of the diets of many people in the tropics and subtropics. Coconut endosperm contains a large quantity of a liquid, \"coconut water\". Mature coconuts can be processed for oil and coconut milk from the flesh, charcoal from the hard shell, and coir from the fibrous husk. Dried coconut flesh is called copra, and the oil and milk derived from it are commonly used in cooking and in soaps and cosmetics. Sweet coconut sap can be made into drinks or fermented into palm wine or coconut vinegar. The hard shells, fibrous husks and long pinnate leaves are used to make products for furnishing and decoration.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Grated meat is squeezed for coconut milk (Gata) used in savory stews and desserts, while coconut water (Buko) is served as a refreshing beverage.",
+    "health_statuses": {
+      "Niyog___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Lush green crown of fronds; trunk free of damage; heavy bunches of coconuts.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Clean the crown of dead leaves and debris regularly."
+      },
+      "Niyog___Cocolisap": {
+        "condition_name": "Coconut Scale Insect (Cocolisap)",
+        "symptoms": "Leaves turn yellow and dry up; undersides of fronds are covered in tiny yellow/white scales.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune and burn heavily infested fronds. Spray with soap and coconut oil mixture.",
+        "preventive_measures": "Introduce natural predators like ladybugs."
+      }
+    }
+  },
+  "Calamansi": {
+    "local_name": "Calamansi",
+    "scientific_name": "Citrus × microcarpa",
+    "category": "Fruit Tree",
+    "ecological_status": "Native/Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water regularly, especially during fruit production)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Calamansi (Citrus × microcarpa), also known as calamondin, Philippine lime, or Philippine lemon, is a citrus hybrid cultivated predominantly in the Philippines. It is native to the Philippines, parts of Indonesia (Borneo, Sumatra, and Sulawesi), Malaysia, and Brunei, as well as Taiwan, Sri Lanka and parts of southern China. Calamansi is ubiquitous in traditional Philippine cuisine. It is naturally very sour, and is used in various condiments, beverages, dishes, marinades, and preserves. Calamansi is also used as an ingredient in Malaysian and Indonesian cuisines.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Its sour juice is squeezed over noodles, grilled meats, and used as a base for dipping sauces (Toyomansi) or hot wellness tea.",
+    "health_statuses": {
+      "Calamansi___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Shiny green leaves, white fragrant flowers, juicy green spherical citrus fruits.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Apply organic compost around the root zone twice a year."
+      },
+      "Calamansi___Citrus_Canker": {
+        "condition_name": "Citrus Canker (Kanser ng Calamansi)",
+        "symptoms": "Raised brown corky spots with yellow halos on leaves, stems, and fruits.",
+        "severity": "Moderate to High",
+        "organic_treatment": "Prune infected twigs. Spray copper fungicide or baking soda wash.",
+        "preventive_measures": "Plant windbreaks around the trees to reduce bacterial spread via wind/rain."
+      }
+    }
+  },
+  "Pinya": {
+    "local_name": "Pinya",
+    "scientific_name": "Ananas comosus",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Low (Drought-tolerant bromeliad, water once a week)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "The pineapple (Ananas comosus) is a tropical plant with an edible fruit; it is the most economically significant plant in the family Bromeliaceae. The pineapple is native to South America, where it has been cultivated for many centuries. The introduction of the pineapple plant to Europe in the 17th century made it a significant cultural icon of luxury. Since the 1820s, pineapple has been commercially grown in greenhouses and many tropical plantations. The fruit, particularly its juice, has diverse uses in cuisines and desserts.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Slices are eaten fresh, processed into canned desserts, or added as a sweet-tangy component in savory dishes like Hamonado and Sweet and Sour Pork.",
+    "health_statuses": {
+      "Pinya___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Rosette of stiff spiny green leaves; single central pine fruit developing normally.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Ensure highly sandy well-draining soil."
+      },
+      "Pinya___Heart_Rot": {
+        "condition_name": "Heart Rot (Bulok-puso)",
+        "symptoms": "Central leaves turn yellow-brown and are easily pulled out from the plant; rot smells foul.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Uproot and burn. Do not plant pinya in that wet soil again.",
+        "preventive_measures": "Dip slips/cuttings in organic copper solution before planting."
+      }
+    }
+  },
+  "Guyabano": {
+    "local_name": "Guyabano",
+    "scientific_name": "Annona muricata",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Keep soil moist but well-drained)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Soursop (also called graviola, guyabano, and in Hispanic America guanábana) is the fruit of Annona muricata, a broadleaf, flowering, evergreen tree. It is native to the tropical Americas and is widely propagated. It is in the same genus, Annona, as cherimoya and is in the Annonaceae family. The soursop is adapted to areas of high humidity and relatively warm winters; temperatures below 5 °C (41 °F) will cause damage to leaves and small branches, and temperatures below 3 °C (37 °F) can be fatal. The fruit becomes dry and is no longer good for concentrate.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Its fibrous, creamy white pulp is eaten fresh, squeezed into juice, or processed into purees, valued locally for its traditional cancer-fighting claims.",
+    "health_statuses": {
+      "Guyabano___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Glossy green oval leaves, clean bark, spiky green soursop fruits.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Keep orchard clean of fallen leaves."
+      },
+      "Guyabano___Anthracnose": {
+        "condition_name": "Anthracnose (Sunog-guyabano)",
+        "symptoms": "Black spots on leaves and flowers; guyabano fruits rot, turn black, and mummify.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune infected parts. Spray with neem oil or organic copper wash.",
+        "preventive_measures": "Ensure trees have adequate spacing to minimize humidity."
+      }
+    }
+  },
+  "Langka": {
+    "local_name": "Langka",
+    "scientific_name": "Artocarpus heterophyllus",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Water regularly when young, drought-resistant when mature)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The jackfruit, jakfruit or nangka (Artocarpus heterophyllus) is a species of tree in the fig, mulberry, and breadfruit family (Moraceae). The jackfruit is the largest tree fruit, reaching as much as 55 kg (120 pounds) in weight, 90 cm (35 inches) in length, and 50 cm (20 inches) in diameter. A mature jackfruit tree produces some 200 fruits per year, with older trees bearing up to 500 fruits in a year. The jackfruit is a multiple fruit composed of hundreds to thousands of individual flowers; the fleshy petals of the unripe fruit are eaten by humans, in addition to the ripened fruit.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Ripe yellow bulbs are added to sweeten Turon or Minatamis; unripe green langka is simmered in coconut milk with salted fish (Ginataang Langka).",
+    "health_statuses": {
+      "Langka___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Thick green leathery leaves, huge spiky jackfruits directly on the trunk.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Bag the developing fruits early in large sacks to prevent fruit flies."
+      },
+      "Langka___Fruit_Rot": {
+        "condition_name": "Rhizopus Fruit Rot (Bulok-langka)",
+        "symptoms": "Soft, water-soaked spots on fruits; fruits cover with a dark furry mold and drop.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Remove and bury/burn infected fruits. Spray with copper sulfate solution.",
+        "preventive_measures": "Bag fruits early. Prune lower twigs to improve airflow."
+      }
+    }
+  },
+  "Santol": {
+    "local_name": "Santol",
+    "scientific_name": "Sandoricum koetjape",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Requires dry spells to induce flowering, water normal times)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Sandoricum koetjape, the santol, sentul, setun or cotton fruit, is a tropical fruit native to maritime Southeast Asia. The santol is native to Malesia and New Guinea. It has been introduced to Indochina, Sri Lanka, India, northern Australia, Mauritius, and Seychelles. It is commonly cultivated throughout these regions and the fruits are seasonally abundant in the local and international markets.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten fresh with salt; the thick rind is also grated and simmered in coconut milk with chilies and pork to make the spicy dish Sinantolan.",
+    "health_statuses": {
+      "Santol___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Large compound green leaves, clean bark, smooth yellow-brown globose fruits.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Clean up fallen leaves to control pest breeding."
+      },
+      "Santol___Gall_Mite": {
+        "condition_name": "Leaf Gall Mite (Kuto sa Santol)",
+        "symptoms": "Leaf surface is covered in numerous raised green/red wart-like bumps (galls).",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Prune heavily infested leaves and burn them. Spray with sulfur solution or neem oil.",
+        "preventive_measures": "Inspect new leaf flushes for mites."
+      }
+    }
+  },
+  "Chico": {
+    "local_name": "Chico",
+    "scientific_name": "Manilkara zapota",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Highly drought-resistant but benefits from weekly water)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Manilkara zapota, commonly known as sapodilla, sapote, chicozapote, chico, chicoo, chicle, naseberry, nispero, or soapapple, among other names, is an evergreen tree native to southern Mexico and Central America. An example natural occurrence is in coastal Yucatán, in the Petenes mangroves ecoregion, where it is a subdominant plant species. It was introduced to the Philippines during Spanish colonization. It is grown in large quantities in Mexico and in tropical Asia, including India, Pakistan, Thailand, Malaysia, Cambodia, Indonesia, Vietnam, Bangladesh, as well as in the Caribbean. Most of the common names of Manilkara zapota like \"sapodilla\", \"chiku\", and \"chicozapote\" come from Spanish meaning \"little sapote\". Other common names in English include bully tree, soapapple tree, sawo, marmalade plum and dilly tree.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten fresh as a sweet, brown-skinned dessert fruit, prized for its grain-textured, brown sugar-like honeyed flavor.",
+    "health_statuses": {
+      "Chico___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Oval glossy leaves, brown scaly chico fruits growing in clusters.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Water regularly during fruiting to ensure juicy fruit pulp."
+      },
+      "Chico___Mealybugs": {
+        "condition_name": "Mealybugs (Kuto-kuto)",
+        "symptoms": "White cotton-like clusters on fruit stems and under leaves; black sooty mold follows.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Spray with soapy water or neem oil. Blast with high-pressure water.",
+        "preventive_measures": "Control ants (ants farm and protect mealybugs)."
+      }
+    }
+  },
+  "Rambutan": {
+    "local_name": "Rambutan",
+    "scientific_name": "Nephelium lappaceum",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Requires high moisture and regular watering)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Rambutan (/ræmˈbuːtən/; Nephelium lappaceum) is a medium-sized tropical tree in the family Sapindaceae. The name also refers to the edible fruit produced by this tree. The rambutan is native to Southeast Asia. It is closely related to several other edible tropical fruits, including the lychee, longan, pulasan, and quenepa. It is an evergreen tree growing to a height of 15–24 m (49–79 ft). The leaves are alternate, 14–30 cm (6–12 in) long, pinnate, with three to eleven leaflets, each leaflet 5–15 cm (2–6 in) wide and 3–10 cm (1.2–3.9 in) broad with an entire margin.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Peeled and eaten fresh as a seasonal table fruit, enjoyed for its sweet, translucent, juicy aril surrounding a single seed.",
+    "health_statuses": {
+      "Rambutan___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Clean green leaves; clusters of bright red hairy fruits growing at branch tips.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Conduct post-harvest pruning to encourage new fruiting shoots."
+      },
+      "Rambutan___Powdery_Mildew": {
+        "condition_name": "Powdery Mildew (Puting Amag)",
+        "symptoms": "White powdery growth on flowers and young fruit clusters, causing them to turn black and drop.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune shaded inner twigs. Spray with sulfur powder or baking soda wash.",
+        "preventive_measures": "Ensure tree canopy gets full sunlight."
+      }
+    }
+  },
+  "Lanzones": {
+    "local_name": "Lanzones",
+    "scientific_name": "Lansium domesticum",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "High (Sensitive to dry conditions, requires regular watering)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "Lanzones (Lansium domesticum) is a species of tree in the mahogany family, cultivated for its edible fruit. The fruits grow in grape-like clusters, featuring a thin, yellow leathery skin that releases a milky sap when peeled. The translucent, sweet, and tangy flesh is divided into segments, some of which contain bitter seeds. It is a highly popular seasonal fruit tree grown throughout the Philippines.",
+    "habitat_ecology": "Thrives in warm, humid, and rain-abundant tropical climates, commonly grown in the southern regions of the Philippines, particularly in Davao and Mindanao.",
+    "uses": "Its segments are peeled and eaten fresh as a prized seasonal delicacy; the dried skin is traditionally burned to repel mosquitoes.",
+    "health_statuses": {
+      "Lanzones___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Erect trunk, bunches of yellow-round fruits hanging on branches.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Protect trees from dry winds; mulching roots helps preserve moisture."
+      },
+      "Lanzones___Bark_Borer": {
+        "condition_name": "Bark Borer (Uod sa Lanzones)",
+        "symptoms": "Small holes in the bark; sawdust-like frass on the trunk; branches die back.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Scrape infested bark area to destroy larvae. Apply neem oil paste.",
+        "preventive_measures": "Maintain tree vigor with regular compost feeding."
+      }
+    }
+  },
+  "Duhat": {
+    "local_name": "Duhat",
+    "scientific_name": "Syzygium cumini",
+    "category": "Fruit Tree",
+    "ecological_status": "Native/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Very hardy, drought-tolerant once established)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Syzygium cumini, also known as Java plum, Malabar plum, black plum, jamun, jaman, jambul, jambu, or jambolan, is an evergreen tropical tree in the flowering plant family Myrtaceae, and favored for its fruit, timber, and ornamental value. It is native to the Indian subcontinent and Southeast Asia. It can reach heights of up to 30 m (100 ft) and can live more than 100 years. A rapidly growing plant, it is considered an invasive species in many world regions. Syzygium cumini has been introduced to areas including islands of the Pacific and Indian Oceans, Australia, Hong Kong and Singapore.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Usually shaken in a bowl with rock salt (Duhat shake) to soften the astringency before eating, or fermented into local plum wines.",
+    "health_statuses": {
+      "Duhat___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Broad glossy green leaves, clusters of dark purple to black oval berries.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Harvest ripe fruits daily to avoid attracting pests."
+      },
+      "Duhat___Leaf_Gall": {
+        "condition_name": "Leaf Gall (Galls sa Duhat)",
+        "symptoms": "Small green and yellow blisters on leaf surface; leaves deform and dry.",
+        "severity": "Low to Moderate",
+        "organic_treatment": "Prune and destroy infected leaves. Spray with neem oil.",
+        "preventive_measures": "Prune internal canopy to let in sunlight."
+      }
+    }
+  },
+  "Bayabas": {
+    "local_name": "Bayabas",
+    "scientific_name": "Psidium guajava",
+    "category": "Fruit Tree/Medicinal",
+    "ecological_status": "Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Highly adaptable, grows almost anywhere)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Guava (/ˈɡwɑːvə/ GWAH-və), also known as the 'guava-pear' in various regions, is a common tropical fruit cultivated in many tropical and subtropical regions. The common guava Psidium guajava (lemon guava, apple guava) is a small tree in the myrtle family (Myrtaceae), native to Mexico, Central America, the Caribbean and northern South America. Botanically, guavas are berries. The name guava is also given to some other species in the genus Psidium, such as strawberry guava (Psidium cattleyanum) and to the pineapple guava, Feijoa sellowiana. In 2024, the world production of guavas (data combined with mangos and mangosteens) was 62 million tonnes, led by India having 45% of the total.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten fresh when ripe, or used traditionally as a natural souring agent in fish/pork broth (Sinigang sa Bayabas) and for antiseptic leaf washes.",
+    "health_statuses": {
+      "Bayabas___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Smooth peeling bark, green ribbed leaves, firm green round guava fruits.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Bag the guavas early to prevent fruit fly entry."
+      },
+      "Bayabas___Whitefly": {
+        "condition_name": "Whitefly Infestation (Kuto sa Bayabas)",
+        "symptoms": "Underside of leaves covered in small white insects and sticky honeydew; black mold on leaves.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Spray with soap-water mixture or neem oil wash.",
+        "preventive_measures": "Avoid excessive nitrogen fertilizers."
+      }
+    }
+  },
+  "Kaimito": {
+    "local_name": "Kaimito",
+    "scientific_name": "Chrysophyllum cainito",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Drought-tolerant once mature)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Chrysophyllum cainito is a tropical tree of the family Sapotaceae. It is native to the Isthmus of Panama, where it was domesticated. It has spread to the Greater Antilles and the West Indies and is now grown throughout the tropics, including Southeast Asia. It grows rapidly and reaches 20 meters in height. The common names cainito and caimito likely come from the Mayan words cab (juice), im (breast), and vitis (sap), via Spanish. Star apple is a common name. It is also known as the purple apple.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Chilled and eaten fresh by scooping out the sweet, milky, gelatinous flesh, often mixed with condensed milk or cream.",
+    "health_statuses": {
+      "Kaimito___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Leaves with green tops and bronze golden undersides; firm purple star apples.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Prune lowest branches to allow air circulation near the base."
+      },
+      "Kaimito___Fruit_Fly": {
+        "condition_name": "Fruit Fly (Uod sa Kaimito)",
+        "symptoms": "Sunken soft patches on star apple skin; white maggots inside the sweet pulp, causing early rot.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Bag fruits in paper. Hang methyl eugenol traps around the tree.",
+        "preventive_measures": "Gather and dispose of all fallen fruits."
+      }
+    }
+  },
+  "Kamias": {
+    "local_name": "Kamias",
+    "scientific_name": "Averrhoa bilimbi",
+    "category": "Fruit Tree/Medicinal",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Prefers evenly moist soil)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Averrhoa bilimbi (commonly known as bilimbi, orkkaappuli, cucumber tree, or tree sorrel) is a fruit-bearing tree of the genus Averrhoa, family Oxalidaceae. It is native to the Maluku Islands and Sulawesi in Indonesia, and has become naturalised and is common throughout Southeast Asia. It is cultivated in parts of tropical South Asia and the Americas. It bears edible but extremely sour fruit. It is a close relative of the carambola tree. Averrhoa bilimbi is a small tropical tree reaching up to 15 m in height. It is often multitrunked, quickly dividing into ramifications. Bilimbi leaves are alternate, pinnate, measuring approximately 30–60 cm in length. Each leaf contains 11-37 leaflets; ovate to oblong, 2–10 cm long, and 1–2 cm wide, and cluster at branch extremities. The leaves are quite similar to those of the Otaheite gooseberry. The tree is cauliflorous with 18–68 flowers in panicles that form on the trunk and other branches. The flowers are heterostylous, borne in a pendulous panicle inflorescence. The flower is fragrant, corolla of 5 petals 10–30 mm long, yellowish green to reddish purple.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Extremely sour fruit used fresh as a powerful acid/souring agent in stews (Paksiw, Sinigang), or sun-dried to preserve it for cooking.",
+    "health_statuses": {
+      "Kamias___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Clusters of highly sour green bilimbi fruits growing directly on trunk.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Water regularly during dry spells."
+      },
+      "Kamias___Sooty_Mold": {
+        "condition_name": "Sooty Mold (Itim na Amag)",
+        "symptoms": "Leaves and fruits get covered in a thin, dry black powder.",
+        "severity": "Low to Moderate",
+        "organic_treatment": "Spray with soapy water to wash off the mold. Control sucking insects.",
+        "preventive_measures": "Keep canopy open to direct sunlight."
+      }
+    }
+  },
+  "Balimbing": {
+    "local_name": "Balimbing",
+    "scientific_name": "Averrhoa carambola",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Keep soil moist but not soggy)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Averrhoa carambola is a species of tree in the family Oxalidaceae native to tropical Southeast Asia; it has a number of common names, including carambola, star fruit and five-corner. It is a small tree or shrub that grows 5 to 12 m (16 to 39 ft) tall, with rose to red-purple flowers. The flowers are small and bell-shaped, with five petals that have whitish edges. The flowers are often produced year round under tropical conditions. The tree is cultivated in tropical and semitropical regions for its edible fruits. The species in the genus Averrhoa along with the species in genus Sarcotheca are the only woody, tree-like plants belonging to the Oxalis family Oxalidaceae. The Oxalis family has nearly 900 species; most are herbaceous perennials or annuals native from tropical and semitropical locations, although a number also grow in other parts of the world. Averrhoa has sometimes been placed in the family Averrhoaceae. Averrhoa carambola is one of two species in the genus Averrhoa, both have edible fruit; the other species A. bilimbi, which is sometimes called the bilimbi or the cucumber tree, is limited to tropical regions. The fruits of A. bilimbi are too sour to be eaten raw, while the sweet forms of A. carambola are eaten raw. The fruits of A. bilimbi and the sour forms—which have high oxalic acid content—of A. carambola are pickled and made into jelly, jam, and juice.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Sliced crosswise to reveal star shapes, eaten fresh with salt for a crunchy, juicy snack, or juiced as a thirst-quenching beverage.",
+    "health_statuses": {
+      "Balimbing___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Small feathery leaves, 5-angled star fruits.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Bag the star fruits with paper bags early."
+      },
+      "Balimbing___Fruit_Fly": {
+        "condition_name": "Fruit Fly (Uod sa Balimbing)",
+        "symptoms": "Tiny puncture spots; fruit flesh becomes soft, turns brown, and is filled with maggots.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Bag fruits when they are 1-inch long. Clean up all fallen fruit.",
+        "preventive_measures": "Use fruit fly traps."
+      }
+    }
+  },
+  "Suha": {
+    "local_name": "Suha",
+    "scientific_name": "Citrus maxima",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Regular watering; protect from soil sogginess)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The pomelo (/ˈpɒmɪloʊ, ˈpʌm-/ POM-il-oh, PUM-; or pummelo, Citrus maxima), also known as a shaddock, is the largest citrus fruit. It is an ancestor of several cultivated citrus species, including the bitter orange and the grapefruit. It is a natural, non-hybrid citrus fruit, native to Southeast Asia. Similar in taste to a sweet grapefruit, the pomelo is commonly eaten and used for festive occasions throughout Southeast and East Asia. As with the grapefruit, phytochemicals in the pomelo have the potential for drug interactions. The pomelo tree can be 5–15 metres (16–50 feet) tall, with a trunk, often rather crooked, that is 10–30 centimetres (4–12 inches) thick, and low-hanging, irregular branches. The petioles (leaf stalks) are distinctly winged. The leaves are alternate, ovate or elliptic in shape, and 5–20 cm (2–8 in) long; they are leathery and dull green above, hairy beneath. The flowers, produced singly or in clusters, are fragrant and yellow-white.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Peeled and eaten fresh by the segment as a refreshing citrus snack, or tossed into local green salads and fruit punches.",
+    "health_statuses": {
+      "Suha___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Large winged green leaves, huge green/yellow thick-skinned pomelos.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Fertilize with compost twice a year."
+      },
+      "Suha___Citrus_Canker": {
+        "condition_name": "Citrus Canker (Kanser ng Suha)",
+        "symptoms": "Raised brown craters with yellow halos on leaves and fruit skin.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune all diseased twigs. Spray with copper sulfate solution.",
+        "preventive_measures": "Grow windbreaks; spray copper during leaf flushes."
+      }
+    }
+  },
+  "Atis": {
+    "local_name": "Atis",
+    "scientific_name": "Annona squamosa",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Low to Moderate (Drought-tolerant, hates wet roots)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Annona squamosa is a small, well-branched tree or shrub from the family Annonaceae that bears edible fruits called sugar apples or sweetsops or custard apples. It tolerates a tropical lowland climate better than its relatives Annona reticulata and Annona cherimola (whose fruits often share the same name) helping make it the most widely cultivated of these species. Annona squamosa is semi-(or late) deciduous, and 3 to 8 metres (10 to 26 feet) tall, similar to soursop (Annona muricata). It is a native of tropical climate in the Americas, and Spanish traders aboard the Manila galleons docking in the Philippines brought it to Asia.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten fresh by pressing the soft, scaly skin open and consuming the sweet, custardy white segments around the black seeds.",
+    "health_statuses": {
+      "Atis___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Light green leaves, bumpy green sugar apples developing normally.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Expose to full sun and well-draining soil."
+      },
+      "Atis___Mealybugs": {
+        "condition_name": "Mealybugs (Kuto-kuto sa Atis)",
+        "symptoms": "White powdery clusters cover the crevices of the fruit; fruit stops growing and turns black.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Spray soap solution or neem oil. Use high-pressure water spray to dislodge clusters.",
+        "preventive_measures": "Deter ant colonizations around the base."
+      }
+    }
+  },
+  "Makopa": {
+    "local_name": "Makopa",
+    "scientific_name": "Syzygium samarangense",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "High (Water frequently for juicy fruits)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "Syzygium samarangense is a species of flowering plant in the family Myrtaceae, native to an area that includes the Greater Sunda Islands, Malay Peninsula, and the Andaman and Nicobar Islands, but introduced in prehistoric times to a wider area and now widely cultivated in the tropics. Common names in English include wax apple, Java apple, Semarang rose-apple, and wax jambu. Syzygium samarangense is a tropical tree growing to 12 metres (39 feet) tall, with evergreen leaves 10–25 cm (4–10 in) long and 5–10 cm (2–4 in) broad. The leaves are elliptical, but rounded at the base; they are aromatic when crushed. The trunk is relatively short, with a wide – yet open – crown starting low on the tree. The bark is pinkish-gray in color, and flakes readily.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten fresh as a crisp, mildly sweet, bell-shaped fruit, often dipped in rock salt for a refreshing afternoon snack.",
+    "health_statuses": {
+      "Makopa___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Dense green leaves, bunches of bell-shaped pink/red wax apples.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Water regularly to encourage crunchy and juicy fruits."
+      },
+      "Makopa___Fruit_Fly": {
+        "condition_name": "Fruit Fly (Uod sa Makopa)",
+        "symptoms": "Tiny puncture wounds on the red skin; fruit becomes soft and rots from within.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Bag fruit clusters. Collect and bury rotting fallen fruits.",
+        "preventive_measures": "Hang yellow sticky traps."
+      }
+    }
+  },
+  "Pakwan": {
+    "local_name": "Pakwan",
+    "scientific_name": "Citrullus lanatus",
+    "category": "Fruit",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate to High (Water regularly until fruit reaches full size; reduce water before harvest for sweetness)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The watermelon (Citrullus lanatus) is a species of flowering plant in the family Cucurbitaceae, that has a large, edible fruit. It is a scrambling and trailing vine-like plant, and is widely cultivated worldwide, with more than 1,000 varieties. Watermelons are grown in favorable climates from tropical to temperate regions worldwide for its large edible fruit, which is a berry with a hard rind and no internal divisions, botanically called a pepo. The sweet, juicy flesh is usually deep red to pink, with many seeds that are black when mature, white when immature. Seedless varieties also exist. The fruit can be eaten raw or pickled, and the rind is edible after cooking. It may also be consumed as a juice or an ingredient in mixed beverages.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Slices are served chilled as a sweet, hydrating dessert, or blended into fruit shakes during the hot summer months.",
+    "health_statuses": {
+      "Pakwan___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Vigorous trailing vines, yellow flowers, large glossy striped watermelons.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Rotate crops and protect growing fruits from soil contact by resting them on straw."
+      },
+      "Pakwan___Fusarium_Wilt": {
+        "condition_name": "Fusarium Wilt (Lanta ng Pakwan)",
+        "symptoms": "Vines wilt during the heat of the day and recover at night; eventually, the entire vine collapses and turns brown.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "None. Remove and burn the wilted vines. Apply wood ash to raise soil pH.",
+        "preventive_measures": "Grow in well-drained soil; practice a 5-year crop rotation."
+      },
+      "Pakwan___Anthracnose": {
+        "condition_name": "Anthracnose (Sunog-pakwan)",
+        "symptoms": "Water-soaked spots on leaves that turn black; circular sunken black lesions on watermelon rinds.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Remove diseased leaves. Spray copper sulfate solution or neem oil.",
+        "preventive_measures": "Avoid overhead watering; use clean seed."
+      }
+    }
+  },
+  "Avocado": {
+    "local_name": "Avocado",
+    "scientific_name": "Persea americana",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Moderate (Dewater regularly but ensure excellent soil drainage to prevent root rot)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The avocado, alligator pear or avocado pear (Persea americana) is an evergreen tree in the laurel family (Lauraceae). It is native to the Americas, with archaeological evidence of early human avocado use dating back thousands of years across various regions of Central and South America. It was prized for its large and unusually oily fruit. The native range of avocado (Persea americana) extends from Mexico to Peru, encompassing much of Central America and parts of northern and western South America. Its fruit, sometimes also referred to as an alligator pear or avocado pear, is botanically a large berry containing a single large seed. Sequencing of its genome showed that the evolution of avocados was shaped by polyploidy events and that commercial varieties have a hybrid origin. Avocado trees are partly self-pollinating, and are often propagated through grafting to maintain consistent fruit output. Avocados are presently cultivated in the tropical and Mediterranean climates of many countries. As of 2023, Mexico is the world's leading producer of avocados, supplying 29% of the global harvest of 10.5 million tonnes.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten as a dessert in the Philippines, mashed with condensed milk or sugar and milk, or blended with ice to make a rich, creamy shake.",
+    "health_statuses": {
+      "Avocado___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Lush dark green leaves, straight trunk, firm pear-shaped green avocadoes.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Plant in sandy loam mounds to ensure roots never sit in stagnant water."
+      },
+      "Avocado___Root_Rot": {
+        "condition_name": "Phytophthora Root Rot (Bulok-ugat ng Avocado)",
+        "symptoms": "Foliage turns pale green and wilts; leaves drop leaving a bare canopy; roots turn black and mushy.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "None. Pull out dying trees. Apply generous amounts of compost and gypsum to remaining trees to suppress the fungus.",
+        "preventive_measures": "Strictly avoid waterlogging. Use resistant rootstocks."
+      },
+      "Avocado___Anthracnose": {
+        "condition_name": "Anthracnose (Sunog-dahon sa Avocado)",
+        "symptoms": "Circular brown-black spots on avocado skin; spots expand and sink into the flesh, causing decay.",
+        "severity": "Moderate to High",
+        "organic_treatment": "Harvest fruits early before spots worsen. Spray copper fungicide before fruiting.",
+        "preventive_measures": "Prune tree to increase airflow."
+      }
+    }
+  },
+  "Durian": {
+    "local_name": "Durian",
+    "scientific_name": "Durio zibethinus",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate to High (Needs consistent moisture during fruit set; sensitive to flooding)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The durian (/ˈdʊəriən/ ) is the edible fruit of several tree species belonging to the genus Durio. There are 30 recognised species, at least nine of which produce edible fruit. Durio zibethinus, native to Borneo, Sumatra, and the Malay Peninsula, is the only species available on the international market. It has over 300 named varieties in Thailand and over 200 in Malaysia as of 2021. Other species are sold in their local regions. Known in some regions as the \"king of fruits\", the durian is distinctive for its large size, strong odour, and thorn-covered rind. The fruit can grow as large as 30 cm (12 in) long and 15 cm (6 in) in diameter, and it typically weighs 1 to 3 kg (2 to 7 lb). Its shape ranges from oblong to round, the colour of its husk from green to brown, and its flesh from pale yellow to red, depending on the species. The flavour of the flesh is complex with savoury notes. The texture is creamy and pudding-like.",
+    "habitat_ecology": "Thrives in warm, humid, and rain-abundant tropical climates, commonly grown in the southern regions of the Philippines, particularly in Davao and Mindanao.",
+    "uses": "Eaten fresh for its rich, custard-like pungent flesh, or processed into commercial delicacies like durian candy, yema, and ice cream.",
+    "health_statuses": {
+      "Durian___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Oblong dark green leaves, large spiky durian fruits hanging from heavy branches.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Provide balanced organic compost and clean undergrowth."
+      },
+      "Durian___Patch_Canker": {
+        "condition_name": "Phytophthora Patch Canker (Kanser sa Durian)",
+        "symptoms": "Reddish-brown liquid oozes from the trunk bark; bark turns soft, dark, and decays; leaves turn yellow and drop.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Scrape off the cankered bark area. Paint the wound with a thick copper sulfate paste.",
+        "preventive_measures": "Ensure excellent drainage. Do not injure the tree trunk during weeding."
+      }
+    }
+  },
+  "Mangosteen": {
+    "local_name": "Mangosteen",
+    "scientific_name": "Garcinia mangostana",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "High (Requires high annual rainfall and moist, shaded soil when young)",
+      "description": "Requires consistent and abundant soil moisture. Highly susceptible to drying out; water daily and protect from extreme dry spells."
+    },
+    "description": "Mangosteen (Garcinia mangostana), also called mangostan or purple mangosteen, is a tropical evergreen tree with edible fruit native to the Malay Peninsula and Borneo. It has been cultivated extensively in tropical Asia since ancient times. It is grown mainly in Southeast Asia, southwest India and other tropical areas such as Colombia, Puerto Rico and Florida, where the tree has been introduced. The tree grows from 6 to 25 m (19.7 to 82.0 ft) tall. The fruit of the mangosteen is sweet and tangy, juicy, somewhat fibrous, with fluid-filled vesicles and an inedible, deep reddish-purple colored rind (exocarp) when ripe. The fragrant edible flesh that surrounds each seed is the endocarp, i.e., the inner layer of the ovary. The seeds are of similar size and shape to almonds.",
+    "habitat_ecology": "Thrives in warm, humid, and rain-abundant tropical climates, commonly grown in the southern regions of the Philippines, particularly in Davao and Mindanao.",
+    "uses": "Eaten fresh by breaking the thick purple rind to reveal sweet, snowy-white segments, or boiled as a traditional herbal tea.",
+    "health_statuses": {
+      "Mangosteen___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Thick, leathery dark green leaves; dense conical crown; firm dark purple round mangosteens.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Maintain high soil organic matter and mulch roots to preserve moisture."
+      },
+      "Mangosteen___Gummosis": {
+        "condition_name": "Gummosis (Pagtagas ng Dagta)",
+        "symptoms": "Yellow latex/sap oozes from the branches, trunk, or fruit skin; sap stains fruits and makes flesh bitter.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Prune weak branches. Paint sap wounds with copper wash.",
+        "preventive_measures": "Protect trees from physical wind damage. Avoid overwatering."
+      }
+    }
+  },
+  "Sampalok": {
+    "local_name": "Sampalok",
+    "scientific_name": "Tamarindus indica",
+    "category": "Fruit Tree/Spice",
+    "ecological_status": "Naturalized",
+    "watering_needs": {
+      "frequency": "Low to Moderate (Extremely drought-tolerant once established)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Tamarind (Tamarindus indica) is a leguminous tree bearing edible fruit that is indigenous to tropical Africa and naturalized in Asia. The genus Tamarindus is monotypic, meaning that it contains only this species. It belongs to the family Fabaceae. The tamarind tree produces brown, pod-like fruits that contain a sweet, tangy pulp, which is used in cuisines around the world. The pulp is also used in traditional medicine and as a dye. The wood can be used for woodworking, and tamarind seed oil can be extracted from the seeds. Its young leaves are used in Indian and Filipino cuisine. Because tamarind has multiple uses, it is cultivated worldwide in tropical and subtropical zones.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Unripe pods are the premier souring agent boiled for Sinigang broth; ripe pods are sweetened and rolled in sugar as a candy.",
+    "health_statuses": {
+      "Sampalok___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Feathery foliage, small leaves, long brown curved woody seed pods.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Requires almost no care once established; highly drought-resistant."
+      },
+      "Sampalok___Sooty_Mold": {
+        "condition_name": "Sooty Mold (Itim na Amag)",
+        "symptoms": "Black velvety layer of mold covers leaves and pods, reducing photosynthesis.",
+        "severity": "Low to Moderate",
+        "organic_treatment": "Spray soap solution to control aphids and scale insects. Wash mold off leaves.",
+        "preventive_measures": "Keep canopy open to the sun."
+      }
+    }
+  },
+  "Siniguelas": {
+    "local_name": "Siniguelas",
+    "scientific_name": "Spondias purpurea",
+    "category": "Fruit Tree",
+    "ecological_status": "Naturalized",
+    "watering_needs": {
+      "frequency": "Low (Highly drought-tolerant; drops leaves and fruits in dry season)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Spondias purpurea is a species of flowering plant in the cashew family, Anacardiaceae, that is native to tropical regions of the Americas, from Mexico to northern Colombia and the southwest Caribbean Islands. It has also been introduced to and naturalized to other parts of the American tropics, Southeast Asia, and West Africa. It is commonly known as jocote, which derives from the Nahuatl word xocotl, meaning any kind of sour or acidic fruit. Other common names include red mombin, Spanish plum, purple mombin, Jamaica plum, and hog plum. In countries where they are native, jocotes are also known more widely as jocote, ciruela, ciruelo, chiabal, cirgüela, or jobo (Mexico); ciruela calentana or ciruela huesito (Venezuela, Colombia); jocote tronador or sismoyo (Costa Rica); ciruela (Honduras); jocote comun (Nicaragua); ciruela or ciruela traqueadora (Panama); ciruela, ovo, ciriguela or jobito (Ecuador); and jocote, jobo, or pitarrillo (El Salvador). They were also introduced very early to the Philippines during the Spanish colonial era, where they are known as siniguelas, sineguelas, siriguelas, or sirhuelas (from Philippine Spanish ciruela or cirigüela).",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Eaten whole (including the skin) when green and sour with rock salt, or when ripe, sweet, and juicy as a summer snack.",
+    "health_statuses": {
+      "Siniguelas___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Deciduous branches with small flowers, clusters of smooth green/red Spanish plums.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Extremely hardy; thrives in dry soils."
+      },
+      "Siniguelas___Fruit_Fly": {
+        "condition_name": "Fruit Fly (Uod sa Siniguelas)",
+        "symptoms": "Fruits turn red prematurely, develop soft patches, and rot with small larvae inside.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Hang pheromone traps around the canopy. Bury fallen fruit.",
+        "preventive_measures": "Keep orchard floor clear."
+      }
+    }
+  },
+  "Melon": {
+    "local_name": "Melon",
+    "scientific_name": "Cucumis melo",
+    "category": "Fruit",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate (Water daily at base; keep foliage dry to avoid powdery mildew)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "Cucumis melo, also known as melon or true melon, is a species of Cucumis that has been developed into many cultivated varieties. The fruit is a pepo. The flesh is either sweet or bland, with or without an aroma, and the rind can be smooth (such as honeydew), ribbed (such as European cantaloupe), wrinkled (such as Casaba melon), or netted (such as American cantaloupe). The species is sometimes referred to as muskmelon. However, there is no consensus about the usage of this term, as it can also be used as a specific name for the musky netted-rind American cantaloupe, or as a generic name for any sweet-flesh variety such the inodorous smooth-rind honeydew melon. The origin of melons is not known. Research has revealed that seeds and rootstocks were among the goods traded along the caravan routes of the Ancient World. Some botanists consider melons native to the Levant and Egypt, while others place their origin in Iran, India or Central Asia. Still others support an African origin; in modern times, wild melons can still be found in some African countries.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "Shredded into thin ribbons to make the popular street drink Melon Juice, mixed with water, sugar, condensed milk, and ice.",
+    "health_statuses": {
+      "Melon___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Climbing fuzzy green vines, yellow flowers, round cantaloupes with netted skin.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Rest fruit on straw or plastic to avoid soil rot."
+      },
+      "Melon___Powdery_Mildew": {
+        "condition_name": "Powdery Mildew (Puting Amag)",
+        "symptoms": "White powdery patches cover leaves, leading to leaves drying up and sunburned fruits.",
+        "severity": "Moderate (Katamtaman)",
+        "organic_treatment": "Spray with dilute milk wash (1:9) or baking soda solution.",
+        "preventive_measures": "Water at soil level early in the morning."
+      }
+    }
+  },
+  "Strawberry": {
+    "local_name": "Strawberry",
+    "scientific_name": "Fragaria x ananassa",
+    "category": "Fruit",
+    "ecological_status": "Cultivated",
+    "watering_needs": {
+      "frequency": "Moderate to High (Requires consistent watering; mulch with pine needles to prevent fruit rot)",
+      "description": "Requires regular, even watering to keep the soil moist but not waterlogged. Allow the topsoil to dry slightly between watering cycles."
+    },
+    "description": "The garden strawberry (or simply strawberry; Fragaria × ananassa) is a widely grown hybrid plant cultivated worldwide for its fruit. The genus Fragaria, the strawberries, is in the rose family, Rosaceae. The fruit is appreciated for its aroma, bright red colour, juicy texture, and sweetness. It is eaten either fresh or in prepared foods such as jam, ice cream, and chocolates. Artificial strawberry flavourings and aromas are widely used in commercial products. Botanically, the strawberry is not a berry, but an aggregate accessory fruit. Each apparent 'seed' on the outside of the strawberry is actually an achene, a botanical fruit with a seed inside it. The garden strawberry was first bred in Brittany, France, in the 1750s via a cross of F. virginiana from eastern North America and F. chiloensis, which was brought from Chile by Amédée-François Frézier in 1714. Cultivars of F. × ananassa have replaced the woodland strawberry F. vesca in commercial production. In 2024, world production of strawberries exceeded ten million tons, led by China with 38% of the total.",
+    "habitat_ecology": "Thrives in the cool, high-altitude climates of the Philippines, heavily cultivated in agricultural regions like Benguet (Baguio) and high-elevation zones of Mindanao.",
+    "uses": "Eaten fresh with condensed milk, or processed into the famous Benguet strawberry jam, strawberry taho, and regional wines.",
+    "health_statuses": {
+      "Strawberry___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Trifoliate leaves, white flowers, bright red heart-shaped strawberries.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Mulch beds with pine needles (dulas) to keep berries off the wet soil."
+      },
+      "Strawberry___Gray_Mold": {
+        "condition_name": "Gray Mold / Fruit Rot (Bulok sa Strawberry)",
+        "symptoms": "Fuzzy gray mold covers developing or ripe strawberries, turning them into soft rot.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Harvest ripe fruits daily. Prune old leaves. Spray copper fungicide or baking soda.",
+        "preventive_measures": "Enforce strict mulching; avoid overhead watering."
+      }
+    }
+  },
+  "Kasoy": {
+    "local_name": "Kasoy",
+    "scientific_name": "Anacardium occidentale",
+    "category": "Fruit Tree",
+    "ecological_status": "Cultivated/Naturalized",
+    "watering_needs": {
+      "frequency": "Low to Moderate (Highly drought-resistant; thrives in dry soils)",
+      "description": "Thrives in well-draining soil. Allow the soil to dry out significantly between watering cycles to avoid root rot."
+    },
+    "description": "Cashew is the common name of a tropical evergreen tree Anacardium occidentale, in the family Anacardiaceae. It is the source of the cashew nut and the cashew apple. The tree can grow as tall as 14 meters (46 feet). Cashews are native to tropical South America. Portuguese explorers encountered them in the 16th century and spread them to India and other tropical regions of the world. The dwarf cultivars, growing up to 6 m (20 ft), are the most profitable, maturing sooner and producing greater yields. In 2023, 3.9 million tons of cashew nuts were harvested globally, led by the Ivory Coast and India.",
+    "habitat_ecology": "Widely grown in orchards, home backyards, and agricultural plantations across the lowlands of the Philippines.",
+    "uses": "The roasted cashew nuts are a prized snack, while the yellow-red cashew apple is eaten fresh or squeezed into a tangy juice.",
+    "health_statuses": {
+      "Kasoy___Healthy": {
+        "condition_name": "Healthy (Malusog)",
+        "symptoms": "Leathery leaves, pear-shaped yellow-red cashew apples with kidney-shaped nuts below.",
+        "severity": "None",
+        "organic_treatment": "None.",
+        "preventive_measures": "Prune lower branches to encourage a strong main canopy."
+      },
+      "Kasoy___Anthracnose": {
+        "condition_name": "Anthracnose (Sunog-kasoy)",
+        "symptoms": "Reddish-brown spots on young leaves and flowers; developing cashew apples blacken and shrivel.",
+        "severity": "High (Mataas)",
+        "organic_treatment": "Prune affected flower twigs. Spray with copper sulfate solution.",
+        "preventive_measures": "Maintain orchard spacing."
+      }
+    }
+  }
+}
