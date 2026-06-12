@@ -47,7 +47,7 @@ Camera / Gallery → [ Step 1: Flash Classifier ] → [ Step 2: Local RAG ] → 
 | **Secure Proxy Server** | Go (Golang) Web Server | Custom Go Service on Google Cloud Run | Cloud (Google Run - Free Tier) | Secures the Gemini API Key. Manages the connection, sends requests, and handles raw HTTP stream relay (SSE) to client with zero timeout limits. |
 | **Follow-Up Chatbot** | Go Proxy + Gemini API | User's selected model (⚡ or 🧠) | Cloud (Google servers) | Handles follow-up questions. Users can switch models mid-chat. |
 | **Knowledge Base** | Local JavaScript Map / JSON | Bundled `vegetables_db.json` (< 1MB) | Device Storage / RAM | Stores grounded crop facts. Injects only the single identified crop metadata into Step 3 to save 96% token cost. |
-| **Offline Fallback** | Local JSON Lookup | `vegetables_db.json` | Device Storage | When offline, disables AI and allows user to search the local database directly for symptoms/treatments. |
+| **Offline Fallback & Queue** | SQLite Storage | Local image cache + SQLite queue | Device Storage | Allows offline image capture and queues scans. When connection is restored, background sync auto-runs the AI analysis. Disables live chat input but allows viewing all previous chat logs. |
 
 ### What's Eliminated
 
@@ -327,13 +327,14 @@ A prominent circular progress bar visualizes the plant's health score. The score
 
 ## 6. Adaptive Connectivity Workflow
 
-Since the app requires internet for AI analysis, a graceful fallback system handles connectivity issues:
+Since the app requires internet for AI analysis, an offline-first queue and fallback system manages connectivity states:
 
 | Connectivity State | Behavior |
 |---|---|
-| **Online** | Full AI-powered diagnosis using the user's selected model (⚡ or 🧠). Image analysis + streamed conversational response + follow-up chat. |
-| **Offline** | Model toggle is disabled (grayed out). User manually selects their crop and condition from a searchable local list. App displays the raw `vegetables_db.json` data (symptoms, treatment, severity) in a clean card layout — no AI prose, but still fully useful. |
-| **Slow/Unstable Connection** | App attempts the AI call with a 10-second timeout. If it fails, auto-switches to offline mode with a toast: *"Walang internet — nagpapakita ng local na impormasyon."* |
+| **Online** | Full AI-powered diagnosis using the user's selected model (⚡ or 🧠). Uploads image to Supabase, runs the two-step AI diagnosis, streams response to bento grid dashboard, and enables follow-up chat. |
+| **Offline** | 1. **Scan Mode:** Users can snap or upload a photo. The app caches the photo locally and queues the scan in SQLite (`status = "pending_analysis"`, `synced = false`). Shows notice: *"Walang internet. Ise-save namin ang larawan at susuriin kapag may koneksyon na."* <br> 2. **History Mode:** Users can browse all past completed scan results and previous chat logs offline. <br> 3. **Chat Mode:** Users can read previous messages, but new message input is disabled with notice: *"Kailangan ng internet para mag-chat."* |
+| **Reconnection (Auto-Sync)** | The app detects restoration of internet (`@react-native-community/netinfo`). A background sync worker uploads the queued photo to Supabase Storage, calls the Go API proxy to execute Step 1 and Step 3 AI calls, writes the results back to local SQLite and Supabase Postgres, and triggers a local push notification: *"🌿 Pagsusuri Kumpleto! Tapos na ang pagsusuri sa iyong [Halaman]."* |
+| **Slow/Unstable Connection** | App attempts the AI call with a 10-second timeout. If it fails, it prompts the user to save the scan to the offline queue and try again later. |
 
 ---
 
@@ -402,6 +403,8 @@ Stores user profile metadata. Linked to Supabase Auth.
 | `username` | Text | Both | Unique username. |
 | `full_name` | Text | Both | Display name. |
 | `avatar_url` | Text | Both | Public URL of the profile picture in Supabase Storage (`avatars` bucket). |
+| `gender` | Text | Both | User's gender (Check Constraint: `'Male'`, `'Female'`, or `'Other'`). |
+| `birthdate` | Date | Both | User's date of birth (YYYY-MM-DD). |
 | `updated_at` | Timestamp | Both | When the profile was last modified. |
 
 #### Table: `chat_sessions`
