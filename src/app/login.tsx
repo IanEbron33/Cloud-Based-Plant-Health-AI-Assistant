@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Leaf, Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -17,8 +17,8 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScrollView 
-      contentContainerStyle={{ flexGrow: 1 }} 
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
       showsVerticalScrollIndicator={false}
     >
@@ -26,8 +26,8 @@ export default function LoginScreen() {
         {/* Header Mascot Branding */}
         <View className="items-center mb-10">
           <View className="w-28 h-28 rounded-xl overflow-hidden shadow-md shadow-emerald-900/10 mb-4 bg-white items-center justify-center">
-            <Image 
-              source={require('../../assets/images/mascot-logo.jpeg')} 
+            <Image
+              source={require('../../assets/images/mascot-logo.jpeg')}
               className="w-full h-full"
               resizeMode="cover"
             />
@@ -36,13 +36,13 @@ export default function LoginScreen() {
             Bugsok AI
           </Text>
           <Text className={`text-sm mt-1 font-medium font-fredoka tracking-wide ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
-            Plant Health Tracker
+            AI Powered Crop Health Tracker
           </Text>
         </View>
 
         {/* Form Container */}
         <View className={`p-6 rounded-[32px] border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-100 shadow-sm'}`}>
-          <Text className={`text-2xl font-bold mb-6 font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}>
+          <Text className={`text-lg font-bold mb-6 font-fredoka ${isDark ? 'text-white' : 'text-stone-700'}`}>
             Log in to your Account
           </Text>
 
@@ -60,8 +60,8 @@ export default function LoginScreen() {
                 placeholderTextColor="#a8a29e"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                className={`flex-1 py-4 px-3 text-base ${isDark ? 'text-white' : 'text-stone-900'}`}
-                style={{ fontSize: 16 }}
+                className={`flex-1 py-4 px-2 text-base ${isDark ? 'text-white' : 'text-stone-900'}`}
+                style={{ fontSize: 13 }}
               />
             </View>
           </View>
@@ -80,10 +80,10 @@ export default function LoginScreen() {
                 placeholderTextColor="#a8a29e"
                 secureTextEntry={!isPasswordVisible}
                 autoCapitalize="none"
-                className={`flex-1 py-4 px-3 text-base ${isDark ? 'text-white' : 'text-stone-900'}`}
-                style={{ fontSize: 16 }}
+                className={`flex-1 py-4 px-2 text-base ${isDark ? 'text-white' : 'text-stone-900'}`}
+                style={{ fontSize: 13 }}
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setIsPasswordVisible(!isPasswordVisible)}
                 activeOpacity={0.7}
                 className="p-1"
@@ -107,7 +107,7 @@ export default function LoginScreen() {
           </View>
 
           {/* Login Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleLogin}
             activeOpacity={0.85}
             className="bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl items-center shadow-lg shadow-emerald-600/10 mb-5"
