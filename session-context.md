@@ -11,8 +11,14 @@ This document captures the current state, architecture, and files of the project
 * **Operating Framework:** React Native Expo (Expo Router)
 * **SDK Version:** **Expo SDK 54** (downgraded for compatibility with client's physical Expo Go device)
 * **Platform Support:** iOS, Android, and Web
-* **Primary Language:** English only (all Tagalog / Taglish translations removed from the UI)
+* **Primary Language:** Taglish/English UI
 * **Design Guidelines:** Solid green shades (Mint, Emerald, Forest) with crisp elevations and borders. **No glassmorphism.**
+* **Custom Floating Bottom Navigation Bar**:
+  * **Floating capsule bar**: absolutely positioned white bar with rounded corners and shadow.
+  * **Shared Sliding Capsule**: A single active background capsule (`width: 66, height: 56`) that smoothly slides horizontally to the active tab using spring physics (`Animated.spring` on `translateX`).
+  * **Morphing Corners**: Capsule border radius morphs from `32` (on edge tabs: Home and Profile) to `18` (on middle tabs: History and Chat).
+  * **Elevated Scan Button**: Circular button floating above the center of the bar. It spring-scales to `1.12` and displays a looping, breathing scanner glow ring (`pulseRing`, `scale: 1.0` -> `1.45`, fading `0.5` -> `0.0` over `1800ms`) when selected.
+  * **Driver Conflict Isolation**: Structured as nested views (`slidingPillContainer` + `slidingPillInner`) to isolate native GPU-driven animations (translate, opacity) from JS-driven animations (border-radius), preventing React Native driver conflicts.
 
 ---
 
@@ -22,7 +28,7 @@ This document captures the current state, architecture, and files of the project
 * **Navigation:** Expo Router (file-based stack & tabs under `src/app`)
 * **Styling:** **NativeWind v4** (Tailwind CSS for React Native) compiled with `react-native-reanimated` plugin
 * **Typography:** **Fredoka** Google Font family (loaded asynchronously using `expo-font`)
-* **Icons:** **Lucide Icons** (`lucide-react-native`)
+* **Icons:** **Lucide Icons** (`lucide-react-native`) and **Ionicons** (`@expo/vector-icons`)
 * **Assets:** Custom mascot logo (`assets/images/mascot-logo.jpeg`) and bundled plant disease database (`assets/data/vegetables_db.json`)
 
 ---
@@ -44,16 +50,17 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   ├── login.tsx                # Redesigned English-only login with mascot logo & Lucide icons
 │   │   ├── register.tsx             # Redesigned English-only registration screen
 │   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard
-│   │   ├── chat.tsx                 # Follow-up Chat viewport (model toggles, chat bubbles)
 │   │   └── (tabs)/
-│   │       ├── _layout.tsx          # Tab bar layout (emerald theme, Lucide icons)
+│   │       ├── _layout.tsx          # Custom Tab bar layout (integrates CustomTabBar)
 │   │       ├── index.tsx            # Home Dashboard (Quick stats, recent scans list, tips)
-│   │       ├── scan.tsx             # Camera guidelines frame, ⚡ Flash vs 🧠 Deep Thinking toggles
 │   │       ├── history.tsx          # Past scans (search bar, offline sync badges)
+│   │       ├── scan.tsx             # Camera guidelines frame, ⚡ Flash vs 🧠 Deep Thinking toggles
+│   │       ├── chat.tsx             # [NEW] Chat placeholder screen (coming soon)
 │   │       └── profile.tsx          # User profile info and SQLite synchronization dashboard
 │   ├── components/
 │   │   ├── BentoGrid.tsx            # Bento layout tiles (colSpan helper wrapper)
-│   │   └── CircularProgress.tsx     # SVG progress circle matching health severity
+│   │   ├── CircularProgress.tsx     # SVG progress circle matching health severity
+│   │   └── CustomTabBar.tsx         # [NEW] Shared sliding pill floating bottom tab bar with pulse rings
 │   ├── constants/
 │   │   └── theme.ts                 # Theme layout values, colors, spacing definitions
 │   └── hooks/

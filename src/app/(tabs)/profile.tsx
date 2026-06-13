@@ -17,7 +17,7 @@ export default function ProfileScreen() {
     <ScrollView 
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 30 }}
+      contentContainerStyle={{ paddingBottom: 100 }}
     >
       {/* Top Profile Header */}
       <View className="bg-emerald-800 pt-16 pb-8 px-6 rounded-b-[36px] items-center">

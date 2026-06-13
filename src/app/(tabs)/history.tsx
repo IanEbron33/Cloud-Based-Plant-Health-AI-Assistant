@@ -72,7 +72,7 @@ export default function HistoryScreen() {
       {/* Scans List Scroll view */}
       <ScrollView 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
         {filteredScans.length > 0 ? (
           filteredScans.map((scan) => (

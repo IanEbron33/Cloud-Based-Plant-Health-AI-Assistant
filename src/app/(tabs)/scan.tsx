@@ -22,7 +22,7 @@ export default function ScanScreen() {
   };
 
   return (
-    <View className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'} px-6 pt-14 pb-8`}>
+    <View className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'} px-6 pt-14 pb-[100px]`}>
       
       {/* Screen Header */}
       <View className="items-center mb-6">

@@ -19,6 +19,7 @@ export default function HomeScreen() {
     <ScrollView 
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 100 }}
     >
       {/* Top Banner / Greeting */}
       <View className="bg-emerald-800 pt-14 pb-8 px-6 rounded-b-[36px] shadow-lg shadow-emerald-950/20">
