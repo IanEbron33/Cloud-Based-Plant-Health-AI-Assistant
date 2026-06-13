@@ -5,6 +5,9 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      fontFamily: {
+        fredoka: ["Fredoka_400Regular", "Fredoka_700Bold"],
+      },
       colors: {
         crop: {
           50: '#f2f8f4',
