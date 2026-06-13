@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "plant-health-app",
-    "slug": "plant-health-app",
+    "name": "Bugsok AI",
+    "slug": "Plant-Health-Tracker",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "planthealthapp",
+    "icon": "./public/mascot-logo.jpeg",
+    "scheme": "planthealthtracker",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./public/mascot-logo.jpeg"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./public/mascot-logo.jpeg"
     },
     "plugins": [
       "expo-router",
