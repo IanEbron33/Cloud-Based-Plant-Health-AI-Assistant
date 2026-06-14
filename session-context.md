@@ -58,7 +58,7 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   ├── app/
 │   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, Metro config injection)
 │   │   ├── index.tsx                # App entry redirect (routes to /splash)
-│   │   ├── splash.tsx               # [NEW] Custom staggered fade-in splash screen with WebM animation
+│   │   ├── splash.tsx               # [NEW] Custom staggered fade-in splash screen with transparent WebP animation
 │   │   ├── login.tsx                # Redesigned English-only login with mascot logo & Lucide icons
 │   │   ├── register.tsx             # Redesigned English-only registration screen
 │   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard
