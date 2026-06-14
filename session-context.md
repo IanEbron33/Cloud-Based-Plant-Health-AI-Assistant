@@ -19,6 +19,11 @@ This document captures the current state, architecture, and files of the project
   * **Morphing Corners**: Capsule border radius morphs from `32` (on edge tabs: Home and Profile) to `18` (on middle tabs: History and Chat).
   * **Elevated Scan Button**: Circular button floating above the center of the bar. It spring-scales to `1.12` and displays a looping, breathing scanner glow ring (`pulseRing`, `scale: 1.0` -> `1.45`, fading `0.5` -> `0.0` over `1800ms`) when selected.
   * **Driver Conflict Isolation**: Structured as nested views (`slidingPillContainer` + `slidingPillInner`) to isolate native GPU-driven animations (translate, opacity) from JS-driven animations (border-radius), preventing React Native driver conflicts.
+* **Mascot Animation Custom Splash Screen**:
+  * **Image Rendering**: Renders `assets/images/mascot-animation.webp` (transparent animated WebP converted from WebM via FFmpeg with alpha channel preservation) on a solid stone-50 background.
+  * **Expo Image**: Uses `expo-image` for high-performance, hardware-accelerated rendering of the transparent animation in Expo Go.
+  * **Staggered Entrance**: Animated title "Bugsok AI" fades in at `1.0s` and the subtitle fades in at `1.5s` using native-driven opacity transitions.
+  * **Automated Flow**: The entire screen fades out at `3.5s` and redirects the user to the `/login` screen at `4.0s` (matching the 4-second mascot animation).
 
 ---
 
@@ -29,6 +34,7 @@ This document captures the current state, architecture, and files of the project
 * **Styling:** **NativeWind v4** (Tailwind CSS for React Native) compiled with `react-native-reanimated` plugin
 * **Typography:** **Fredoka** Google Font family (loaded asynchronously using `expo-font`)
 * **Icons:** **Lucide Icons** (`lucide-react-native`) and **Ionicons** (`@expo/vector-icons`)
+* **Media Rendering:** **expo-image** (for rendering transparent animated WebP on splash screen)
 * **Assets:** Custom mascot logo (`assets/images/mascot-logo.jpeg`) and bundled plant disease database (`assets/data/vegetables_db.json`)
 
 ---
@@ -42,11 +48,17 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   ├── data/
 │   │   └── vegetables_db.json       # Crop database context (~143KB)
 │   └── images/
+│       ├── mascot-animation.webp    # Bundled transparent animated WebP mascot splash animation (4.0s)
 │       └── mascot-logo.jpeg         # App mascot image (square with 12px rounded radius)
+├── public/
+│   ├── mascot-animation.webm        # Alternative/fallback WebM mascot splash animation
+│   ├── mascot-logo.jpeg             # Alternative mascot logo image
+│   └── mascot-transparent.png        # Transparent PNG mascot logo
 ├── src/
 │   ├── app/
 │   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, Metro config injection)
-│   │   ├── index.tsx                # App entry redirect (routes to /login)
+│   │   ├── index.tsx                # App entry redirect (routes to /splash)
+│   │   ├── splash.tsx               # [NEW] Custom staggered fade-in splash screen with WebM animation
 │   │   ├── login.tsx                # Redesigned English-only login with mascot logo & Lucide icons
 │   │   ├── register.tsx             # Redesigned English-only registration screen
 │   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard
