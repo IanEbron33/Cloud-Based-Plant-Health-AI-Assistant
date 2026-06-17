@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, useColorScheme } from 'react-native';
+import { View, Text } from 'react-native';
 
 interface BentoGridProps {
   children: React.ReactNode;
@@ -28,30 +28,21 @@ export function BentoTile({
   colSpan = 1, 
   className = '' 
 }: BentoTileProps) {
-  const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
-
   return (
     <View 
-      className={`p-4 rounded-3xl mb-3 border ${
+      className={`p-4 rounded-2xl mb-3 border border-stone-200 bg-white shadow-sm ${
         colSpan === 1 ? 'w-[48.5%]' : 'w-full'
-      } ${
-        isDark 
-          ? 'bg-stone-900 border-stone-850' 
-          : 'bg-white border-stone-150 shadow-sm'
       } ${className}`}
     >
       {title && (
-        <View className="flex-row items-center justify-between mb-2 pb-1.5 border-b border-stone-850/5">
-          <Text className={`text-[11px] font-bold uppercase tracking-wider ${
-            isDark ? 'text-stone-500' : 'text-stone-400'
-          }`}>
+        <View className="flex-row items-center justify-between mb-2 pb-2 border-b border-stone-200">
+          <Text className="text-[11px] font-bold uppercase tracking-wider text-stone-900 flex-1 mr-2">
             {title}
           </Text>
           {icon && <View>{icon}</View>}
         </View>
       )}
-      <View className="flex-1 justify-center">
+      <View className="flex-1 justify-center mt-1">
         {children}
       </View>
     </View>
