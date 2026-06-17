@@ -87,14 +87,14 @@ export default function ScanResultsScreen() {
           
           {/* TILE 1: HERO (2x2 span equivalent - full width) */}
           <Animated.View entering={FadeInDown.springify().damping(18).stiffness(120)} className="w-full">
-            <BentoTile colSpan={2} className="overflow-hidden p-0 rounded-2xl">
-              <View className="h-44 relative bg-stone-300">
+            <BentoTile colSpan={2} className="overflow-hidden p-0 rounded-[24px]">
+              <View className="h-44 relative bg-stone-300 rounded-[23px] overflow-hidden">
                 <Image 
                   source={{ uri: diagnosis.imageUrl }} 
-                  className="w-full h-full object-cover" 
+                  className="w-full h-full object-cover rounded-[23px]" 
                 />
                 {/* Darkening Overlay gradient simulation */}
-                <View className="absolute inset-0 bg-black/45 justify-end p-5">
+                <View className="absolute inset-0 bg-black/45 justify-end p-5 rounded-[23px]">
                   <Text className="text-emerald-350 text-[10px] uppercase font-bold tracking-wider">
                     Pananim na Sinuri
                   </Text>

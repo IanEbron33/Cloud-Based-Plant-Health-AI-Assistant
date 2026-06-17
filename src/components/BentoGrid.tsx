@@ -30,7 +30,7 @@ export function BentoTile({
 }: BentoTileProps) {
   return (
     <View 
-      className={`p-4 rounded-2xl mb-3 border border-stone-200 bg-white shadow-sm ${
+      className={`p-4 rounded-[24px] mb-3 border border-stone-200 bg-white shadow-sm ${
         colSpan === 1 ? 'w-[48.5%]' : 'w-full'
       } ${className}`}
     >
