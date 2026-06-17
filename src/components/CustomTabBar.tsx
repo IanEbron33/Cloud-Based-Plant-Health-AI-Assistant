@@ -110,7 +110,15 @@ const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProp
           />
         )}
         <Animated.View style={[styles.scanButton, { transform: [{ scale: scanScaleAnim }] }]}>
-          <Ionicons name="camera" size={26} color="#ffffff" />
+          <View style={styles.scanIconContainer}>
+            <Ionicons name="camera" size={26} color="#ffffff" />
+            <Ionicons
+              name="sparkles"
+              size={12}
+              color="#ffffff"
+              style={styles.scanSparkleBadge}
+            />
+          </View>
         </Animated.View>
       </TouchableOpacity>
     );
@@ -130,6 +138,14 @@ const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProp
             size={22}
             color={isFocused ? '#059669' : '#78716c'}
           />
+          {routeName === 'chat' && (
+            <Ionicons
+              name="sparkles"
+              size={10}
+              color={isFocused ? '#059669' : 'rgba(5, 150, 105, 0.5)'}
+              style={styles.sparkleBadge}
+            />
+          )}
         </View>
         {isFocused && (
           <Animated.View style={{ opacity: fadeAnim, marginTop: 4 }}>
@@ -342,5 +358,20 @@ const styles = StyleSheet.create({
     borderColor: '#059669',
     backgroundColor: 'rgba(5, 150, 105, 0.15)',
     zIndex: 9,
+  },
+  scanIconContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanSparkleBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -7,
+  },
+  sparkleBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 10,
   },
 });
