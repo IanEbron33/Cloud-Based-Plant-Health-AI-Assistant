@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, useColorScheme, Animated } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useRef } from 'react';
+import { Animated, ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -64,19 +65,29 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView 
+    <ScrollView
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 120 }}
     >
       {/* Top Profile Header */}
-      <Animated.View 
+      <Animated.View
         style={{
           opacity: headerAnim,
           transform: [{ translateY: getTranslateY(headerAnim) }]
         }}
-        className="bg-emerald-800 pt-16 pb-8 px-6 rounded-b-[36px] items-center shadow-lg shadow-emerald-950/20"
+        className="pt-16 pb-8 px-6 rounded-b-[36px] items-center shadow-lg shadow-emerald-950/20 overflow-hidden"
       >
+        <LinearGradient
+          colors={['#047857', '#064e3b']}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+          }}
+        />
         {/* Avatar Card with layered ring treatment */}
         <View className="w-28 h-28 bg-emerald-900/30 rounded-full items-center justify-center mb-4 border border-emerald-700/20 shadow-inner">
           <View className="w-24 h-24 bg-emerald-700 rounded-full items-center justify-center border-4 border-white/20">
@@ -84,13 +95,13 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <Text 
+        <Text
           style={{ fontFamily: 'Fredoka_700Bold' }}
           className="text-white text-2xl font-bold"
         >
           Juan Dela Cruz
         </Text>
-        <Text 
+        <Text
           style={{ fontFamily: 'Fredoka_400Regular' }}
           className="text-emerald-300 text-sm mt-0.5"
         >
@@ -98,7 +109,7 @@ export default function ProfileScreen() {
         </Text>
 
         <View className="bg-emerald-900/60 border border-emerald-700/20 px-4 py-1.5 rounded-full mt-4">
-          <Text 
+          <Text
             style={{ fontFamily: 'Fredoka_400Regular' }}
             className="text-emerald-200 text-xs font-semibold"
           >
@@ -109,7 +120,7 @@ export default function ProfileScreen() {
 
       <View className="px-6 py-6">
         {/* Database Mirror & Sync Status */}
-        <Animated.Text 
+        <Animated.Text
           style={{
             opacity: dbCardAnim,
             fontFamily: 'Fredoka_700Bold',
@@ -119,34 +130,33 @@ export default function ProfileScreen() {
         >
           Database Status
         </Animated.Text>
-        
-        <Animated.View 
+
+        <Animated.View
           style={{
             opacity: dbCardAnim,
             transform: [{ translateY: getTranslateY(dbCardAnim) }]
           }}
-          className={`p-5 rounded-3xl mb-5 border ${
-            isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-150 shadow-sm'
-          }`}
+          className={`p-5 rounded-3xl mb-5 border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-150 shadow-sm'
+            }`}
         >
           {/* SQLite card block */}
           <View className="mb-4 pb-4.5 border-b border-stone-800/10 dark:border-stone-800/30">
             <View className="flex-row justify-between items-center mb-1.5">
               <View>
-                <Text 
+                <Text
                   style={{ fontFamily: 'Fredoka_700Bold' }}
                   className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
                 >
                   Local Database (SQLite)
                 </Text>
-                <Text 
+                <Text
                   style={{ fontFamily: 'Fredoka_400Regular' }}
                   className="text-stone-400 text-xs"
                 >
                   Saved on your mobile device
                 </Text>
               </View>
-              <Text 
+              <Text
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
               >
@@ -162,20 +172,20 @@ export default function ProfileScreen() {
           <View>
             <View className="flex-row justify-between items-center mb-1.5">
               <View>
-                <Text 
+                <Text
                   style={{ fontFamily: 'Fredoka_700Bold' }}
                   className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
                 >
                   Cloud Database (Supabase)
                 </Text>
-                <Text 
+                <Text
                   style={{ fontFamily: 'Fredoka_400Regular' }}
                   className="text-stone-400 text-xs"
                 >
                   Backed up in the cloud
                 </Text>
               </View>
-              <Text 
+              <Text
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className="text-emerald-500 text-sm font-bold"
               >
@@ -195,12 +205,12 @@ export default function ProfileScreen() {
             transform: [{ translateY: getTranslateY(syncBtnAnim) }]
           }}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={0.8}
             className="bg-emerald-600 py-4 rounded-2xl flex-row items-center justify-center mb-8 shadow-lg shadow-emerald-600/10"
           >
             <Ionicons name="sync" size={18} color="white" />
-            <Text 
+            <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
               className="text-white font-bold ml-2 text-sm"
             >
@@ -209,29 +219,16 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Settings options list */}
-        <Animated.Text 
-          style={{
-            opacity: settingsHeaderAnim,
-            fontFamily: 'Fredoka_700Bold',
-            transform: [{ translateY: getTranslateY(settingsHeaderAnim) }]
-          }}
-          className={`text-[10px] font-bold uppercase tracking-wider mb-2.5 px-1 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}
-        >
-          Options
-        </Animated.Text>
-
-        <Animated.View 
+        <Animated.View
           style={{
             opacity: settingsListAnim,
             transform: [{ translateY: getTranslateY(settingsListAnim) }]
           }}
-          className={`rounded-[28px] overflow-hidden border ${
-            isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100 shadow-sm'
-          } mb-8`}
+          className={`rounded-[28px] overflow-hidden border ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100 shadow-sm'
+            } mb-8`}
         >
           {/* Notifications setting item */}
-          <TouchableOpacity 
+          <TouchableOpacity
             className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-stone-800/30' : 'border-stone-100'}`}
             activeOpacity={0.7}
           >
@@ -239,7 +236,7 @@ export default function ProfileScreen() {
               <View className={`w-9 h-9 rounded-xl items-center justify-center ${isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'}`}>
                 <Ionicons name="notifications-outline" size={18} color="#059669" />
               </View>
-              <Text 
+              <Text
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className={`ml-3.5 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}
               >
@@ -250,7 +247,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           {/* Privacy setting item */}
-          <TouchableOpacity 
+          <TouchableOpacity
             className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-stone-800/30' : 'border-stone-100'}`}
             activeOpacity={0.7}
           >
@@ -258,7 +255,7 @@ export default function ProfileScreen() {
               <View className={`w-9 h-9 rounded-xl items-center justify-center ${isDark ? 'bg-blue-50/10' : 'bg-blue-50'}`}>
                 <Ionicons name="shield-checkmark-outline" size={18} color="#3b82f6" />
               </View>
-              <Text 
+              <Text
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className={`ml-3.5 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}
               >
@@ -269,7 +266,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           {/* Help setting item */}
-          <TouchableOpacity 
+          <TouchableOpacity
             className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-stone-800/30' : 'border-stone-100'}`}
             activeOpacity={0.7}
           >
@@ -277,7 +274,7 @@ export default function ProfileScreen() {
               <View className={`w-9 h-9 rounded-xl items-center justify-center ${isDark ? 'bg-amber-50/10' : 'bg-amber-50'}`}>
                 <Ionicons name="help-circle-outline" size={18} color="#d97706" />
               </View>
-              <Text 
+              <Text
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className={`ml-3.5 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}
               >
@@ -288,7 +285,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           {/* Logout item */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleLogout}
             className="flex-row items-center justify-between p-4"
             activeOpacity={0.7}
@@ -297,7 +294,7 @@ export default function ProfileScreen() {
               <View className={`w-9 h-9 rounded-xl items-center justify-center ${isDark ? 'bg-red-50/10' : 'bg-red-50'}`}>
                 <Ionicons name="log-out-outline" size={18} color="#ef4444" />
               </View>
-              <Text 
+              <Text
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className="ml-3.5 text-sm text-red-500"
               >
@@ -309,11 +306,11 @@ export default function ProfileScreen() {
         </Animated.View>
 
         {/* Footer branding */}
-        <Animated.View 
+        <Animated.View
           style={{ opacity: footerAnim }}
           className="items-center justify-center py-4"
         >
-          <Text 
+          <Text
             style={{ fontFamily: 'Fredoka_400Regular' }}
             className="text-stone-400 dark:text-stone-600 text-xs text-center"
           >

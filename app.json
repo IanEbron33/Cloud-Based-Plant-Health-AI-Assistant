@@ -4,11 +4,11 @@
     "slug": "Plant-Health-Tracker",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./public/mascot-logo.jpeg",
+    "icon": "./assets/images/mascot-logo.jpeg",
     "scheme": "planthealthtracker",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./public/mascot-logo.jpeg"
+      "icon": "./assets/images/mascot-logo.jpeg"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./public/mascot-logo.jpeg"
+      "favicon": "./assets/images/mascot-logo.jpeg"
     },
     "plugins": [
       "expo-router",

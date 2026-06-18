@@ -33,18 +33,42 @@ interface TabButtonProps {
 const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProps) => {
   const { label, activeIcon, inactiveIcon } = getTabConfig(routeName);
 
-  // Animation for the text and icon color transition
+  // Animation values for the smooth transitions
   const fadeAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
+  const scaleAnim = useRef(new Animated.Value(isFocused ? 1.15 : 1.0)).current;
+  const iconTranslateY = useRef(new Animated.Value(isFocused ? -5 : 0)).current;
+  const labelTranslateY = useRef(new Animated.Value(isFocused ? 0 : 8)).current;
   const scanScaleAnim = useRef(new Animated.Value(isFocused ? 1.12 : 1.0)).current;
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const pulseLoopRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: isFocused ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
+    // Coordinated transitions for regular tabs
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: isFocused ? 1 : 0,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: isFocused ? 1.15 : 1.0,
+        friction: 8,
+        tension: 45,
+        useNativeDriver: true,
+      }),
+      Animated.spring(iconTranslateY, {
+        toValue: isFocused ? -5 : 0,
+        friction: 8,
+        tension: 45,
+        useNativeDriver: true,
+      }),
+      Animated.spring(labelTranslateY, {
+        toValue: isFocused ? 0 : 8,
+        friction: 8,
+        tension: 45,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
     if (routeName === 'scan') {
       Animated.spring(scanScaleAnim, {
@@ -132,7 +156,17 @@ const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProp
       activeOpacity={0.7}
     >
       <View style={styles.buttonContent}>
-        <View style={styles.iconWrapper}>
+        <Animated.View
+          style={[
+            styles.iconWrapper,
+            {
+              transform: [
+                { scale: scaleAnim },
+                { translateY: iconTranslateY }
+              ]
+            }
+          ]}
+        >
           <Ionicons
             name={isFocused ? activeIcon : inactiveIcon}
             size={22}
@@ -146,12 +180,18 @@ const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProp
               style={styles.sparkleBadge}
             />
           )}
-        </View>
-        {isFocused && (
-          <Animated.View style={{ opacity: fadeAnim, marginTop: 4 }}>
-            <Text style={styles.tabLabel}>{label}</Text>
-          </Animated.View>
-        )}
+        </Animated.View>
+        
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [{ translateY: labelTranslateY }],
+            position: 'absolute',
+            bottom: 4,
+          }}
+        >
+          <Text style={styles.tabLabel}>{label}</Text>
+        </Animated.View>
       </View>
     </TouchableOpacity>
   );

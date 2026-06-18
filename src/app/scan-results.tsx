@@ -123,7 +123,7 @@ export default function ScanResultsScreen() {
                     percentage={diagnosis.healthScore} 
                     color={severityData.color}
                     size={80}
-                    strokeWidth={6}
+                    strokeWidth={10}
                   />
                   <Text className="text-xs font-bold uppercase mt-2.5 text-center" style={{ color: severityData.color }}>
                     {diagnosis.healthScore <= 30 ? 'CRITICAL' : diagnosis.healthScore <= 70 ? 'WARNING' : 'EXCELLENT'}
