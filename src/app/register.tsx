@@ -9,7 +9,10 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
 import {
   User,
@@ -49,6 +52,7 @@ export default function RegisterScreen() {
 
   // Wizard step
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(1)).current;
 
@@ -133,8 +137,107 @@ export default function RegisterScreen() {
     }
   };
 
-  const handleRegister = () => {
-    router.replace('/(tabs)');
+  const handleRegister = async () => {
+    // Basic final check of validation
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Required Fields', 'Please fill in your email and password.');
+      return;
+    }
+    if (!fullName.trim() || !username.trim()) {
+      Alert.alert('Required Fields', 'Please fill in your name and username.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // 1. Sign up user
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+          }
+        }
+      });
+
+      if (signUpError) {
+        Alert.alert('Registration Failed', signUpError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!user) {
+        Alert.alert('Registration Complete', 'Verification email sent, or sign up succeeded.');
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Upload avatar image if selected
+      let avatarUrl = null;
+      if (profileImage) {
+        try {
+          const fileExt = profileImage.split('.').pop() || 'jpg';
+          const fileName = `${user.id}/avatar.${fileExt}`;
+
+          let fileBody: any;
+          let uploadOptions: any = { upsert: true };
+
+          if (Platform.OS === 'web') {
+            const response = await fetch(profileImage);
+            fileBody = await response.blob();
+            uploadOptions.contentType = `image/${fileExt === 'png' ? 'png' : 'jpeg'}`;
+          } else {
+            const formData = new FormData();
+            formData.append('file', {
+              uri: profileImage,
+              name: `avatar.${fileExt}`,
+              type: `image/${fileExt === 'png' ? 'png' : 'jpeg'}`,
+            } as any);
+            fileBody = formData;
+            // For FormData uploads in React Native, we omit contentType to let the 
+            // native network engine set the correct boundary.
+          }
+
+          const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, fileBody, uploadOptions);
+
+          if (uploadError) {
+            console.warn('Avatar upload failed:', uploadError.message);
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from('avatars')
+              .getPublicUrl(fileName);
+            avatarUrl = publicUrl;
+          }
+        } catch (imgErr: any) {
+          console.warn('Failed to upload image:', imgErr.message);
+        }
+      }
+
+      // 3. Update profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          username: username.trim().toLowerCase(),
+          gender: gender === 'Prefer not to say' ? 'Other' : gender,
+          birthdate: `${birthdate.year}-${String(birthdate.month).padStart(2, '0')}-${String(birthdate.day).padStart(2, '0')}`,
+          avatar_url: avatarUrl,
+        })
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.warn('Profile DB update failed:', profileError.message);
+      }
+
+      // Redirect is handled by root listener, but backup here
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // === Reusable Input Field ===
@@ -597,6 +700,7 @@ export default function RegisterScreen() {
             {currentStep > 1 && (
               <TouchableOpacity
                 onPress={handleBack}
+                disabled={isLoading}
                 activeOpacity={0.8}
                 style={{
                   flex: 1,
@@ -609,6 +713,7 @@ export default function RegisterScreen() {
                   borderWidth: 1.5,
                   borderColor: '#d6d3d1',
                   backgroundColor: '#ffffff',
+                  opacity: isLoading ? 0.5 : 1,
                 }}
               >
                 <ChevronLeft size={18} color="#57534e" />
@@ -627,6 +732,7 @@ export default function RegisterScreen() {
 
             <TouchableOpacity
               onPress={currentStep === 3 ? handleRegister : handleNext}
+              disabled={isLoading}
               activeOpacity={0.85}
               style={{
                 flex: currentStep > 1 ? 1.5 : 1,
@@ -636,24 +742,30 @@ export default function RegisterScreen() {
                 justifyContent: 'center',
                 flexDirection: 'row',
                 gap: 8,
-                backgroundColor: '#059669',
+                backgroundColor: isLoading ? 'rgba(5, 150, 105, 0.7)' : '#059669',
               }}
             >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: '700',
-                  color: '#ffffff',
-                  fontFamily: 'Fredoka_700Bold',
-                  letterSpacing: 0.3,
-                }}
-              >
-                {currentStep === 3 ? 'Create Account' : 'Next'}
-              </Text>
-              {currentStep === 3 ? (
-                <UserPlus size={18} color="#ffffff" />
+              {isLoading ? (
+                <ActivityIndicator color="white" size="small" />
               ) : (
-                <ArrowRight size={18} color="#ffffff" />
+                <>
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: '700',
+                      color: '#ffffff',
+                      fontFamily: 'Fredoka_700Bold',
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    {currentStep === 3 ? 'Create Account' : 'Next'}
+                  </Text>
+                  {currentStep === 3 ? (
+                    <UserPlus size={18} color="#ffffff" />
+                  ) : (
+                    <ArrowRight size={18} color="#ffffff" />
+                  )}
+                </>
               )}
             </TouchableOpacity>
           </View>
@@ -662,8 +774,9 @@ export default function RegisterScreen() {
           {currentStep === 3 && (
             <TouchableOpacity
               onPress={handleRegister}
+              disabled={isLoading}
               activeOpacity={0.7}
-              style={{ alignItems: 'center', marginTop: 14 }}
+              style={{ alignItems: 'center', marginTop: 14, opacity: isLoading ? 0.5 : 1 }}
             >
               <Text
                 style={{

@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View, Alert, ActivityIndicator } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -11,9 +12,32 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Required Fields', 'Please enter your email and password.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) {
+        Alert.alert('Login Failed', error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'An unexpected error occurred.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -109,12 +133,19 @@ export default function LoginScreen() {
           {/* Login Button */}
           <TouchableOpacity
             onPress={handleLogin}
+            disabled={isLoading}
             activeOpacity={0.85}
-            className="bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl items-center shadow-lg shadow-emerald-600/10 mb-5"
+            className={`py-4 rounded-2xl items-center shadow-lg mb-5 ${
+              isLoading ? 'bg-emerald-600/70 shadow-none' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/10'
+            }`}
           >
-            <Text className="text-white text-base font-bold font-fredoka tracking-wide">
-              Log In
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator color="white" size="small" />
+            ) : (
+              <Text className="text-white text-base font-bold font-fredoka tracking-wide">
+                Log In
+              </Text>
+            )}
           </TouchableOpacity>
 
           {/* Link to Register */}

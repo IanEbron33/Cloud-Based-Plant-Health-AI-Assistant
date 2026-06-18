@@ -92,23 +92,28 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 
 ## 🚀 Current Project Status & Commands
 
-1. **Compilation Status:** Checked via `npx tsc --noEmit`. Passes successfully with **0 errors and 0 warnings**.
-2. **Local Metro Bundler:** Runs cleanly without errors.
-3. **Core Development Command:**
+1. **Phase 2 (Supabase Auth & Session Integration):** **Fully Completed & Verified**. Users can register, log in, view dynamic profile metadata, upload profile pictures (using a robust native `FormData` parser), and log out securely.
+2. **Compilation Status:** Checked via `npx tsc --noEmit`. Passes successfully with **0 errors and 0 warnings**.
+3. **Local Metro Bundler:** Runs cleanly without errors.
+4. **Core Development Command:**
    ```bash
    npx expo start -c
    ```
    *(Always use `-c` when resetting or installing new assets to wipe Metro's internal caches).*
-4. **Platform Previews:**
+5. **Platform Previews:**
    - **Mobile (Phone):** Scan the QR code shown by `npx expo start` inside the **Expo Go** app (compatible with SDK 54).
    - **Web Browser:** Press **`w`** in the Expo terminal window to launch in Chrome/Edge at `http://localhost:8081`.
 
 ---
 
-## ⏭️ Next Phase: Phase 2 — Go Proxy Backend
+## ⏭️ Next Phase: Phase 3 — AI Classification, Diagnosis & Chat Integration
 
-Once the frontend layout is finalized and you're ready to proceed to Phase 2:
-1. Create a `backend/` directory in the root.
-2. Scaffolding Go proxy server (`go mod init`, installing Google Generative AI Go SDK).
-3. Wire the classification endpoint (Gemini Flash Lite router) and diagnosis endpoint (streamed relay using SSE).
-4. Dockerize and configure for Google Cloud Run deployment.
+Once the authentication layer is verified and you are ready to proceed to Phase 3:
+1. **Camera/Gallery Picking:** Connect [scan.tsx](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/src/app/(tabs)/scan.tsx) button handlers to `expo-image-picker` to select plant leaf images on native and web.
+2. **Two-Step AI Classification Pipeline:**
+   - Wire a multipart/form-data upload to `/classify` to retrieve the identified crop.
+   - Look up crop-specific facts from the local [vegetables_db.json](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/assets/data/vegetables_db.json).
+   - Send the image + metadata context to the `/diagnose` endpoint.
+3. **SSE Chunked Parser:** Build an `XMLHttpRequest`-based parser to stream AI text live into the client UI.
+4. **Scan Results Routing:** Parse the diagnosis markdown response and render it dynamically inside the Bento Grid cards in [scan-results.tsx](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/src/app/scan-results.tsx).
+5. **Dynamic Follow-Up Chat:** Connect [chat.tsx](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/src/app/chat.tsx) to `/chat` to continue the conversation in the context of the scanned crop.

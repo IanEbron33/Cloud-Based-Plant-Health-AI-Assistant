@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -41,9 +42,18 @@ export default function SplashScreen() {
       }).start();
     }, 3500);
 
-    // 4.0s — Navigate to login
-    const navTimer = setTimeout(() => {
-      router.replace('/login');
+    // 4.0s — Navigate based on session state
+    const navTimer = setTimeout(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          router.replace('/(tabs)');
+        } else {
+          router.replace('/login');
+        }
+      } catch (err) {
+        router.replace('/login');
+      }
     }, 4000);
 
     return () => {

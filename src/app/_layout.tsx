@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { supabase } from '../lib/supabase';
 import { useFonts, Fredoka_400Regular, Fredoka_700Bold } from '@expo-google-fonts/fredoka';
 import * as SplashScreen from 'expo-splash-screen';
 import '../global.css';
@@ -11,6 +12,9 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const scheme = useColorScheme();
+
+  const router = useRouter();
+  const segments = useSegments();
 
   const [loaded, error] = useFonts({
     Fredoka_400Regular,
@@ -22,6 +26,35 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  useEffect(() => {
+    if (!loaded) return;
+
+    // Listen for auth state changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const isSplashOrAuth = 
+        segments[0] === 'login' || 
+        segments[0] === 'register' || 
+        segments[0] === 'splash' || 
+        !segments[0];
+
+      if (!session) {
+        // If not logged in and on a protected screen, redirect to login
+        if (!isSplashOrAuth) {
+          router.replace('/login');
+        }
+      } else {
+        // If logged in and on an auth screen, redirect to tabs
+        if (segments[0] === 'login' || segments[0] === 'register') {
+          router.replace('/(tabs)');
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [loaded, segments]);
 
   if (!loaded && !error) {
     return null;
