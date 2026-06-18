@@ -4,7 +4,7 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of June 17, 2026)
+## 📅 Project Context (As of June 18, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
@@ -18,7 +18,10 @@ This document captures the current state, architecture, and files of the project
   * **Shared Sliding Capsule**: A single active background capsule (`width: 66, height: 56`) that smoothly slides horizontally to the active tab using spring physics (`Animated.spring` on `translateX`).
   * **Morphing Corners**: Capsule border radius morphs from `32` (on edge tabs: Home and Profile) to `18` (on middle tabs: History and Chat).
   * **Elevated Scan Button**: Circular button floating above the center of the bar. It spring-scales to `1.12` and displays a looping, breathing scanner glow ring (`pulseRing`, `scale: 1.0` -> `1.45`, fading `0.5` -> `0.0` over `1800ms`) when selected.
+  * **Smooth Icon & Label Transitions**: Active tabs animate the icon to scale up (`1.0` -> `1.15`) and shift upwards (`translateY: 0` -> `-5`) using spring physics, while the label is always-mounted and slides and fades in (`translateY` `8` -> `0`, opacity `0` -> `1`). When focus is lost, they return to the center and fade out smoothly (no instant unmounting or layout popping).
   * **Driver Conflict Isolation**: Structured as nested views (`slidingPillContainer` + `slidingPillInner`) to isolate native GPU-driven animations (translate, opacity) from JS-driven animations (border-radius), preventing React Native driver conflicts.
+* **Profile Header Background**: Premium linear gradient background (`['#047857', '#064e3b']`) applied using `expo-linear-gradient` to the header of the Profile screen.
+* **Scan Results Health Gauge**: Circular progress indicator with a thicker bold `strokeWidth={10}` on the Scan Results screen to highlight the crop's health score.
 * **Concentric Layout & Border-Radius Smoothing**:
   * **AI Toggle switch**: Outer container uses `rounded-[20px]` and inner sliding pill uses `borderRadius: 16` (20px outer - 4px padding = 16px inner) to deliver a perfectly aligned, smooth concentric curvature.
   * **Camera Viewport**: Replaced dashed border with solid `border-stone-300` and `rounded-[24px]` corners to prevent rendering artifacts or jagged aliasing.
@@ -54,10 +57,6 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   └── images/
 │       ├── mascot-animation.webp    # Bundled transparent animated WebP mascot splash animation (4.0s)
 │       └── mascot-logo.jpeg         # App mascot image (square with 12px rounded radius)
-├── public/
-│   ├── mascot-animation.webm        # Alternative/fallback WebM mascot splash animation
-│   ├── mascot-logo.jpeg             # Alternative mascot logo image
-│   └── mascot-transparent.png        # Transparent PNG mascot logo
 ├── src/
 │   ├── app/
 │   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, Metro config injection)
@@ -66,13 +65,14 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   ├── login.tsx                # Redesigned English-only login with mascot logo & Lucide icons
 │   │   ├── register.tsx             # Redesigned English-only registration screen
 │   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard with circular health progress and spring enter animations
+│   │   ├── chat.tsx                 # Detailed crop follow-up chat conversation screen with model selector (Flash vs Deep)
 │   │   └── (tabs)/
 │   │       ├── _layout.tsx          # Custom Tab bar layout (integrates CustomTabBar)
 │   │       ├── index.tsx            # Home Dashboard (Quick stats, recent scans list, tips)
 │   │       ├── history.tsx          # Past scans (search bar, offline sync badges)
 │   │       ├── scan.tsx             # Camera preview guidelines frame with solid rounded-[24px] border, custom sliding AI mode toggle (Zap/Brain) with concentric border-radius layout, and action buttons
-│   │       ├── chat.tsx             # Interactive follow-up chat with model toggle selection (Flash vs Deep Think) and message bubbles
-│   │       └── profile.tsx          # User profile info and SQLite synchronization dashboard
+│   │       ├── chat.tsx             # General Chat tab placeholder screen (Coming Soon)
+│   │       └── profile.tsx          # User profile info, SQLite synchronization dashboard, and LinearGradient header
 │   ├── components/
 │   │   ├── BentoGrid.tsx            # Bento layout tiles (colSpan helper wrapper)
 │   │   ├── CircularProgress.tsx     # SVG progress circle matching health severity
