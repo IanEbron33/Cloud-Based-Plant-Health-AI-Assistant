@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, useColorScheme } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, useColorScheme, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,151 +8,318 @@ export default function ProfileScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
+  // Animation values
+  const headerAnim = useRef(new Animated.Value(0)).current;
+  const dbCardAnim = useRef(new Animated.Value(0)).current;
+  const syncBtnAnim = useRef(new Animated.Value(0)).current;
+  const settingsHeaderAnim = useRef(new Animated.Value(0)).current;
+  const settingsListAnim = useRef(new Animated.Value(0)).current;
+  const footerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Staggered screen entry transition
+    Animated.stagger(70, [
+      Animated.timing(headerAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(dbCardAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(syncBtnAnim, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: true,
+      }),
+      Animated.timing(settingsHeaderAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(settingsListAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(footerAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   const handleLogout = () => {
-    // Go back to login screen
     router.replace('/login');
+  };
+
+  const getTranslateY = (anim: Animated.Value) => {
+    return anim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [15, 0],
+    });
   };
 
   return (
     <ScrollView 
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 100 }}
+      contentContainerStyle={{ paddingBottom: 120 }}
     >
       {/* Top Profile Header */}
-      <View className="bg-emerald-800 pt-16 pb-8 px-6 rounded-b-[36px] items-center">
-        {/* Avatar Card */}
-        <View className="w-24 h-24 bg-emerald-700 rounded-full items-center justify-center mb-4 border-4 border-emerald-900/40">
-          <Ionicons name="person" size={48} color="white" />
+      <Animated.View 
+        style={{
+          opacity: headerAnim,
+          transform: [{ translateY: getTranslateY(headerAnim) }]
+        }}
+        className="bg-emerald-800 pt-16 pb-8 px-6 rounded-b-[36px] items-center shadow-lg shadow-emerald-950/20"
+      >
+        {/* Avatar Card with layered ring treatment */}
+        <View className="w-28 h-28 bg-emerald-900/30 rounded-full items-center justify-center mb-4 border border-emerald-700/20 shadow-inner">
+          <View className="w-24 h-24 bg-emerald-700 rounded-full items-center justify-center border-4 border-white/20">
+            <Ionicons name="person" size={44} color="white" />
+          </View>
         </View>
 
-        <Text className="text-white text-xl font-bold">
+        <Text 
+          style={{ fontFamily: 'Fredoka_700Bold' }}
+          className="text-white text-2xl font-bold"
+        >
           Juan Dela Cruz
         </Text>
-        <Text className="text-emerald-300 text-sm">
+        <Text 
+          style={{ fontFamily: 'Fredoka_400Regular' }}
+          className="text-emerald-300 text-sm mt-0.5"
+        >
           @juan_delacruz
         </Text>
 
-        <View className="bg-emerald-900/60 border border-emerald-700/20 px-3 py-1 rounded-full mt-3">
-          <Text className="text-emerald-200 text-xs font-semibold">
-            Miyembro simula Hunyo 2026
+        <View className="bg-emerald-900/60 border border-emerald-700/20 px-4 py-1.5 rounded-full mt-4">
+          <Text 
+            style={{ fontFamily: 'Fredoka_400Regular' }}
+            className="text-emerald-200 text-xs font-semibold"
+          >
+            Member since June 2026
           </Text>
         </View>
-      </View>
+      </Animated.View>
 
       <View className="px-6 py-6">
         {/* Database Mirror & Sync Status */}
-        <Text className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+        <Animated.Text 
+          style={{
+            opacity: dbCardAnim,
+            fontFamily: 'Fredoka_700Bold',
+            transform: [{ translateY: getTranslateY(dbCardAnim) }]
+          }}
+          className={`text-[10px] font-bold uppercase tracking-wider mb-2.5 px-1 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}
+        >
           Database Status
-        </Text>
-        <View className={`p-5 rounded-3xl mb-6 border ${
-          isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-150 shadow-sm'
-        }`}>
-          <View className="flex-row justify-between mb-4 pb-4 border-b border-stone-800/25">
-            <View>
-              <Text className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}>
-                Local Database (SQLite)
-              </Text>
-              <Text className="text-stone-500 text-xs mt-0.5">
-                Naka-save sa iyong mobile device
-              </Text>
-            </View>
-            <View className="items-end">
-              <Text className={`text-base font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}>
+        </Animated.Text>
+        
+        <Animated.View 
+          style={{
+            opacity: dbCardAnim,
+            transform: [{ translateY: getTranslateY(dbCardAnim) }]
+          }}
+          className={`p-5 rounded-3xl mb-5 border ${
+            isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-150 shadow-sm'
+          }`}
+        >
+          {/* SQLite card block */}
+          <View className="mb-4 pb-4.5 border-b border-stone-800/10 dark:border-stone-800/30">
+            <View className="flex-row justify-between items-center mb-1.5">
+              <View>
+                <Text 
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+                >
+                  Local Database (SQLite)
+                </Text>
+                <Text 
+                  style={{ fontFamily: 'Fredoka_400Regular' }}
+                  className="text-stone-400 text-xs"
+                >
+                  Saved on your mobile device
+                </Text>
+              </View>
+              <Text 
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+              >
                 12 scans
               </Text>
             </View>
+            <View className="w-full bg-stone-100 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
+              <View className="w-full h-full bg-emerald-600 rounded-full" />
+            </View>
           </View>
 
-          <View className="flex-row justify-between">
-            <View>
-              <Text className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}>
-                Cloud Database (Supabase)
-              </Text>
-              <Text className="text-stone-500 text-xs mt-0.5">
-                Naka-back up sa cloud
-              </Text>
-            </View>
-            <View className="items-end">
-              <Text className="text-emerald-500 text-base font-bold">
+          {/* Supabase card block */}
+          <View>
+            <View className="flex-row justify-between items-center mb-1.5">
+              <View>
+                <Text 
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+                >
+                  Cloud Database (Supabase)
+                </Text>
+                <Text 
+                  style={{ fontFamily: 'Fredoka_400Regular' }}
+                  className="text-stone-400 text-xs"
+                >
+                  Backed up in the cloud
+                </Text>
+              </View>
+              <Text 
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className="text-emerald-500 text-sm font-bold"
+              >
                 11 scans
               </Text>
             </View>
+            <View className="w-full bg-stone-100 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
+              <View className="h-full bg-emerald-500 rounded-full" style={{ width: '91.6%' }} />
+            </View>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Sync Actions */}
-        <TouchableOpacity 
-          activeOpacity={0.8}
-          className="bg-emerald-600 py-4 rounded-2xl flex-row items-center justify-center mb-8 shadow-lg shadow-emerald-600/10"
+        <Animated.View
+          style={{
+            opacity: syncBtnAnim,
+            transform: [{ translateY: getTranslateY(syncBtnAnim) }]
+          }}
         >
-          <Ionicons name="sync" size={20} color="white" />
-          <Text className="text-white font-bold ml-2 text-sm">
-            I-sync ang mga Nakapilang Scans
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            className="bg-emerald-600 py-4 rounded-2xl flex-row items-center justify-center mb-8 shadow-lg shadow-emerald-600/10"
+          >
+            <Ionicons name="sync" size={18} color="white" />
+            <Text 
+              style={{ fontFamily: 'Fredoka_700Bold' }}
+              className="text-white font-bold ml-2 text-sm"
+            >
+              Sync Queued Scans
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
 
         {/* Settings options list */}
-        <Text className={`text-xs font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
-          Mga Opsyon
-        </Text>
+        <Animated.Text 
+          style={{
+            opacity: settingsHeaderAnim,
+            fontFamily: 'Fredoka_700Bold',
+            transform: [{ translateY: getTranslateY(settingsHeaderAnim) }]
+          }}
+          className={`text-[10px] font-bold uppercase tracking-wider mb-2.5 px-1 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}
+        >
+          Options
+        </Animated.Text>
 
-        <View className={`rounded-3xl overflow-hidden border ${
-          isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100 shadow-sm'
-        }`}>
+        <Animated.View 
+          style={{
+            opacity: settingsListAnim,
+            transform: [{ translateY: getTranslateY(settingsListAnim) }]
+          }}
+          className={`rounded-[28px] overflow-hidden border ${
+            isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100 shadow-sm'
+          } mb-8`}
+        >
+          {/* Notifications setting item */}
           <TouchableOpacity 
-            className="flex-row items-center justify-between p-4 border-b border-stone-800/10"
+            className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-stone-800/30' : 'border-stone-100'}`}
             activeOpacity={0.7}
           >
             <View className="flex-row items-center">
-              <Ionicons name="notifications-outline" size={20} color={isDark ? '#a8a29e' : '#57534e'} />
-              <Text className={`font-semibold ml-3 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}>
-                Mga Abiso (Notifications)
+              <View className={`w-9 h-9 rounded-xl items-center justify-center ${isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'}`}>
+                <Ionicons name="notifications-outline" size={18} color="#059669" />
+              </View>
+              <Text 
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className={`ml-3.5 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}
+              >
+                Notifications
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color="#78716c" />
+            <Ionicons name="chevron-forward" size={16} color={isDark ? '#57534e' : '#a8a29e'} />
           </TouchableOpacity>
 
+          {/* Privacy setting item */}
           <TouchableOpacity 
-            className="flex-row items-center justify-between p-4 border-b border-stone-800/10"
+            className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-stone-800/30' : 'border-stone-100'}`}
             activeOpacity={0.7}
           >
             <View className="flex-row items-center">
-              <Ionicons name="shield-checkmark-outline" size={20} color={isDark ? '#a8a29e' : '#57534e'} />
-              <Text className={`font-semibold ml-3 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}>
-                Privacy at Seguridad
+              <View className={`w-9 h-9 rounded-xl items-center justify-center ${isDark ? 'bg-blue-50/10' : 'bg-blue-50'}`}>
+                <Ionicons name="shield-checkmark-outline" size={18} color="#3b82f6" />
+              </View>
+              <Text 
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className={`ml-3.5 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}
+              >
+                Privacy & Security
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color="#78716c" />
+            <Ionicons name="chevron-forward" size={16} color={isDark ? '#57534e' : '#a8a29e'} />
           </TouchableOpacity>
 
+          {/* Help setting item */}
           <TouchableOpacity 
-            className="flex-row items-center justify-between p-4 border-b border-stone-800/10"
+            className={`flex-row items-center justify-between p-4 border-b ${isDark ? 'border-stone-800/30' : 'border-stone-100'}`}
             activeOpacity={0.7}
           >
             <View className="flex-row items-center">
-              <Ionicons name="help-circle-outline" size={20} color={isDark ? '#a8a29e' : '#57534e'} />
-              <Text className={`font-semibold ml-3 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}>
-                Tulong at Suporta
+              <View className={`w-9 h-9 rounded-xl items-center justify-center ${isDark ? 'bg-amber-50/10' : 'bg-amber-50'}`}>
+                <Ionicons name="help-circle-outline" size={18} color="#d97706" />
+              </View>
+              <Text 
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className={`ml-3.5 text-sm ${isDark ? 'text-stone-200' : 'text-stone-700'}`}
+              >
+                Help & Support
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color="#78716c" />
+            <Ionicons name="chevron-forward" size={16} color={isDark ? '#57534e' : '#a8a29e'} />
           </TouchableOpacity>
 
+          {/* Logout item */}
           <TouchableOpacity 
             onPress={handleLogout}
             className="flex-row items-center justify-between p-4"
             activeOpacity={0.7}
           >
             <View className="flex-row items-center">
-              <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-              <Text className="font-semibold ml-3 text-sm text-red-500">
-                Mag-logout
+              <View className={`w-9 h-9 rounded-xl items-center justify-center ${isDark ? 'bg-red-50/10' : 'bg-red-50'}`}>
+                <Ionicons name="log-out-outline" size={18} color="#ef4444" />
+              </View>
+              <Text 
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className="ml-3.5 text-sm text-red-500"
+              >
+                Log Out
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#ef4444" />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
+
+        {/* Footer branding */}
+        <Animated.View 
+          style={{ opacity: footerAnim }}
+          className="items-center justify-center py-4"
+        >
+          <Text 
+            style={{ fontFamily: 'Fredoka_400Regular' }}
+            className="text-stone-400 dark:text-stone-600 text-xs text-center"
+          >
+            Bugsok AI v1.0.0 · Made with 🌱
+          </Text>
+        </Animated.View>
 
       </View>
     </ScrollView>
