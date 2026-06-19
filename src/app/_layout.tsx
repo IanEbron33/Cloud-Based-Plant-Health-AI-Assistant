@@ -6,6 +6,7 @@ import { useFonts, Fredoka_400Regular, Fredoka_700Bold } from '@expo-google-font
 import * as SplashScreen from 'expo-splash-screen';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { ToastProvider } from '../context/ToastContext';
+import { ScanProvider } from '../context/ScanContext';
 import '../global.css';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -90,7 +91,9 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <RootNavigator />
+        <ScanProvider>
+          <RootNavigator />
+        </ScanProvider>
       </ToastProvider>
     </AuthProvider>
   );

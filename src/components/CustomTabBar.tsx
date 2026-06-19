@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Easing } from 'react-native';
+import { router } from 'expo-router';
+import { useScan } from '../context/ScanContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -32,6 +34,7 @@ interface TabButtonProps {
 
 const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProps) => {
   const { label, activeIcon, inactiveIcon } = getTabConfig(routeName);
+  const { isScanning } = useScan();
 
   // Animation values for the smooth transitions
   const fadeAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
@@ -40,7 +43,9 @@ const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProp
   const labelTranslateY = useRef(new Animated.Value(isFocused ? 0 : 8)).current;
   const scanScaleAnim = useRef(new Animated.Value(isFocused ? 1.12 : 1.0)).current;
   const pulseAnim = useRef(new Animated.Value(0)).current;
+  const rotationAnim = useRef(new Animated.Value(0)).current;
   const pulseLoopRef = useRef<Animated.CompositeAnimation | null>(null);
+  const rotationLoopRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
     // Coordinated transitions for regular tabs
@@ -78,22 +83,51 @@ const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProp
         useNativeDriver: true,
       }).start();
 
-      if (isFocused) {
-        pulseAnim.setValue(0);
-        pulseLoopRef.current = Animated.loop(
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 1800,
-            useNativeDriver: true,
-          })
-        );
-        pulseLoopRef.current.start();
-      } else {
+      if (isScanning) {
+        // Stop pulse animation
         if (pulseLoopRef.current) {
           pulseLoopRef.current.stop();
           pulseLoopRef.current = null;
         }
         pulseAnim.setValue(0);
+
+        // Start rotating animation
+        rotationAnim.setValue(0);
+        rotationLoopRef.current = Animated.loop(
+          Animated.timing(rotationAnim, {
+            toValue: 1,
+            duration: 1200,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          })
+        );
+        rotationLoopRef.current.start();
+      } else {
+        // Stop rotating animation
+        if (rotationLoopRef.current) {
+          rotationLoopRef.current.stop();
+          rotationLoopRef.current = null;
+        }
+        rotationAnim.setValue(0);
+
+        // Start pulse animation if focused
+        if (isFocused) {
+          pulseAnim.setValue(0);
+          pulseLoopRef.current = Animated.loop(
+            Animated.timing(pulseAnim, {
+              toValue: 1,
+              duration: 1800,
+              useNativeDriver: true,
+            })
+          );
+          pulseLoopRef.current.start();
+        } else {
+          if (pulseLoopRef.current) {
+            pulseLoopRef.current.stop();
+            pulseLoopRef.current = null;
+          }
+          pulseAnim.setValue(0);
+        }
       }
     }
 
@@ -101,10 +135,52 @@ const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProp
       if (pulseLoopRef.current) {
         pulseLoopRef.current.stop();
       }
+      if (rotationLoopRef.current) {
+        rotationLoopRef.current.stop();
+      }
     };
-  }, [isFocused]);
+  }, [isFocused, isScanning]);
 
   if (routeName === 'scan') {
+    if (isScanning) {
+      const rotation = rotationAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg'],
+      });
+
+      return (
+        <TouchableOpacity
+          onPress={onPress}
+          onLongPress={onLongPress}
+          style={styles.scanButtonContainer}
+          activeOpacity={0.8}
+        >
+          <Animated.View
+            style={[
+              styles.pulseRing,
+              {
+                transform: [{ rotate: rotation }],
+                borderColor: '#059669',
+                borderTopColor: 'transparent', // create spinner effect
+                opacity: 0.9,
+              },
+            ]}
+          />
+          <Animated.View style={[styles.scanButton, { transform: [{ scale: scanScaleAnim }] }]}>
+            <View style={styles.scanIconContainer}>
+              <ActivityIndicator size="small" color="#ffffff" />
+              <Ionicons
+                name="sparkles"
+                size={12}
+                color="#ffffff"
+                style={styles.scanSparkleBadge}
+              />
+            </View>
+          </Animated.View>
+        </TouchableOpacity>
+      );
+    }
+
     const pulseScale = pulseAnim.interpolate({
       inputRange: [0, 1],
       outputRange: [1.0, 1.45],
@@ -198,6 +274,8 @@ const TabButton = ({ isFocused, routeName, onPress, onLongPress }: TabButtonProp
 };
 
 export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { isScanning } = useScan();
+
   // Shared Sliding Pill Layout Math
   const capsuleWidth = 66;
   const capsuleHeight = 56;
@@ -278,6 +356,11 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         const isFocused = state.index === index;
 
         const onPress = () => {
+          if (route.name === 'scan' && isScanning) {
+            router.push('/scan-results');
+            return;
+          }
+
           const event = navigation.emit({
             type: 'tabPress',
             target: route.key,

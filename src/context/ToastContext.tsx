@@ -17,6 +17,7 @@ export interface ToastOptions {
   title?: string;
   message: string;
   duration?: number;
+  onPress?: () => void;
 }
 
 interface ToastContextValue {
@@ -40,6 +41,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
     type: ToastType;
     title?: string;
     message: string;
+    onPress?: () => void;
   }>({
     visible: false,
     type: 'info',
@@ -79,7 +81,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
   }, [slideAnim, opacityAnim, scaleAnim]);
 
   const showToast = useCallback(
-    ({ type = 'info', title, message, duration = 3500 }: ToastOptions) => {
+    ({ type = 'info', title, message, duration = 3500, onPress }: ToastOptions) => {
       // Clear any existing timer
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -91,6 +93,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
         type,
         title,
         message,
+        onPress,
       });
 
       // Reset progress bar
@@ -209,7 +212,12 @@ export function ToastProvider({ children }: ToastProviderProps) {
         >
           <TouchableOpacity
             activeOpacity={0.95}
-            onPress={hideToast}
+            onPress={() => {
+              if (toast.onPress) {
+                toast.onPress();
+              }
+              hideToast();
+            }}
             style={{
               flexDirection: 'row',
               borderRadius: 20,

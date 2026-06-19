@@ -79,3 +79,49 @@ export interface StreamChunk {
   text?: string;
   error?: string;
 }
+
+// ─────────────────────────────────────────────
+// Scan / Diagnosis Context Types
+// ─────────────────────────────────────────────
+
+/** Fully parsed diagnosis result from the AI streaming response. */
+export interface DiagnosisResult {
+  cropLocalName: string;
+  cropScientificName: string;
+  category: string;
+  ecologicalStatus: string;
+  condition: string;
+  severity: 'None' | 'Low' | 'Moderate' | 'High';
+  healthScore: number;          // 0–100
+  confidenceScore: number;      // 0–100
+  wateringFrequency: string;
+  wateringDescription: string;
+  symptoms: string[];
+  treatment: string[];
+  prevention: string[];
+  careTip: string;
+  imageUri: string;             // Local URI of the scanned leaf image
+}
+
+/** The global scan state. */
+export interface ScanState {
+  isScanning: boolean;
+  scanPhase: 'idle' | 'classifying' | 'diagnosing' | 'done' | 'error';
+  scannedImageUri: string | null;
+  activeModel: 'flash' | 'deep';
+  identifiedCrop: string | null;
+  diagnosisResult: DiagnosisResult | null;
+  errorMessage: string | null;
+  loadingCaption: string;
+}
+
+/** Methods exposed by the ScanContext provider. */
+export interface ScanActions {
+  startScan: (imageUri: string, model: 'flash' | 'deep') => void;
+  cancelScan: () => void;
+  clearResults: () => void;
+}
+
+/** Combined shape of the ScanContext value. */
+export type ScanContextValue = ScanState & ScanActions;
+

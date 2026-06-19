@@ -4,7 +4,7 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of June 18, 2026)
+## 📅 Project Context (As of June 19, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
@@ -34,6 +34,25 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
+## 🔒 Phase 2 Enhancements (Authentication, Security & Flow Controls)
+
+* **Refactored Architecture & Separation of Concerns**:
+  * Moved direct Supabase SDK calls out of the UI screens (`login.tsx`, `register.tsx`, `splash.tsx`, `profile.tsx`).
+  * Created dedicated service layers (`auth.service.ts`, `profile.service.ts`) and global hook context (`AuthContext.tsx`) to handle authentication status and profile fetch state.
+* **Custom Toast Notification System**:
+  * Designed global `ToastProvider` with physical bounce animations, dynamic colors (emerald for success, red for error, amber for warning), and an interactive shrinking progress bar detailing auto-dismiss timer.
+* **Login Rate Limiter & Cooldown Lock**:
+  * Added 3-strike login lockout system. If a user fails to authenticate 3 times sequentially, the login button gets locked for 60 seconds.
+  * Cooldown timer and locking state are persisted locally under `AsyncStorage` keys to prevent users from bypassing the lock by restarting the app.
+* **Forgot Password Flow & Dynamic Password Strength**:
+  * **3-Step Recovery Wizard**: Created `/forgot-password` route with clean layout exceptions in `_layout.tsx` to handle password recovery.
+  * **Responsive 6-Digit OTP Box Grid**: Renders 6 numeric input boxes that automatically calculate their width dynamically using the screen's size to prevent clipping/overflow on narrower mobile devices. Focus moves forward automatically on keypress and moves backward on backspace.
+  * **Animated Password Strength Meter**: Dynamic color-morphing progress bar (Red ➔ Orange ➔ Green) representing Weak, Good, or Strong values based on character rules, implemented on both the Registration and Reset Password screens.
+* **Registration Redirect Flow**:
+  * Modified signup handler to register the account profile, upload the user's avatar, clear the automatic session via `signOut()`, and redirect the user back to the login screen with a manual login instruction toast.
+
+---
+
 ## 🛠️ Technology Stack & Dependencies
 
 * **Core:** React 19.1.0, React Native 0.81.5
@@ -43,6 +62,7 @@ This document captures the current state, architecture, and files of the project
 * **Icons:** **Lucide Icons** (`lucide-react-native`) and **Ionicons** (`@expo/vector-icons`)
 * **Media Rendering:** **expo-image** (for rendering transparent animated WebP on splash screen)
 * **Assets:** Custom mascot logo (`assets/images/mascot-logo.jpeg`) and bundled plant disease database (`assets/data/vegetables_db.json`)
+* **Local Storage:** `@react-native-async-storage/async-storage` for persisting login cooldown states.
 
 ---
 
@@ -59,24 +79,34 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │       └── mascot-logo.jpeg         # App mascot image (square with 12px rounded radius)
 ├── src/
 │   ├── app/
-│   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, Metro config injection)
+│   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, wraps providers, auth stack whitelisting)
 │   │   ├── index.tsx                # App entry redirect (routes to /splash)
-│   │   ├── splash.tsx               # [NEW] Custom staggered fade-in splash screen with transparent WebP animation
-│   │   ├── login.tsx                # Redesigned English-only login with mascot logo & Lucide icons
-│   │   ├── register.tsx             # Redesigned English-only registration screen
+│   │   ├── splash.tsx               # Staggered fade-in splash screen with transparent WebP animation
+│   │   ├── login.tsx                # Redesigned English-only login with mascot logo, lockout timer, & custom toast alerts
+│   │   ├── register.tsx             # Redesigned English-only registration screen with password strength progress bar
+│   │   ├── forgot-password.tsx      # 🆕 3-step secure password recovery wizard (Email, 6-digit OTP, Strength-tested Reset)
 │   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard with circular health progress and spring enter animations
 │   │   ├── chat.tsx                 # Detailed crop follow-up chat conversation screen with model selector (Flash vs Deep)
 │   │   └── (tabs)/
 │   │       ├── _layout.tsx          # Custom Tab bar layout (integrates CustomTabBar)
 │   │       ├── index.tsx            # Home Dashboard (Quick stats, recent scans list, tips)
 │   │       ├── history.tsx          # Past scans (search bar, offline sync badges)
-│   │       ├── scan.tsx             # Camera preview guidelines frame with solid rounded-[24px] border, custom sliding AI mode toggle (Zap/Brain) with concentric border-radius layout, and action buttons
+│   │       ├── scan.tsx             # Camera preview guidelines frame with solid rounded-[24px] border, custom sliding AI mode toggle
 │   │       ├── chat.tsx             # General Chat tab placeholder screen (Coming Soon)
 │   │       └── profile.tsx          # User profile info, SQLite synchronization dashboard, and LinearGradient header
 │   ├── components/
 │   │   ├── BentoGrid.tsx            # Bento layout tiles (colSpan helper wrapper)
 │   │   ├── CircularProgress.tsx     # SVG progress circle matching health severity
-│   │   └── CustomTabBar.tsx         # [NEW] Shared sliding pill floating bottom tab bar with pulse rings
+│   │   └── CustomTabBar.tsx         # Shared sliding pill floating bottom tab bar with pulse rings
+│   ├── context/
+│   │   ├── AuthContext.tsx          # 🆕 Global auth state provider (exposes session, profile, and recovery helpers)
+│   │   └── ToastContext.tsx         # 🆕 Global Custom Toast context provider (exposes toast view states & animations)
+│   ├── services/
+│   │   ├── auth.service.ts          # 🆕 Supabase authentication service calls wrapper
+│   │   ├── profile.service.ts       # 🆕 Profiles database & avatars storage calls wrapper
+│   │   └── api.service.ts           # Phase 3 placeholder for Hugging Face proxy API (classifyCrop, diagnoseCrop)
+│   ├── types/
+│   │   └── index.ts                 # 🆕 Shared TypeScript interfaces and typings
 │   ├── constants/
 │   │   └── theme.ts                 # Theme layout values, colors, spacing definitions
 │   └── hooks/
