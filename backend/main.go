@@ -255,7 +255,7 @@ func handleDiagnose(w http.ResponseWriter, r *http.Request) {
 	if modelType == "deep" {
 		modelName = os.Getenv("DEEP_MODEL")
 		if modelName == "" {
-			modelName = "gemma-4-31b"
+			modelName = "gemma-4-31b-it"
 		}
 	} else {
 		modelName = os.Getenv("FLASH_MODEL")
@@ -369,7 +369,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	if req.Model == "deep" {
 		modelName = os.Getenv("DEEP_MODEL")
 		if modelName == "" {
-			modelName = "gemma-4-31b"
+			modelName = "gemma-4-31b-it"
 		}
 	} else {
 		modelName = os.Getenv("FLASH_MODEL")
