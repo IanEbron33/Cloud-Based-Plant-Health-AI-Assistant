@@ -1,16 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef } from 'react';
-import { Animated, ScrollView, Text, TouchableOpacity, useColorScheme, View, Image } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, ScrollView, Text, TouchableOpacity, useColorScheme, View, Image, ActivityIndicator } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import { fetchScanStats, syncData } from '../../services/scan.service';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
   const { user, profile, isLoading, signOut } = useAuth();
+  const [localCount, setLocalCount] = useState(0);
+  const [cloudCount, setCloudCount] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Derive display values from auth context
   const displayName = profile?.full_name || 'Anonymous User';
@@ -28,6 +33,21 @@ export default function ProfileScreen() {
   const settingsHeaderAnim = useRef(new Animated.Value(0)).current;
   const settingsListAnim = useRef(new Animated.Value(0)).current;
   const footerAnim = useRef(new Animated.Value(0)).current;
+
+  const loadStats = () => {
+    if (!user) return;
+    const stats = fetchScanStats(user.id);
+    setLocalCount(stats.total);
+    setCloudCount(stats.synced);
+  };
+
+  useEffect(() => {
+    loadStats();
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadStats();
+    });
+    return unsubscribe;
+  }, [navigation, user]);
 
   useEffect(() => {
     // Staggered screen entry transition
@@ -74,12 +94,22 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleSyncQueued = async () => {
+    if (!user || isSyncing) return;
+    setIsSyncing(true);
+    await syncData(user.id);
+    setIsSyncing(false);
+    loadStats();
+  };
+
   const getTranslateY = (anim: Animated.Value) => {
     return anim.interpolate({
       inputRange: [0, 1],
       outputRange: [15, 0],
     });
   };
+
+  const syncPercentage = localCount > 0 ? Math.min(100, Math.round((cloudCount / localCount) * 100)) : 100;
 
   return (
     <ScrollView
@@ -185,7 +215,7 @@ export default function ProfileScreen() {
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
               >
-                12 scans
+                {localCount} {localCount === 1 ? 'scan' : 'scans'}
               </Text>
             </View>
             <View className="w-full bg-stone-100 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
@@ -214,11 +244,11 @@ export default function ProfileScreen() {
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className="text-emerald-500 text-sm font-bold"
               >
-                11 scans
+                {cloudCount} {cloudCount === 1 ? 'scan' : 'scans'}
               </Text>
             </View>
             <View className="w-full bg-stone-100 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
-              <View className="h-full bg-emerald-500 rounded-full" style={{ width: '91.6%' }} />
+              <View className="h-full bg-emerald-500 rounded-full" style={{ width: `${syncPercentage}%` }} />
             </View>
           </View>
         </Animated.View>
@@ -231,18 +261,27 @@ export default function ProfileScreen() {
           }}
         >
           <TouchableOpacity
+            onPress={handleSyncQueued}
+            disabled={isSyncing}
             activeOpacity={0.8}
-            className="bg-emerald-600 py-4 rounded-2xl flex-row items-center justify-center mb-8 shadow-lg shadow-emerald-600/10"
+            className="bg-emerald-600 py-4 rounded-2xl flex-row items-center justify-center mb-8 shadow-lg shadow-emerald-600/10 min-h-[50px]"
           >
-            <Ionicons name="sync" size={18} color="white" />
-            <Text
-              style={{ fontFamily: 'Fredoka_700Bold' }}
-              className="text-white font-bold ml-2 text-sm"
-            >
-              Sync Queued Scans
-            </Text>
+            {isSyncing ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <Ionicons name="sync" size={18} color="white" />
+                <Text
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className="text-white font-bold ml-2 text-sm"
+                >
+                  Sync Queued Scans
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         </Animated.View>
+
 
         <Animated.View
           style={{

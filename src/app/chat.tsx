@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, useColorScheme, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useScan } from '../context/ScanContext';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { chatWithAI } from '../services/api.service';
+import { getOrCreateChatSession, saveChatMessage, fetchChatMessages } from '../services/scan.service';
 import vegetablesDb from '../../assets/data/vegetables_db.json';
 
 interface Message {
@@ -17,6 +19,8 @@ interface Message {
 
 export default function ChatScreen() {
   const router = useRouter();
+  const { scanId } = useLocalSearchParams<{ scanId?: string }>();
+  const { user } = useAuth();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const scrollViewRef = useRef<ScrollView>(null);
@@ -30,23 +34,73 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(false);
 
-  // Dynamically initialize conversation greeting based on scan results context
+  const cropName = diagnosisResult?.cropLocalName || identifiedCrop || 'Plant';
+
+  // Load chat session from SQLite/Supabase
+  const loadChatSession = async () => {
+    if (!scanId || !user) {
+      // General transient fallback session
+      const greetingText = 'Hello! I am your plant care assistant. How can I help you with your crops today?';
+      setMessages([
+        {
+          id: '1',
+          sender: 'ai',
+          text: greetingText,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          modelUsed: 'flash',
+        },
+      ]);
+      setSessionId(null);
+      return;
+    }
+
+    setIsLoadingSession(true);
+    try {
+      const sessId = await getOrCreateChatSession(scanId, user.id, cropName);
+      setSessionId(sessId);
+
+      const dbMsgs = fetchChatMessages(sessId);
+      const mapped = dbMsgs.map((m) => ({
+        id: m.id,
+        sender: m.sender,
+        text: m.message,
+        timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+      }));
+
+      if (mapped.length === 0) {
+        // If it's a new session, persist the initial greeting in SQLite/Supabase
+        const greetingText = diagnosisResult
+          ? `Hello! I am your plant care assistant. I noticed from the analysis that your **${diagnosisResult.cropLocalName}** has **${diagnosisResult.condition}** with a severity of **${diagnosisResult.severity}** (${diagnosisResult.healthScore}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
+          : `Hello! I am your plant care assistant. How can I help you with your ${cropName} today?`;
+
+        await saveChatMessage(sessId, 'ai', greetingText, 'flash');
+
+        const reloaded = fetchChatMessages(sessId);
+        setMessages(reloaded.map((m) => ({
+          id: m.id,
+          sender: m.sender,
+          text: m.message,
+          timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+        })));
+      } else {
+        setMessages(mapped);
+      }
+    } catch (err) {
+      console.error('[Chat Screen] Error loading session:', err);
+    } finally {
+      setIsLoadingSession(false);
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 250);
+    }
+  };
+
   useEffect(() => {
-    const greetingText = diagnosisResult
-      ? `Hello! I am your plant care assistant. I noticed from the analysis that your **${diagnosisResult.cropLocalName}** has **${diagnosisResult.condition}** with a severity of **${diagnosisResult.severity}** (${diagnosisResult.healthScore}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
-      : 'Hello! I am your plant care assistant. How can I help you with your crops today?';
-
-    setMessages([
-      {
-        id: '1',
-        sender: 'ai',
-        text: greetingText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        modelUsed: 'flash',
-      },
-    ]);
-  }, [diagnosisResult]);
+    loadChatSession();
+  }, [scanId, user]);
 
   // Clean up abort controllers on unmount
   useEffect(() => {
@@ -57,19 +111,31 @@ export default function ChatScreen() {
     };
   }, []);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
+    const userMsgText = inputText;
+    setInputText('');
+
+    const userMsgId = Date.now().toString();
     const userMsg: Message = {
-      id: Date.now().toString(),
+      id: userMsgId,
       sender: 'user',
-      text: inputText,
+      text: userMsgText,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    setInputText('');
     setIsTyping(true);
+
+    // Persist user message in DB
+    if (sessionId) {
+      try {
+        await saveChatMessage(sessionId, 'user', userMsgText);
+      } catch (err) {
+        console.error('[Chat Screen] Save user message error:', err);
+      }
+    }
 
     // Scroll to bottom after user sends message
     setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
@@ -124,8 +190,25 @@ export default function ChatScreen() {
         }
       },
       // onDone callback
-      () => {
+      async () => {
         setIsTyping(false);
+        // Persist completed AI message in DB
+        if (sessionId) {
+          try {
+            await saveChatMessage(sessionId, 'ai', accumulatedText, activeModel);
+            // Reload from DB to ensure local message sync state and timestamp match
+            const dbMsgs = fetchChatMessages(sessionId);
+            setMessages(dbMsgs.map((m) => ({
+              id: m.id,
+              sender: m.sender,
+              text: m.message,
+              timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+            })));
+          } catch (err) {
+            console.error('[Chat Screen] Save AI response error:', err);
+          }
+        }
         scrollViewRef.current?.scrollToEnd({ animated: true });
       },
       // onError callback
@@ -141,29 +224,66 @@ export default function ChatScreen() {
     );
   };
 
-  const handleClearChat = () => {
+  const handleClearChat = async () => {
     if (chatAbortControllerRef.current) {
       chatAbortControllerRef.current.abort();
     }
 
+    if (sessionId) {
+      try {
+        const { supabase } = require('../lib/supabase');
+        const SQLite = require('expo-sqlite');
+        const db = SQLite.openDatabaseSync('bugsok_ai.db');
+
+        // Delete locally
+        db.runSync('DELETE FROM chat_messages WHERE session_id = ?', [sessionId]);
+
+        // Delete remotely
+        await supabase.from('chat_messages').delete().eq('session_id', sessionId);
+      } catch (err) {
+        console.error('[Chat Screen] Clear messages error:', err);
+      }
+    }
+
     const greetingText = diagnosisResult
       ? `Hello! I am your plant care assistant. I noticed from the analysis that your **${diagnosisResult.cropLocalName}** has **${diagnosisResult.condition}** with a severity of **${diagnosisResult.severity}** (${diagnosisResult.healthScore}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
-      : 'Hello! I am your plant care assistant. How can I help you with your crops today?';
+      : `Hello! I am your plant care assistant. How can I help you with your ${cropName} today?`;
 
-    setMessages([
-      {
-        id: Date.now().toString(),
-        sender: 'ai',
-        text: greetingText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        modelUsed: 'flash',
-      },
-    ]);
+    // Persist new initial greeting
+    if (sessionId) {
+      await saveChatMessage(sessionId, 'ai', greetingText, 'flash');
+      const dbMsgs = fetchChatMessages(sessionId);
+      setMessages(dbMsgs.map((m) => ({
+        id: m.id,
+        sender: m.sender,
+        text: m.message,
+        timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+      })));
+    } else {
+      setMessages([
+        {
+          id: Date.now().toString(),
+          sender: 'ai',
+          text: greetingText,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          modelUsed: 'flash',
+        },
+      ]);
+    }
   };
 
-  const cropName = diagnosisResult?.cropLocalName || identifiedCrop || 'Plant';
   const headerTitle = `${cropName} Follow-up Chat`;
   const subtitle = diagnosisResult?.condition || 'General Care';
+
+  if (isLoadingSession) {
+    return (
+      <View className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'} items-center justify-center`}>
+        <ActivityIndicator size="large" color="#10b981" />
+        <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-500 text-sm mt-3">Loading chat history...</Text>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -251,7 +371,7 @@ export default function ChatScreen() {
               {/* Footer info: time & model tag */}
               <View className="flex-row items-center justify-between mt-2">
                 <Text
-                  style={{ fontFamily: 'Fredoka_450' }}
+                  style={{ fontFamily: 'Fredoka_400Regular' }}
                   className={`text-[9px] ${msg.sender === 'user' ? 'text-emerald-200' : 'text-stone-500'}`}
                 >
                   {msg.timestamp}

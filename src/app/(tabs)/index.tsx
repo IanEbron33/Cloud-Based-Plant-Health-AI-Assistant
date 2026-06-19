@@ -1,19 +1,148 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import { useRouter, useNavigation } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
+import { fetchUserScans, fetchScanStats, LocalScanRow } from '../../services/scan.service';
+
+// Reusable card component to encapsulate press scale animations cleanly
+function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index: number; isDark: boolean; onPress: () => void }) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 1,
+      duration: 350,
+      delay: index * 100,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.98,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 6,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 6,
+    }).start();
+  };
+
+  const getSeverityColors = (severity: string) => {
+    if (severity === 'High') return { barColor: 'bg-red-500', badgeBg: 'bg-red-500/10', text: 'text-red-500' };
+    if (severity === 'Moderate') return { barColor: 'bg-orange-500', badgeBg: 'bg-orange-500/10', text: 'text-orange-500' };
+    if (severity === 'Low') return { barColor: 'bg-yellow-500', badgeBg: 'bg-yellow-500/10', text: 'text-yellow-500' };
+    return { barColor: 'bg-emerald-500', badgeBg: 'bg-emerald-500/10', text: 'text-emerald-500' };
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const { barColor, badgeBg, text: textStyle } = getSeverityColors(scan.severity);
+  const displayImage = scan.cloud_image_url || scan.local_image_path || 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=400';
+
+  const translateY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [16, 0],
+  });
+
+  return (
+    <Animated.View
+      style={{
+        opacity: slideAnim,
+        transform: [{ translateY }, { scale: scaleAnim }],
+      }}
+    >
+      <TouchableOpacity
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        activeOpacity={0.9}
+        className={`flex-row p-4 rounded-3xl items-center border ${
+          isDark ? 'bg-stone-900 border-stone-880' : 'bg-white border-stone-100 shadow-sm'
+        }`}
+        style={{ marginBottom: 12 }}
+      >
+        {/* Crop Image */}
+        <View className="w-16 h-16 bg-stone-200 rounded-2xl overflow-hidden mr-4">
+          <Image
+            source={{ uri: displayImage }}
+            className="w-full h-full object-cover"
+          />
+        </View>
+
+        {/* Details */}
+        <View className="flex-1">
+          <View className="flex-row justify-between items-center">
+            <Text
+              style={{ fontFamily: 'Fredoka_700Bold' }}
+              className={`text-base font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+            >
+              {scan.crop_name}
+            </Text>
+            <Text
+              style={{ fontFamily: 'Fredoka_400Regular' }}
+              className={`text-[10px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
+            >
+              {formatDate(scan.created_at)}
+            </Text>
+          </View>
+
+          <View className="flex-row items-center justify-between mt-1">
+            <Text
+              style={{ fontFamily: 'Fredoka_400Regular' }}
+              className={`text-xs ${isDark ? 'text-stone-400' : 'text-stone-600'}`}
+            >
+              {scan.condition_name}
+            </Text>
+            {/* Severity Badge */}
+            <View className={`px-2 py-0.5 rounded-full ${badgeBg}`}>
+              <Text
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className={`text-[9px] font-bold ${textStyle}`}
+              >
+                {scan.severity === 'None' ? 'Healthy' : scan.severity}
+              </Text>
+            </View>
+          </View>
+
+          {/* Health Progress Mini Bar */}
+          <View className="mt-2.5 w-full bg-stone-100 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
+            <View
+              style={{ width: `${scan.health_score}%` }}
+              className={`h-full rounded-full ${barColor}`}
+            />
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
 export default function HomeScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
-  // Mock data for recent scans
-  const recentScans = [
-    { id: '1', crop: 'Eggplant', condition: 'Bacterial Wilt', severity: 'High', date: 'Just now', health: 15, image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=400' },
-    { id: '2', crop: 'Tomato', condition: 'Tomato Leaf Curl', severity: 'Moderate', date: 'Yesterday', health: 45, image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400' },
-    { id: '3', crop: 'Chili', condition: 'Healthy', severity: 'None', date: '3 days ago', health: 100, image: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=400' },
-  ];
+  const { user, profile } = useAuth();
+  const [recentScans, setRecentScans] = useState<LocalScanRow[]>([]);
+  const [stats, setStats] = useState({ total: 0, infected: 0, synced: 0 });
 
   // Animated values for entrance animations
   const bannerAnim = useRef(new Animated.Value(0)).current;
@@ -21,11 +150,25 @@ export default function HomeScreen() {
   const statsAnim = useRef(new Animated.Value(0)).current;
   const ctaAnim = useRef(new Animated.Value(0)).current;
   const sectionHeaderAnim = useRef(new Animated.Value(0)).current;
-  const scanAnims = useRef(recentScans.map(() => new Animated.Value(0))).current;
   const tipAnim = useRef(new Animated.Value(0)).current;
 
-  // Spring scale animated values for scan cards press feedback
-  const scaleAnims = useRef(recentScans.map(() => new Animated.Value(1))).current;
+  // Load data from local SQLite DB
+  const loadDatabaseData = () => {
+    if (!user) return;
+    const scans = fetchUserScans(user.id);
+    setRecentScans(scans.slice(0, 3));
+    const counts = fetchScanStats(user.id);
+    setStats(counts);
+  };
+
+  // Reload SQLite data whenever the screen gains navigation focus
+  useEffect(() => {
+    loadDatabaseData();
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadDatabaseData();
+    });
+    return unsubscribe;
+  }, [navigation, user]);
 
   useEffect(() => {
     // Staggered entrance animation sequence
@@ -56,13 +199,6 @@ export default function HomeScreen() {
         duration: 350,
         useNativeDriver: true,
       }),
-      ...scanAnims.map((anim) =>
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 350,
-          useNativeDriver: true,
-        })
-      ),
       Animated.timing(tipAnim, {
         toValue: 1,
         duration: 400,
@@ -73,25 +209,6 @@ export default function HomeScreen() {
     Animated.stagger(80, animations).start();
   }, []);
 
-  // Helper to animate card scale on press
-  const handlePressIn = (index: number) => {
-    Animated.spring(scaleAnims[index], {
-      toValue: 0.98,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 6,
-    }).start();
-  };
-
-  const handlePressOut = (index: number) => {
-    Animated.spring(scaleAnims[index], {
-      toValue: 1,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 6,
-    }).start();
-  };
-
   // Helper to interpolate translate Y
   const getTranslateY = (anim: Animated.Value) => {
     return anim.interpolate({
@@ -100,12 +217,12 @@ export default function HomeScreen() {
     });
   };
 
-  // Color helper for health bar matching condition severity
-  const getSeverityColors = (health: number) => {
-    if (health >= 70) return { barColor: 'bg-emerald-500', badgeBg: 'bg-emerald-500/10', text: 'text-emerald-500' };
-    if (health >= 30) return { barColor: 'bg-orange-500', badgeBg: 'bg-orange-500/10', text: 'text-orange-500' };
-    return { barColor: 'bg-red-500', badgeBg: 'bg-red-500/10', text: 'text-red-500' };
-  };
+  const displayName = profile?.full_name || 'Grower';
+  const mascotSpeechBubbleText = stats.infected === 0
+    ? "All your plants are looking healthy! Keep up the good work."
+    : stats.infected === 1
+    ? "You have 1 infected plant in your recent scans. Let's analyze it."
+    : `You have ${stats.infected} infected plants in your recent scans. Let's analyze them.`;
 
   return (
     <ScrollView
@@ -173,13 +290,13 @@ export default function HomeScreen() {
               style={{ fontFamily: 'Fredoka_700Bold' }}
               className="text-white text-base font-bold"
             >
-              Hello, Juan!
+              Hello, {displayName}!
             </Text>
             <Text
               style={{ fontFamily: 'Fredoka_400Regular' }}
               className="text-emerald-100 text-xs mt-1 leading-5"
             >
-              You have 3 infected plants in your recent scans. Let's analyze them.
+              {mascotSpeechBubbleText}
             </Text>
           </View>
         </View>
@@ -205,7 +322,7 @@ export default function HomeScreen() {
             style={{ fontFamily: 'Fredoka_700Bold' }}
             className={`text-lg font-bold mt-0.5 ${isDark ? 'text-white' : 'text-stone-900'}`}
           >
-            12
+            {stats.total}
           </Text>
           <Text
             style={{ fontFamily: 'Fredoka_400Regular' }}
@@ -227,7 +344,7 @@ export default function HomeScreen() {
             style={{ fontFamily: 'Fredoka_700Bold' }}
             className={`text-lg font-bold mt-0.5 ${isDark ? 'text-white' : 'text-stone-900'}`}
           >
-            3
+            {stats.infected}
           </Text>
           <Text
             style={{ fontFamily: 'Fredoka_400Regular' }}
@@ -248,7 +365,7 @@ export default function HomeScreen() {
             style={{ fontFamily: 'Fredoka_700Bold' }}
             className={`text-lg font-bold mt-0.5 ${isDark ? 'text-white' : 'text-stone-900'}`}
           >
-            9
+            {stats.synced}
           </Text>
           <Text
             style={{ fontFamily: 'Fredoka_400Regular' }}
@@ -318,83 +435,27 @@ export default function HomeScreen() {
 
           {/* Scans List */}
           <View className="space-y-4">
-            {recentScans.map((scan, index) => {
-              const { barColor, badgeBg, text: textStyle } = getSeverityColors(scan.health);
-              return (
-                <Animated.View
+            {recentScans.length > 0 ? (
+              recentScans.map((scan, index) => (
+                <ScanCard
                   key={scan.id}
-                  style={{
-                    opacity: scanAnims[index],
-                    transform: [
-                      { translateY: getTranslateY(scanAnims[index]) },
-                      { scale: scaleAnims[index] }
-                    ]
-                  }}
-                >
-                  <TouchableOpacity
-                    onPressIn={() => handlePressIn(index)}
-                    onPressOut={() => handlePressOut(index)}
-                    onPress={() => router.push('/scan-results')}
-                    activeOpacity={0.9}
-                    className={`flex-row p-4 rounded-3xl items-center border ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100 shadow-sm'
-                      }`}
-                    style={{ marginBottom: 12 }}
-                  >
-                    {/* Crop Mock Image */}
-                    <View className="w-16 h-16 bg-stone-200 rounded-2xl overflow-hidden mr-4">
-                      <Image
-                        source={{ uri: scan.image }}
-                        className="w-full h-full object-cover"
-                      />
-                    </View>
-
-                    {/* Details */}
-                    <View className="flex-1">
-                      <View className="flex-row justify-between items-center">
-                        <Text
-                          style={{ fontFamily: 'Fredoka_700Bold' }}
-                          className={`text-base font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
-                        >
-                          {scan.crop}
-                        </Text>
-                        <Text
-                          style={{ fontFamily: 'Fredoka_400Regular' }}
-                          className={`text-[10px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
-                        >
-                          {scan.date}
-                        </Text>
-                      </View>
-
-                      <View className="flex-row items-center justify-between mt-1">
-                        <Text
-                          style={{ fontFamily: 'Fredoka_400Regular' }}
-                          className={`text-xs ${isDark ? 'text-stone-400' : 'text-stone-600'}`}
-                        >
-                          {scan.condition}
-                        </Text>
-                        {/* Severity Badge */}
-                        <View className={`px-2 py-0.5 rounded-full ${badgeBg}`}>
-                          <Text
-                            style={{ fontFamily: 'Fredoka_700Bold' }}
-                            className={`text-[9px] font-bold ${textStyle}`}
-                          >
-                            {scan.severity === 'High' ? 'High' : scan.severity === 'Moderate' ? 'Moderate' : 'Healthy'}
-                          </Text>
-                        </View>
-                      </View>
-
-                      {/* Health Progress Mini Bar */}
-                      <View className="mt-2.5 w-full bg-stone-100 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
-                        <View
-                          style={{ width: `${scan.health}%` }}
-                          className={`h-full rounded-full ${barColor}`}
-                        />
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                </Animated.View>
-              );
-            })}
+                  scan={scan}
+                  index={index}
+                  isDark={isDark}
+                  onPress={() => router.push({ pathname: '/scan-results', params: { id: scan.id } })}
+                />
+              ))
+            ) : (
+              <View className="py-12 items-center justify-center border border-dashed border-stone-200 dark:border-stone-800 rounded-3xl bg-white dark:bg-stone-900">
+                <Ionicons name="leaf-outline" size={32} color={isDark ? '#57534e' : '#a8a29e'} />
+                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-stone-400 text-xs mt-2">
+                  No Scans Found
+                </Text>
+                <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-400 text-[10px] mt-0.5">
+                  Tap 'Scan your Crops' above to run your first analysis.
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 

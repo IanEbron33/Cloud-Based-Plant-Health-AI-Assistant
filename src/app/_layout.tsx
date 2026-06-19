@@ -9,6 +9,14 @@ import { ToastProvider } from '../context/ToastContext';
 import { ScanProvider } from '../context/ScanContext';
 import '../global.css';
 
+// Force Chrome debugger to intercept XMLHttpRequests in development
+if (__DEV__) {
+  if ((global as any).originalXMLHttpRequest) {
+    (global as any).XMLHttpRequest = (global as any).originalXMLHttpRequest;
+    (global as any).FormData = (global as any).originalFormData;
+  }
+}
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 

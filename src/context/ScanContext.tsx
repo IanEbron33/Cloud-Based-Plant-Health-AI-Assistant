@@ -4,6 +4,8 @@ import { DiagnosisResult, ScanState, ScanActions, ScanContextValue } from '../ty
 import { classifyCrop, diagnoseCrop } from '../services/api.service';
 import { parseDiagnosis } from '../services/diagnosis-parser';
 import { useToast } from './ToastContext';
+import { useAuth } from './AuthContext';
+import { initLocalDatabase, saveScan } from '../services/scan.service';
 import vegetablesDb from '../../assets/data/vegetables_db.json';
 
 const ScanContext = createContext<ScanContextValue | undefined>(undefined);
@@ -14,6 +16,7 @@ interface ScanProviderProps {
 
 export function ScanProvider({ children }: ScanProviderProps) {
   const { showToast } = useToast();
+  const { user } = useAuth();
 
   const [state, setState] = useState<ScanState>({
     isScanning: false,
@@ -115,10 +118,30 @@ export function ScanProvider({ children }: ScanProviderProps) {
           }
         },
         // onDone callback
-        () => {
+        async () => {
           if (captionIntervalRef.current) clearInterval(captionIntervalRef.current);
 
           const parsedResult = parseDiagnosis(accumulatedTextRef.current, crop, imageUri);
+
+          // Write to SQLite and trigger sync
+          let savedId = '';
+          if (user) {
+            try {
+              const savedRow = await saveScan(
+                user.id,
+                crop,
+                parsedResult.condition,
+                parsedResult.severity,
+                parsedResult.healthScore,
+                parsedResult.confidenceScore,
+                imageUri,
+                accumulatedTextRef.current
+              );
+              savedId = savedRow.id;
+            } catch (dbErr) {
+              console.error('[ScanContext] SQLite write error:', dbErr);
+            }
+          }
 
           setState((prev) => ({
             ...prev,
@@ -133,7 +156,7 @@ export function ScanProvider({ children }: ScanProviderProps) {
             message: `Identified crop as ${parsedResult.cropLocalName}. Tap to view results.`,
             duration: 5000,
             onPress: () => {
-              router.push('/scan-results');
+              router.push({ pathname: '/scan-results', params: { id: savedId } });
             },
           });
         },
@@ -222,6 +245,7 @@ export function ScanProvider({ children }: ScanProviderProps) {
   };
 
   useEffect(() => {
+    initLocalDatabase();
     return () => {
       if (captionIntervalRef.current) clearInterval(captionIntervalRef.current);
       if (abortControllerRef.current) abortControllerRef.current.abort();

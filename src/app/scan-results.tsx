@@ -1,13 +1,20 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BentoGrid, BentoTile } from '@/components/BentoGrid';
 import CircularProgress from '@/components/CircularProgress';
 import { useScan } from '../context/ScanContext';
+import { useAuth } from '../context/AuthContext';
+import { DiagnosisResult } from '../types';
+import { fetchScanById } from '../services/scan.service';
+import { parseDiagnosis } from '../services/diagnosis-parser';
 
 export default function ScanResultsScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+
   const {
     isScanning,
     scanPhase,
@@ -21,6 +28,35 @@ export default function ScanResultsScreen() {
     cancelScan,
     clearResults,
   } = useScan();
+
+  const [dbResult, setDbResult] = useState<DiagnosisResult | null>(null);
+  const [isLoadingRecord, setIsLoadingRecord] = useState(false);
+
+  // Load record from database if id parameter is provided
+  useEffect(() => {
+    if (!id || !user) {
+      setDbResult(null);
+      return;
+    }
+    setIsLoadingRecord(true);
+    try {
+      const row = fetchScanById(id, user.id);
+      if (row) {
+        const parsed = parseDiagnosis(
+          row.diagnosis_text,
+          row.crop_name,
+          row.cloud_image_url || row.local_image_path || ''
+        );
+        setDbResult(parsed);
+      } else {
+        setDbResult(null);
+      }
+    } catch (err) {
+      console.error('[Results Screen] DB query error:', err);
+    } finally {
+      setIsLoadingRecord(false);
+    }
+  }, [id, user]);
 
   // Animation values for the loading spinner
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -103,8 +139,47 @@ export default function ScanResultsScreen() {
     }
   };
 
-  // State 1: Idle (No scan has been initiated)
-  if (scanPhase === 'idle' && !diagnosisResult) {
+  // State 1: ID provided but loading record from SQLite
+  if (id && isLoadingRecord) {
+    return (
+      <View className="flex-1 bg-stone-50 items-center justify-center">
+        <ActivityIndicator size="large" color="#10b981" />
+        <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-500 text-sm mt-3">Loading analysis report...</Text>
+      </View>
+    );
+  }
+
+  // State 2: ID provided but record does not exist
+  if (id && !dbResult && !isLoadingRecord) {
+    return (
+      <View className="flex-1 bg-stone-50 items-center justify-center px-6">
+        <Ionicons name="alert-circle-outline" size={64} color="#ef4444" />
+        <Text
+          style={{ fontFamily: 'Fredoka_700Bold' }}
+          className="text-stone-800 text-lg font-bold mt-4 text-center"
+        >
+          Record Not Found
+        </Text>
+        <Text
+          style={{ fontFamily: 'Fredoka_400Regular' }}
+          className="text-stone-500 text-sm mt-2 text-center max-w-[280px]"
+        >
+          We couldn't locate this specific diagnosis record in the database.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.replace('/(tabs)/history')}
+          className="bg-emerald-600 px-6 py-3 rounded-xl mt-6 shadow-sm"
+        >
+          <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white font-bold text-sm">
+            Back to History
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // State 3: Idle (No scan has been initiated and no ID requested)
+  if (!id && scanPhase === 'idle' && !diagnosisResult) {
     return (
       <View className="flex-1 bg-stone-50 items-center justify-center px-6">
         <Ionicons name="scan-outline" size={64} color="#a8a29e" />
@@ -132,8 +207,8 @@ export default function ScanResultsScreen() {
     );
   }
 
-  // State 2: Error
-  if (scanPhase === 'error') {
+  // State 4: Error during active scan pipeline
+  if (!id && scanPhase === 'error') {
     return (
       <View className="flex-1 bg-stone-50 items-center justify-center px-6">
         <Ionicons name="alert-circle-outline" size={64} color="#ef4444" />
@@ -171,8 +246,8 @@ export default function ScanResultsScreen() {
     );
   }
 
-  // State 3: Loading / Scanning
-  if (isScanning || (scanPhase !== 'done' && !diagnosisResult)) {
+  // State 5: Loading / Scanning (active pipeline in progress)
+  if (!id && (isScanning || (scanPhase !== 'done' && !diagnosisResult))) {
     const spin = spinValue.interpolate({
       inputRange: [0, 1],
       outputRange: ['0deg', '360deg'],
@@ -257,9 +332,10 @@ export default function ScanResultsScreen() {
     );
   }
 
-  // State 4: Completed (Show results)
-  const result = diagnosisResult!;
+  // State 6: Completed (Show results)
+  const result = (id ? dbResult : diagnosisResult) as DiagnosisResult;
   const severityData = getSeverityData(result.severity);
+  const scanRecordId = id || '';
 
   return (
     <View className="flex-1 bg-stone-50">
@@ -275,12 +351,14 @@ export default function ScanResultsScreen() {
           Crop Analysis
         </Text>
         <TouchableOpacity
-          onPress={() => router.push('/chat')}
-          className="w-10 h-10 rounded-2xl items-center justify-center border bg-white border-stone-200"
+          onPress={() => router.push({ pathname: '/chat', params: { scanId: scanRecordId } })}
+          disabled={!scanRecordId}
+          className={`w-10 h-10 rounded-2xl items-center justify-center border bg-white border-stone-200 ${!scanRecordId ? 'opacity-40' : ''}`}
         >
           <Ionicons name="chatbubble-ellipses-outline" size={20} color="#292524" />
         </TouchableOpacity>
       </View>
+
 
       <ScrollView
         className="flex-1 px-6 pt-4"
@@ -406,7 +484,7 @@ export default function ScanResultsScreen() {
             icon={<Ionicons name="eye-outline" size={18} color="#f59e0b" />}
           >
             <View className="space-y-1.5 py-1">
-              {result.symptoms.map((symptom, idx) => (
+              {result.symptoms.map((symptom: string, idx: number) => (
                 <View key={idx} className="flex-row items-start" style={{ marginBottom: 6 }}>
                   <Text className="text-emerald-500 font-bold mr-2">•</Text>
                   <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-sm flex-1 leading-5 text-stone-600">
@@ -424,7 +502,7 @@ export default function ScanResultsScreen() {
             icon={<Ionicons name="medkit-outline" size={18} color="#10b981" />}
           >
             <View className="space-y-2 py-1">
-              {result.treatment.map((step, idx) => (
+              {result.treatment.map((step: string, idx: number) => (
                 <View key={idx} className="flex-row items-start" style={{ marginBottom: 8 }}>
                   <View className="bg-emerald-600/15 w-5 h-5 rounded-full items-center justify-center mr-2.5 mt-0.5">
                     <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-emerald-600 text-xs font-bold">{idx + 1}</Text>
@@ -444,7 +522,7 @@ export default function ScanResultsScreen() {
             icon={<Ionicons name="shield-checkmark-outline" size={18} color="#059669" />}
           >
             <View className="space-y-2 py-1">
-              {result.prevention.map((step, idx) => (
+              {result.prevention.map((step: string, idx: number) => (
                 <View key={idx} className="flex-row items-start" style={{ marginBottom: 6 }}>
                   <Ionicons
                     name="checkmark-circle"
@@ -477,9 +555,10 @@ export default function ScanResultsScreen() {
       {/* Floating Action Button Bar at Bottom */}
       <View className="absolute bottom-0 left-0 right-0 p-5 bg-white/95 border-t border-stone-150 shadow-lg">
         <TouchableOpacity
-          onPress={() => router.push('/chat')}
+          onPress={() => router.push({ pathname: '/chat', params: { scanId: scanRecordId } })}
+          disabled={!scanRecordId}
           activeOpacity={0.8}
-          className="bg-emerald-600 py-4 rounded-2xl flex-row items-center justify-center shadow-lg shadow-emerald-600/20"
+          className={`bg-emerald-600 py-4 rounded-2xl flex-row items-center justify-center shadow-lg shadow-emerald-600/20 ${!scanRecordId ? 'opacity-40' : ''}`}
         >
           <Ionicons name="chatbubbles" size={20} color="white" />
           <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white font-bold ml-2 text-base">
