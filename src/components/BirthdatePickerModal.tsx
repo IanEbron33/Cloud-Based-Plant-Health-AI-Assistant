@@ -176,7 +176,7 @@ export default function BirthdatePickerModal({
   onConfirm,
   initialDate,
 }: BirthdatePickerModalProps) {
-  const defaultDate = initialDate || { year: 2000, month: 1, day: 1 };
+  const defaultDate = initialDate || { year: END_YEAR, month: 1, day: 1 };
 
   const [selectedMonth, setSelectedMonth] = useState(defaultDate.month - 1);
   const [selectedDay, setSelectedDay] = useState(defaultDate.day - 1);
@@ -195,7 +195,7 @@ export default function BirthdatePickerModal({
   }, [visible]);
 
   // Calculate days based on selected month + year
-  const currentYear = YEARS[selectedYear] || 2000;
+  const currentYear = YEARS[selectedYear] || END_YEAR;
   const currentMonth = selectedMonth + 1;
   const maxDays = getDaysInMonth(currentMonth, currentYear);
   const days = Array.from({ length: maxDays }, (_, i) => i + 1);

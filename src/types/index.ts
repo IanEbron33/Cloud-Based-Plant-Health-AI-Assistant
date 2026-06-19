@@ -41,6 +41,7 @@ export interface AuthState {
   session: Session | null;
   profile: UserProfile | null;
   isLoading: boolean;
+  isRegistering: boolean;
 }
 
 /** Methods exposed by the `useAuth()` hook. */
@@ -49,6 +50,10 @@ export interface AuthActions {
   signUp: (email: string, password: string, fullName: string) => Promise<{ user: User | null; error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  setIsRegistering: (val: boolean) => void;
+  sendResetEmail: (email: string) => Promise<{ error: string | null }>;
+  verifyRecoveryCode: (email: string, code: string) => Promise<{ error: string | null }>;
+  updatePassword: (password: string) => Promise<{ error: string | null }>;
 }
 
 /** Combined shape of the AuthContext value. */

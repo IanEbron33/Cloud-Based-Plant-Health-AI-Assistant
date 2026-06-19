@@ -87,3 +87,40 @@ export const onAuthStateChange = (
   const { data: { subscription } } = supabase.auth.onAuthStateChange(callback);
   return subscription;
 };
+
+/**
+ * Request a password reset OTP code via email.
+ */
+export const sendPasswordResetEmail = async (email: string) => {
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  return { error: error?.message ?? null };
+};
+
+/**
+ * Verify recovery OTP code sent to user email.
+ */
+export const verifyRecoveryOtp = async (email: string, token: string) => {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'recovery',
+  });
+  return {
+    session: data.session,
+    user: data.user,
+    error: error?.message ?? null,
+  };
+};
+
+/**
+ * Update the password of the currently authenticated session user.
+ */
+export const updateUserPassword = async (password: string) => {
+  const { data, error } = await supabase.auth.updateUser({
+    password,
+  });
+  return {
+    user: data.user,
+    error: error?.message ?? null,
+  };
+};

@@ -16,15 +16,16 @@ function RootNavigator() {
   const scheme = useColorScheme();
   const router = useRouter();
   const segments = useSegments();
-  const { session, isLoading } = useAuth();
+  const { session, isLoading, isRegistering } = useAuth();
 
   useEffect(() => {
-    // Don't redirect while auth state is still being determined
-    if (isLoading) return;
+    // Don't redirect while auth state is still being determined or if we are registering
+    if (isLoading || isRegistering) return;
 
     const isSplashOrAuth =
       segments[0] === 'login' ||
       segments[0] === 'register' ||
+      segments[0] === 'forgot-password' ||
       segments[0] === 'splash' ||
       !segments[0];
 
@@ -34,12 +35,12 @@ function RootNavigator() {
         router.replace('/login');
       }
     } else {
-      // If logged in and on an auth screen, redirect to tabs
+      // If logged in and on an auth screen, redirect to tabs (except forgot-password where password needs to be set)
       if (segments[0] === 'login' || segments[0] === 'register') {
         router.replace('/(tabs)');
       }
     }
-  }, [session, isLoading, segments]);
+  }, [session, isLoading, isRegistering, segments]);
 
   return (
     <>
@@ -48,6 +49,7 @@ function RootNavigator() {
         <Stack.Screen name="splash" options={{ animation: 'fade' }} />
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
+        <Stack.Screen name="forgot-password" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen 
           name="scan-results" 

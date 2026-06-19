@@ -28,6 +28,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   /**
    * Fetch the user's profile from the `profiles` table.
@@ -111,15 +112,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await authService.signOut();
   }, []);
 
+  const sendResetEmail = useCallback(async (email: string) => {
+    const result = await authService.sendPasswordResetEmail(email);
+    return { error: result.error };
+  }, []);
+
+  const verifyRecoveryCode = useCallback(async (email: string, code: string) => {
+    const result = await authService.verifyRecoveryOtp(email, code);
+    return { error: result.error };
+  }, []);
+
+  const updatePassword = useCallback(async (password: string) => {
+    const result = await authService.updateUserPassword(password);
+    return { error: result.error };
+  }, []);
+
   const value: AuthContextValue = {
     user,
     session,
     profile,
     isLoading,
+    isRegistering,
     signIn,
     signUp,
     signOut,
     refreshProfile,
+    setIsRegistering,
+    sendResetEmail,
+    verifyRecoveryCode,
+    updatePassword,
   };
 
   return (

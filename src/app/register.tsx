@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
@@ -48,10 +49,47 @@ const STEP_INFO = [
   { title: 'Profile Picture', subtitle: 'Add a personal touch' },
 ];
 
+interface PasswordStrength {
+  score: number;
+  label: string;
+  color: string;
+  textColor: string;
+}
+
+const getPasswordStrength = (pass: string): PasswordStrength => {
+  if (!pass) return { score: 0, label: '', color: 'bg-stone-200', textColor: 'text-stone-400' };
+
+  let score = 0;
+
+  // Criteria 1: Length >= 6
+  if (pass.length >= 6) score += 1;
+  // Criteria 2: Contains numbers or symbols
+  if (/[0-9]/.test(pass) || /[^A-Za-z0-9]/.test(pass)) score += 1;
+  // Criteria 3: Contains mixed case letters
+  if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score += 1;
+
+  if (pass.length < 6) {
+    return { score: 1, label: 'Weak', color: 'bg-red-500', textColor: 'text-red-500' };
+  }
+
+  if (score === 1) {
+    return { score: 1, label: 'Weak', color: 'bg-red-500', textColor: 'text-red-500' };
+  } else if (score === 2) {
+    return { score: 2, label: 'Good', color: 'bg-orange-500', textColor: 'text-orange-500' };
+  } else {
+    return { score: 3, label: 'Strong', color: 'bg-emerald-500', textColor: 'text-emerald-500' };
+  }
+};
+
 export default function RegisterScreen() {
   const router = useRouter();
-  const { signUp, refreshProfile } = useAuth();
+  const { signUp, refreshProfile, setIsRegistering, signOut } = useAuth();
   const { showToast } = useToast();
+
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
+  const strengthAnim = useRef(new Animated.Value(0)).current;
+
 
   // Wizard step
   const [currentStep, setCurrentStep] = useState(1);
@@ -71,7 +109,7 @@ export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [gender, setGender] = useState<GenderOption>('Male');
-  const [birthdate, setBirthdate] = useState({ year: 2000, month: 1, day: 1 });
+  const [birthdate, setBirthdate] = useState({ year: new Date().getFullYear(), month: 1, day: 1 });
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Step 2 — Credentials
@@ -86,6 +124,15 @@ export default function RegisterScreen() {
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const score = getPasswordStrength(password).score;
+    Animated.timing(strengthAnim, {
+      toValue: score,
+      duration: 220,
+      useNativeDriver: false,
+    }).start();
+  }, [password]);
 
   const formatBirthdate = () => {
     return `${MONTHS[birthdate.month - 1]} ${birthdate.day}, ${birthdate.year}`;
@@ -160,6 +207,9 @@ export default function RegisterScreen() {
     }
 
     setIsLoading(true);
+    // Enable the registration flag to pause navigation redirects
+    setIsRegistering(true);
+
     try {
       // 1. Sign up user via AuthContext
       const { user, error: signUpError } = await signUp(
@@ -174,6 +224,7 @@ export default function RegisterScreen() {
           title: 'Registration Failed',
           message: signUpError,
         });
+        setIsRegistering(false);
         setIsLoading(false);
         return;
       }
@@ -184,6 +235,7 @@ export default function RegisterScreen() {
           title: 'Registration Complete',
           message: 'Verification email sent, or sign up succeeded.',
         });
+        setIsRegistering(false);
         setIsLoading(false);
         return;
       }
@@ -206,16 +258,32 @@ export default function RegisterScreen() {
         console.warn('Profile DB update failed:', profileError);
       }
 
-      // Force refresh the profile state in AuthContext to include the uploaded avatar and user details
+      // 4. Force refresh the profile state in AuthContext to include the uploaded avatar and user details
       try {
         await refreshProfile();
       } catch (refreshErr) {
         console.warn('Failed to refresh profile in auth context:', refreshErr);
       }
 
-      // Redirect is handled by root listener, but backup here
-      router.replace('/(tabs)');
+      // 5. Sign out the user to destroy the auto-started session
+      try {
+        await signOut();
+      } catch (signOutErr) {
+        console.warn('Failed to sign out after registration:', signOutErr);
+      }
+
+      // 6. Turn off the registration flag, display success Toast, and redirect to Login
+      setIsRegistering(false);
+
+      showToast({
+        type: 'success',
+        title: 'Registration Successful',
+        message: 'Your account has been created! Please log in manually.',
+      });
+
+      router.replace('/login');
     } catch (err: any) {
+      setIsRegistering(false);
       showToast({
         type: 'error',
         title: 'Registration Error',
@@ -413,6 +481,42 @@ export default function RegisterScreen() {
             </TouchableOpacity>
           ),
         }
+      )}
+
+      {/* Password Strength Indicator */}
+      {password.length > 0 && (
+        <View className="mb-4 px-1">
+          <View className="flex-row justify-between items-center mb-1.5">
+            <Text className="text-xs font-semibold text-stone-500">
+              Password Strength
+            </Text>
+            <Text className={`text-xs font-bold ${getPasswordStrength(password).textColor}`}>
+              {getPasswordStrength(password).label}
+            </Text>
+          </View>
+          {/* Progress Bar Container */}
+          <View className="h-1.5 w-full bg-stone-100 dark:bg-stone-850 rounded-full overflow-hidden">
+            <Animated.View
+              style={{
+                height: '100%',
+                borderRadius: 4,
+                width: strengthAnim.interpolate({
+                  inputRange: [0, 1, 2, 3],
+                  outputRange: ['0%', '33%', '66%', '100%'],
+                }),
+                backgroundColor: strengthAnim.interpolate({
+                  inputRange: [0, 1, 2, 3],
+                  outputRange: [
+                    isDark ? '#292524' : '#e7e5e4',
+                    '#ef4444',
+                    '#f97316',
+                    '#10b981',
+                  ],
+                }),
+              }}
+            />
+          </View>
+        </View>
       )}
 
       {renderInput(

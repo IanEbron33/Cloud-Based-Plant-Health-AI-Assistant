@@ -21,6 +21,7 @@ export interface ToastOptions {
 
 interface ToastContextValue {
   showToast: (options: ToastOptions) => void;
+  isVisible: boolean;
 }
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
@@ -189,7 +190,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const topPosition = insets.top > 0 ? insets.top + 8 : 16;
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, isVisible: toast.visible }}>
       {children}
       {toast.visible && (
         <Animated.View
