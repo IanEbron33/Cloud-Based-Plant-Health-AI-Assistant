@@ -1,22 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Animated, ScrollView, Text, TouchableOpacity, useColorScheme, View, Image } from 'react-native';
-import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
-  const [profile, setProfile] = useState<{
-    username: string;
-    fullName: string;
-    avatarUrl: string | null;
-    memberSince: string;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, profile, isLoading, signOut } = useAuth();
+
+  // Derive display values from auth context
+  const displayName = profile?.full_name || 'Anonymous User';
+  const displayUsername = profile?.username || 'user';
+  const avatarUrl = profile?.avatar_url || null;
+  const memberSince = user?.created_at
+    ? `Member since ${new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}`
+    : '';
+
 
   // Animation values
   const headerAnim = useRef(new Animated.Value(0)).current;
@@ -60,43 +63,11 @@ export default function ProfileScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-
-    const fetchProfile = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (profileData) {
-          const createdDate = new Date(user.created_at);
-          const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' };
-          const memberSinceStr = `Member since ${createdDate.toLocaleDateString('en-US', options)}`;
-
-          setProfile({
-            username: profileData.username || 'user',
-            fullName: profileData.full_name || 'Anonymous User',
-            avatarUrl: profileData.avatar_url || null,
-            memberSince: memberSinceStr,
-          });
-        }
-      } catch (err) {
-        console.error('Failed to load profile data:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
   }, []);
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
       router.replace('/login');
     } catch (err) {
       router.replace('/login');
@@ -136,9 +107,9 @@ export default function ProfileScreen() {
         />
         {/* Avatar Card with layered ring treatment */}
         <View className="w-28 h-28 bg-emerald-900/30 rounded-full items-center justify-center mb-4 border border-emerald-700/20 shadow-inner overflow-hidden">
-          {profile?.avatarUrl ? (
+          {avatarUrl ? (
             <Image
-              source={{ uri: profile.avatarUrl }}
+              source={{ uri: avatarUrl }}
               className="w-24 h-24 rounded-full border-4 border-white/20"
               resizeMode="cover"
             />
@@ -153,13 +124,13 @@ export default function ProfileScreen() {
           style={{ fontFamily: 'Fredoka_700Bold' }}
           className="text-white text-2xl font-bold"
         >
-          {isLoading ? 'Loading...' : profile?.fullName}
+          {isLoading ? 'Loading...' : displayName}
         </Text>
         <Text
           style={{ fontFamily: 'Fredoka_400Regular' }}
           className="text-emerald-300 text-sm mt-0.5"
         >
-          {isLoading ? '' : `@${profile?.username}`}
+          {isLoading ? '' : `@${displayUsername}`}
         </Text>
 
         <View className="bg-emerald-900/60 border border-emerald-700/20 px-4 py-1.5 rounded-full mt-4">
@@ -167,7 +138,7 @@ export default function ProfileScreen() {
             style={{ fontFamily: 'Fredoka_400Regular' }}
             className="text-emerald-200 text-xs font-semibold"
           >
-            {isLoading ? 'Checking membership...' : profile?.memberSince}
+            {isLoading ? 'Checking membership...' : memberSince}
           </Text>
         </View>
       </Animated.View>

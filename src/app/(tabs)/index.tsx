@@ -10,7 +10,7 @@ export default function HomeScreen() {
 
   // Mock data for recent scans
   const recentScans = [
-    { id: '1', crop: 'Eggplant', condition: 'Bacterial Wilt', severity: 'High', date: 'Just now', health: 15, image: 'https://images.unsplash.com/photo-1590483736622-39da8af75bba?w=400' },
+    { id: '1', crop: 'Eggplant', condition: 'Bacterial Wilt', severity: 'High', date: 'Just now', health: 15, image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=400' },
     { id: '2', crop: 'Tomato', condition: 'Tomato Leaf Curl', severity: 'Moderate', date: 'Yesterday', health: 45, image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400' },
     { id: '3', crop: 'Chili', condition: 'Healthy', severity: 'None', date: '3 days ago', health: 100, image: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=400' },
   ];

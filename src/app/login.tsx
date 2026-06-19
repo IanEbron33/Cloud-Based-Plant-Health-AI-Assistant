@@ -1,13 +1,16 @@
 import { useRouter } from 'expo-router';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View, Alert, ActivityIndicator } from 'react-native';
-import { supabase } from '../lib/supabase';
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View, ActivityIndicator } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export default function LoginScreen() {
   const router = useRouter();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
+  const { signIn } = useAuth();
+  const { showToast } = useToast();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,26 +19,35 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Required Fields', 'Please enter your email and password.');
+      showToast({
+        type: 'error',
+        title: 'Required Fields',
+        message: 'Please enter your email and password.',
+      });
       return;
     }
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { error } = await signIn(email.trim(), password);
 
       if (error) {
-        Alert.alert('Login Failed', error.message);
+        showToast({
+          type: 'error',
+          title: 'Login Failed',
+          message: error,
+        });
         setIsLoading(false);
         return;
       }
 
       router.replace('/(tabs)');
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'An unexpected error occurred.');
+      showToast({
+        type: 'error',
+        title: 'Login Error',
+        message: err.message || 'An unexpected error occurred.',
+      });
       setIsLoading(false);
     }
   };

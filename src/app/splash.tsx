@@ -2,10 +2,11 @@ import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 export default function SplashScreen() {
   const router = useRouter();
+  const { session, isLoading } = useAuth();
 
   // Staggered fade-in animations
   const titleOpacity = useRef(new Animated.Value(0)).current;
@@ -42,27 +43,28 @@ export default function SplashScreen() {
       }).start();
     }, 3500);
 
-    // 4.0s — Navigate based on session state
-    const navTimer = setTimeout(async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          router.replace('/(tabs)');
-        } else {
-          router.replace('/login');
-        }
-      } catch (err) {
-        router.replace('/login');
-      }
-    }, 4000);
-
     return () => {
       clearTimeout(titleTimer);
       clearTimeout(subtitleTimer);
       clearTimeout(fadeOutTimer);
-      clearTimeout(navTimer);
     };
   }, []);
+
+  // 4.0s — Navigate based on session state from AuthContext
+  useEffect(() => {
+    // Wait until AuthContext has finished loading the session
+    if (isLoading) return;
+
+    const navTimer = setTimeout(() => {
+      if (session) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/login');
+      }
+    }, 4000);
+
+    return () => clearTimeout(navTimer);
+  }, [isLoading, session]);
 
   return (
     <Animated.View style={[styles.container, { opacity: screenOpacity }]}>

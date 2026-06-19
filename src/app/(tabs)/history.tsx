@@ -20,7 +20,7 @@ export default function HistoryScreen() {
 
   // Mock list of scans with local/sync statuses
   const historyScans = [
-    { id: '1', crop: 'Eggplant', condition: 'Bacterial Wilt', severity: 'High', date: 'June 12, 2026 - 5:24 PM', synced: true, health: 15, image: 'https://images.unsplash.com/photo-1590483736622-39da8af75bba?w=400' },
+    { id: '1', crop: 'Eggplant', condition: 'Bacterial Wilt', severity: 'High', date: 'June 12, 2026 - 5:24 PM', synced: true, health: 15, image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=400' },
     { id: '2', crop: 'Tomato', condition: 'Tomato Leaf Curl', severity: 'Moderate', date: 'June 11, 2026 - 9:43 AM', synced: true, health: 45, image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400' },
     { id: '3', crop: 'Chili', condition: 'Healthy', severity: 'None', date: 'June 10, 2026 - 2:15 PM', synced: true, health: 100, image: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=400' },
     { id: '4', crop: 'Squash', condition: 'Powdery Mildew', severity: 'Low', date: 'June 09, 2026 - 11:30 AM', synced: false, health: 65, image: 'https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=400' }, // Offline queued

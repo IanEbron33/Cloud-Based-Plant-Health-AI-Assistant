@@ -9,11 +9,12 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
-import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { uploadAvatar, updateUserProfile } from '../services/profile.service';
 import {
   User,
   AtSign,
@@ -49,6 +50,8 @@ const STEP_INFO = [
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { signUp, refreshProfile } = useAuth();
+  const { showToast } = useToast();
 
   // Wizard step
   const [currentStep, setCurrentStep] = useState(1);
@@ -140,101 +143,84 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     // Basic final check of validation
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Required Fields', 'Please fill in your email and password.');
+      showToast({
+        type: 'error',
+        title: 'Required Fields',
+        message: 'Please fill in your email and password.',
+      });
       return;
     }
     if (!fullName.trim() || !username.trim()) {
-      Alert.alert('Required Fields', 'Please fill in your name and username.');
+      showToast({
+        type: 'error',
+        title: 'Required Fields',
+        message: 'Please fill in your name and username.',
+      });
       return;
     }
 
     setIsLoading(true);
     try {
-      // 1. Sign up user
-      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+      // 1. Sign up user via AuthContext
+      const { user, error: signUpError } = await signUp(
+        email.trim(),
         password,
-        options: {
-          data: {
-            full_name: fullName.trim(),
-          }
-        }
-      });
+        fullName.trim()
+      );
 
       if (signUpError) {
-        Alert.alert('Registration Failed', signUpError.message);
+        showToast({
+          type: 'error',
+          title: 'Registration Failed',
+          message: signUpError,
+        });
         setIsLoading(false);
         return;
       }
 
       if (!user) {
-        Alert.alert('Registration Complete', 'Verification email sent, or sign up succeeded.');
+        showToast({
+          type: 'success',
+          title: 'Registration Complete',
+          message: 'Verification email sent, or sign up succeeded.',
+        });
         setIsLoading(false);
         return;
       }
 
-      // 2. Upload avatar image if selected
-      let avatarUrl = null;
+      // 2. Upload avatar image if selected (via profile service)
+      let avatarUrl: string | null = null;
       if (profileImage) {
-        try {
-          const fileExt = profileImage.split('.').pop() || 'jpg';
-          const fileName = `${user.id}/avatar.${fileExt}`;
-
-          let fileBody: any;
-          let uploadOptions: any = { upsert: true };
-
-          if (Platform.OS === 'web') {
-            const response = await fetch(profileImage);
-            fileBody = await response.blob();
-            uploadOptions.contentType = `image/${fileExt === 'png' ? 'png' : 'jpeg'}`;
-          } else {
-            const formData = new FormData();
-            formData.append('file', {
-              uri: profileImage,
-              name: `avatar.${fileExt}`,
-              type: `image/${fileExt === 'png' ? 'png' : 'jpeg'}`,
-            } as any);
-            fileBody = formData;
-            // For FormData uploads in React Native, we omit contentType to let the 
-            // native network engine set the correct boundary.
-          }
-
-          const { error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(fileName, fileBody, uploadOptions);
-
-          if (uploadError) {
-            console.warn('Avatar upload failed:', uploadError.message);
-          } else {
-            const { data: { publicUrl } } = supabase.storage
-              .from('avatars')
-              .getPublicUrl(fileName);
-            avatarUrl = publicUrl;
-          }
-        } catch (imgErr: any) {
-          console.warn('Failed to upload image:', imgErr.message);
-        }
+        avatarUrl = await uploadAvatar(user.id, profileImage);
       }
 
-      // 3. Update profiles table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          username: username.trim().toLowerCase(),
-          gender: gender === 'Prefer not to say' ? 'Other' : gender,
-          birthdate: `${birthdate.year}-${String(birthdate.month).padStart(2, '0')}-${String(birthdate.day).padStart(2, '0')}`,
-          avatar_url: avatarUrl,
-        })
-        .eq('id', user.id);
+      // 3. Update profiles table (via profile service)
+      const profileError = await updateUserProfile(user.id, {
+        username: username.trim().toLowerCase(),
+        gender: gender === 'Prefer not to say' ? 'Other' : gender,
+        birthdate: `${birthdate.year}-${String(birthdate.month).padStart(2, '0')}-${String(birthdate.day).padStart(2, '0')}`,
+        avatar_url: avatarUrl,
+      });
 
       if (profileError) {
-        console.warn('Profile DB update failed:', profileError.message);
+        console.warn('Profile DB update failed:', profileError);
+      }
+
+      // Force refresh the profile state in AuthContext to include the uploaded avatar and user details
+      try {
+        await refreshProfile();
+      } catch (refreshErr) {
+        console.warn('Failed to refresh profile in auth context:', refreshErr);
       }
 
       // Redirect is handled by root listener, but backup here
       router.replace('/(tabs)');
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'An unexpected error occurred.');
+      showToast({
+        type: 'error',
+        title: 'Registration Error',
+        message: err.message || 'An unexpected error occurred.',
+      });
     } finally {
       setIsLoading(false);
     }
