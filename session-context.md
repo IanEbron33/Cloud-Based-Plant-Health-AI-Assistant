@@ -4,7 +4,7 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of June 19, 2026)
+## 📅 Project Context (As of June 20, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
@@ -128,7 +128,7 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   ├── auth.service.ts          # Supabase authentication service calls wrapper
 │   │   ├── profile.service.ts       # Profiles database & avatars storage calls wrapper
 │   │   ├── scan.service.ts          # SQLite-First operations, Supabase bucket uploads, and bidirectional sync
-│   │   └── api.service.ts           # Hugging Face proxy API (classifyCrop, diagnoseCrop, SSE streaming)
+│   │   └── api.service.ts           # Supabase Edge Function proxy API (classifyCrop, diagnoseCrop, SSE streaming with JWT verification)
 │   ├── types/
 │   │   └── index.ts                 # Shared TypeScript interfaces and typings
 │   ├── constants/
@@ -146,13 +146,16 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 
 ## 🚀 Current Project Status & Commands
 
-1. **Phase 2 & 3 Completion**: **Fully Completed, Verified, and Synced to GitHub**.
+1. **Phase 2, 3, & 4 Completion**: **Fully Completed, Verified, and Synced to GitHub**.
    * Auth, profile management, and avatars are fully wired with Supabase.
    * Scans, chat sessions, and message logs are saved locally to SQLite first, providing offline support.
    * Bidirectional sync is completed and successfully verified.
+   * Backend Go proxy was migrated to a serverless Supabase Edge Function (`proxy`) with Deno/TypeScript, using native zero-dependency REST requests to avoid 503 load issues.
+   * Added Gemini model `gemma-4-26b-a4b-it` support for deep reasoning/thinking modes.
+   * Secured API endpoints using Supabase JWT verification on the gateway level and appended active session tokens to the mobile app request headers.
 2. **Git Repository Status**: 
    * Committed and pushed to remote repository (`master` branch).
-   * Commit Message: `"Synched the Supabase"`.
+   * Commit Message: `"Enforce JWT for proxy"`.
 3. **Compilation Status**: Verified with `npx tsc --noEmit` which completes with **0 errors**.
 4. **Dev Server Command**:
    ```bash

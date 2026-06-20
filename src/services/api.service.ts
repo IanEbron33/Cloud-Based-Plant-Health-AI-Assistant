@@ -1,15 +1,15 @@
 /**
  * Bugsok AI — API Service
  *
- * This service handles all communication with the Go Proxy backend
- * hosted on Hugging Face Spaces for AI classification, diagnosis, and chat.
+ * This service handles all communication with the Supabase Edge Function proxy
+ * for AI classification, diagnosis, and chat, secured with JWT verification.
  *
  * Endpoints:
  *   POST /classify  — Identify crop type from a leaf image
  *   POST /diagnose  — Get full AI diagnosis with SSE streaming
  *   POST /chat      — Follow-up chat conversation with SSE streaming
  *
- * @see backend/main.go for the server-side implementation.
+ * @see supabase/functions/proxy/index.ts for the server-side implementation.
  */
 
 import type { ChatMessage, ClassifyResponse, StreamChunk } from '../types';
