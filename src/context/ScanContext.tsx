@@ -90,9 +90,26 @@ export function ScanProvider({ children }: ScanProviderProps) {
       const supportedCrops = Object.keys(vegetablesDb).join(',');
 
       // 2. Classify Crop
-      const classification = await classifyCrop(imageUri, supportedCrops);
+      const classification = await classifyCrop(imageUri, supportedCrops, model);
 
       if (abortControllerRef.current.signal.aborted) return;
+
+      if (classification.matched === false) {
+        if (captionIntervalRef.current) clearInterval(captionIntervalRef.current);
+        setState((prev) => ({
+          ...prev,
+          isScanning: false,
+          scanPhase: 'error',
+          errorMessage: 'Unrecognized image. Please scan a supported crop leaf.',
+        }));
+        showToast({
+          type: 'error',
+          title: 'Scan Failed',
+          message: 'Unrecognized image. Please scan a supported crop leaf.',
+          duration: 5000,
+        });
+        return;
+      }
 
       const crop = classification.crop;
       setState((prev) => ({

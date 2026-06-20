@@ -9,7 +9,7 @@ This document captures the current state, architecture, and files of the project
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
 * **Operating Framework:** React Native Expo (Expo Router)
-* **SDK Version:** **Expo SDK 54** (downgraded for compatibility with client's physical Expo Go device)
+* **SDK Version:** **Expo SDK 54** (configured for compatibility with physical Expo Go testing)
 * **Platform Support:** iOS, Android, and Web
 * **Primary Language:** Taglish/English UI
 * **Design Guidelines:** Solid green shades (Mint, Emerald, Forest) with crisp elevations, smooth concentric curves, and borders. **No glassmorphism.**
@@ -18,38 +18,61 @@ This document captures the current state, architecture, and files of the project
   * **Shared Sliding Capsule**: A single active background capsule (`width: 66, height: 56`) that smoothly slides horizontally to the active tab using spring physics (`Animated.spring` on `translateX`).
   * **Morphing Corners**: Capsule border radius morphs from `32` (on edge tabs: Home and Profile) to `18` (on middle tabs: History and Chat).
   * **Elevated Scan Button**: Circular button floating above the center of the bar. It spring-scales to `1.12` and displays a looping, breathing scanner glow ring (`pulseRing`, `scale: 1.0` -> `1.45`, fading `0.5` -> `0.0` over `1800ms`) when selected.
-  * **Smooth Icon & Label Transitions**: Active tabs animate the icon to scale up (`1.0` -> `1.15`) and shift upwards (`translateY: 0` -> `-5`) using spring physics, while the label is always-mounted and slides and fades in (`translateY` `8` -> `0`, opacity `0` -> `1`). When focus is lost, they return to the center and fade out smoothly (no instant unmounting or layout popping).
-  * **Driver Conflict Isolation**: Structured as nested views (`slidingPillContainer` + `slidingPillInner`) to isolate native GPU-driven animations (translate, opacity) from JS-driven animations (border-radius), preventing React Native driver conflicts.
+  * **Smooth Icon & Label Transitions**: Active tabs animate the icon to scale up (`1.0` -> `1.15`) and shift upwards (`translateY: 0` -> `-5`) using spring physics, while the label is always-mounted and slides and fades in (`translateY` `8` -> `0`, opacity `0` -> `1`).
+  * **Driver Conflict Isolation**: Structured as nested views (`slidingPillContainer` + `slidingPillInner`) to isolate native GPU-driven animations from JS-driven animations, preventing React Native driver conflicts.
 * **Profile Header Background**: Premium linear gradient background (`['#047857', '#064e3b']`) applied using `expo-linear-gradient` to the header of the Profile screen.
 * **Scan Results Health Gauge**: Circular progress indicator with a thicker bold `strokeWidth={10}` on the Scan Results screen to highlight the crop's health score.
 * **Concentric Layout & Border-Radius Smoothing**:
-  * **AI Toggle switch**: Outer container uses `rounded-[20px]` and inner sliding pill uses `borderRadius: 16` (20px outer - 4px padding = 16px inner) to deliver a perfectly aligned, smooth concentric curvature.
+  * **AI Toggle switch**: Outer container uses `rounded-[20px]` and inner sliding pill uses `borderRadius: 16` to deliver a perfectly aligned, smooth concentric curvature.
   * **Camera Viewport**: Replaced dashed border with solid `border-stone-300` and `rounded-[24px]` corners to prevent rendering artifacts or jagged aliasing.
   * **Hero Image Card**: Applied matching concentric border-radius layout (`rounded-[24px]` outer `BentoTile` and `rounded-[23px]` inner `View`/`Image`/overlay) to prevent corner pixel bleed.
 * **Mascot Animation Custom Splash Screen**:
-  * **Image Rendering**: Renders `assets/images/mascot-animation.webp` (transparent animated WebP converted from WebM via FFmpeg with alpha channel preservation) on a solid stone-50 background.
-  * **Expo Image**: Uses `expo-image` for high-performance, hardware-accelerated rendering of the transparent animation in Expo Go.
+  * **Expo Image**: Uses `expo-image` for high-performance, hardware-accelerated rendering of the transparent animated WebP mascot (`assets/images/mascot-animation.webp`).
   * **Staggered Entrance**: Animated title "Bugsok AI" fades in at `1.0s` and the subtitle fades in at `1.5s` using native-driven opacity transitions.
-  * **Automated Flow**: The entire screen fades out at `3.5s` and redirects the user to the `/login` screen at `4.0s` (matching the 4-second mascot animation).
+  * **Automated Flow**: The entire screen fades out at `3.5s` and redirects the user to the `/login` screen at `4.0s`.
 
 ---
 
-## 🔒 Phase 2 Enhancements (Authentication, Security & Flow Controls)
+## 🔒 Phase 2 Enhancements (Authentication & Security)
 
 * **Refactored Architecture & Separation of Concerns**:
-  * Moved direct Supabase SDK calls out of the UI screens (`login.tsx`, `register.tsx`, `splash.tsx`, `profile.tsx`).
+  * Moved direct Supabase SDK calls out of UI screens.
   * Created dedicated service layers (`auth.service.ts`, `profile.service.ts`) and global hook context (`AuthContext.tsx`) to handle authentication status and profile fetch state.
 * **Custom Toast Notification System**:
   * Designed global `ToastProvider` with physical bounce animations, dynamic colors (emerald for success, red for error, amber for warning), and an interactive shrinking progress bar detailing auto-dismiss timer.
 * **Login Rate Limiter & Cooldown Lock**:
   * Added 3-strike login lockout system. If a user fails to authenticate 3 times sequentially, the login button gets locked for 60 seconds.
-  * Cooldown timer and locking state are persisted locally under `AsyncStorage` keys to prevent users from bypassing the lock by restarting the app.
+  * Lockout state is persisted in `AsyncStorage` to prevent bypassing via app restart.
 * **Forgot Password Flow & Dynamic Password Strength**:
-  * **3-Step Recovery Wizard**: Created `/forgot-password` route with clean layout exceptions in `_layout.tsx` to handle password recovery.
-  * **Responsive 6-Digit OTP Box Grid**: Renders 6 numeric input boxes that automatically calculate their width dynamically using the screen's size to prevent clipping/overflow on narrower mobile devices. Focus moves forward automatically on keypress and moves backward on backspace.
-  * **Animated Password Strength Meter**: Dynamic color-morphing progress bar (Red ➔ Orange ➔ Green) representing Weak, Good, or Strong values based on character rules, implemented on both the Registration and Reset Password screens.
-* **Registration Redirect Flow**:
-  * Modified signup handler to register the account profile, upload the user's avatar, clear the automatic session via `signOut()`, and redirect the user back to the login screen with a manual login instruction toast.
+  * **3-Step Recovery Wizard**: `/forgot-password` route with clean layout exceptions in `_layout.tsx`.
+  * **Responsive 6-Digit OTP Box Grid**: Renders 6 numeric input boxes that automatically calculate their width dynamically based on screen size. Focus moves forward automatically on keypress and backward on backspace.
+  * **Animated Password Strength Meter**: Dynamic color-morphing progress bar (Red ➔ Orange ➔ Green) representing Weak, Good, or Strong values based on character rules.
+
+---
+
+## 📦 Phase 3: SQLite-First Offline & Bidirectional Sync Architecture
+
+The application implements **Option C: Bidirectional Sync (SQLite-First)**. The local SQLite database serves as the primary data store, ensuring instant rendering and offline usability, with background synchronization to Supabase.
+
+### 💾 Local SQLite Database Schema
+The local database (`bugsok_ai.db`) contains three primary tables:
+1. **`scans`**: Stores crop diagnoses locally. Unsynced scans store a `local_image_path`. Synced scans contain the Supabase bucket `cloud_image_url`. Includes a `synced` flag (0 = Unsynced, 1 = Synced).
+2. **`chat_sessions`**: Stores follow-up chat sessions associated with scans.
+3. **`chat_messages`**: Stores individual messages for each session.
+
+* **Tagalog Database Keys**: Crops are saved in the database using their Tagalog keys (e.g. `Talong`, `Kamatis`, `Sili`, `Ampalaya`) to match the localized content rules.
+* **Auto-Resume Chat Sessions**: When entering the chat screen from a scan results page, the app automatically fetches and resumes the latest active chat session for that scan instead of starting a new one.
+* **Pure JavaScript UUIDs**: Replaced `expo-crypto` dynamic loading with a pure JavaScript RFC4122-compliant UUID generator to prevent Metro bundler resolution failures on Android devices.
+* **DevTools Network Hook**: Added a check in `src/app/_layout.tsx` to hook `global.XMLHttpRequest` to `originalXMLHttpRequest` in `__DEV__` mode to allow Chrome DevTools (`chrome://inspect`) to capture network requests when debugging.
+
+### 🔄 Bidirectional Synchronization Logic (`syncData`)
+Whenever the app starts up, or when a user taps **"Sync Now"** in the History or Profile tab:
+1. **Upload Queue**: 
+   - Scans with `synced = 0` upload their local images to the `plant-images` Supabase Storage bucket, write to the Supabase database, and update SQLite to `synced = 1`.
+   - Unsynced chat sessions and messages are pushed to Supabase tables.
+2. **Download Delta**: 
+   - Queries Supabase for new/updated scans, chat sessions, and messages matching the logged-in user.
+   - Merges missing records into local SQLite tables using `ON CONFLICT(id) DO UPDATE`.
 
 ---
 
@@ -57,18 +80,18 @@ This document captures the current state, architecture, and files of the project
 
 * **Core:** React 19.1.0, React Native 0.81.5
 * **Navigation:** Expo Router (file-based stack & tabs under `src/app`)
+* **Database:** **expo-sqlite** (`~16.0.10`) for local storage
+* **Cloud backend:** **@supabase/supabase-js** (`^2.108.2`) for authentication, database, and storage buckets
 * **Styling:** **NativeWind v4** (Tailwind CSS for React Native) compiled with `react-native-reanimated` plugin
 * **Typography:** **Fredoka** Google Font family (loaded asynchronously using `expo-font`)
 * **Icons:** **Lucide Icons** (`lucide-react-native`) and **Ionicons** (`@expo/vector-icons`)
 * **Media Rendering:** **expo-image** (for rendering transparent animated WebP on splash screen)
-* **Assets:** Custom mascot logo (`assets/images/mascot-logo.jpeg`) and bundled plant disease database (`assets/data/vegetables_db.json`)
 * **Local Storage:** `@react-native-async-storage/async-storage` for persisting login cooldown states.
 
 ---
 
 ## 📂 Core Directory Structure
 
-Key files and directories in the repository:
 ```
 Cloud-Based Plant Health AI Assistant - Mobile Application/
 ├── assets/
@@ -79,34 +102,35 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │       └── mascot-logo.jpeg         # App mascot image (square with 12px rounded radius)
 ├── src/
 │   ├── app/
-│   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, wraps providers, auth stack whitelisting)
+│   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, wraps providers, Chrome DevTools network hook)
 │   │   ├── index.tsx                # App entry redirect (routes to /splash)
 │   │   ├── splash.tsx               # Staggered fade-in splash screen with transparent WebP animation
-│   │   ├── login.tsx                # Redesigned English-only login with mascot logo, lockout timer, & custom toast alerts
-│   │   ├── register.tsx             # Redesigned English-only registration screen with password strength progress bar
-│   │   ├── forgot-password.tsx      # 🆕 3-step secure password recovery wizard (Email, 6-digit OTP, Strength-tested Reset)
-│   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard with circular health progress and spring enter animations
-│   │   ├── chat.tsx                 # Detailed crop follow-up chat conversation screen with model selector (Flash vs Deep)
+│   │   ├── login.tsx                # Redesigned login with mascot logo, lockout timer, & custom toast alerts
+│   │   ├── register.tsx             # Redesigned registration screen with password strength progress bar
+│   │   ├── forgot-password.tsx      # 3-step secure password recovery wizard (Email, 6-digit OTP, Strength-tested Reset)
+│   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard loading data by ID from SQLite/Supabase
+│   │   ├── chat.tsx                 # Follow-up chat conversation screen querying SQLite logs & saving to SQLite/Supabase
 │   │   └── (tabs)/
 │   │       ├── _layout.tsx          # Custom Tab bar layout (integrates CustomTabBar)
-│   │       ├── index.tsx            # Home Dashboard (Quick stats, recent scans list, tips)
-│   │       ├── history.tsx          # Past scans (search bar, offline sync badges)
+│   │       ├── index.tsx            # Home Dashboard (Live counts from SQLite stats, recent scans list, tips)
+│   │       ├── history.tsx          # Past scans (Search, filter, offline sync status, manual "Sync Now" banner)
 │   │       ├── scan.tsx             # Camera preview guidelines frame with solid rounded-[24px] border, custom sliding AI mode toggle
-│   │       ├── chat.tsx             # General Chat tab placeholder screen (Coming Soon)
-│   │       └── profile.tsx          # User profile info, SQLite synchronization dashboard, and LinearGradient header
+│   │       └── profile.tsx          # User profile info, SQLite vs Supabase counts, and sync dashboard
 │   ├── components/
 │   │   ├── BentoGrid.tsx            # Bento layout tiles (colSpan helper wrapper)
 │   │   ├── CircularProgress.tsx     # SVG progress circle matching health severity
 │   │   └── CustomTabBar.tsx         # Shared sliding pill floating bottom tab bar with pulse rings
 │   ├── context/
-│   │   ├── AuthContext.tsx          # 🆕 Global auth state provider (exposes session, profile, and recovery helpers)
-│   │   └── ToastContext.tsx         # 🆕 Global Custom Toast context provider (exposes toast view states & animations)
+│   │   ├── AuthContext.tsx          # Global auth state provider (exposes session, profile, and recovery helpers)
+│   │   ├── ScanContext.tsx          # Scan provider (initializes SQLite db and persists scanned diagnoses)
+│   │   └── ToastContext.tsx         # Global Custom Toast context provider (exposes toast view states & animations)
 │   ├── services/
-│   │   ├── auth.service.ts          # 🆕 Supabase authentication service calls wrapper
-│   │   ├── profile.service.ts       # 🆕 Profiles database & avatars storage calls wrapper
-│   │   └── api.service.ts           # Phase 3 placeholder for Hugging Face proxy API (classifyCrop, diagnoseCrop)
+│   │   ├── auth.service.ts          # Supabase authentication service calls wrapper
+│   │   ├── profile.service.ts       # Profiles database & avatars storage calls wrapper
+│   │   ├── scan.service.ts          # SQLite-First operations, Supabase bucket uploads, and bidirectional sync
+│   │   └── api.service.ts           # Hugging Face proxy API (classifyCrop, diagnoseCrop, SSE streaming)
 │   ├── types/
-│   │   └── index.ts                 # 🆕 Shared TypeScript interfaces and typings
+│   │   └── index.ts                 # Shared TypeScript interfaces and typings
 │   ├── constants/
 │   │   └── theme.ts                 # Theme layout values, colors, spacing definitions
 │   └── hooks/
@@ -122,28 +146,18 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 
 ## 🚀 Current Project Status & Commands
 
-1. **Phase 2 (Supabase Auth & Session Integration):** **Fully Completed & Verified**. Users can register, log in, view dynamic profile metadata, upload profile pictures (using a robust native `FormData` parser), and log out securely.
-2. **Compilation Status:** Checked via `npx tsc --noEmit`. Passes successfully with **0 errors and 0 warnings**.
-3. **Local Metro Bundler:** Runs cleanly without errors.
-4. **Core Development Command:**
+1. **Phase 2 & 3 Completion**: **Fully Completed, Verified, and Synced to GitHub**.
+   * Auth, profile management, and avatars are fully wired with Supabase.
+   * Scans, chat sessions, and message logs are saved locally to SQLite first, providing offline support.
+   * Bidirectional sync is completed and successfully verified.
+2. **Git Repository Status**: 
+   * Committed and pushed to remote repository (`master` branch).
+   * Commit Message: `"Synched the Supabase"`.
+3. **Compilation Status**: Verified with `npx tsc --noEmit` which completes with **0 errors**.
+4. **Dev Server Command**:
    ```bash
    npx expo start -c
    ```
-   *(Always use `-c` when resetting or installing new assets to wipe Metro's internal caches).*
-5. **Platform Previews:**
-   - **Mobile (Phone):** Scan the QR code shown by `npx expo start` inside the **Expo Go** app (compatible with SDK 54).
-   - **Web Browser:** Press **`w`** in the Expo terminal window to launch in Chrome/Edge at `http://localhost:8081`.
-
----
-
-## ⏭️ Next Phase: Phase 3 — AI Classification, Diagnosis & Chat Integration
-
-Once the authentication layer is verified and you are ready to proceed to Phase 3:
-1. **Camera/Gallery Picking:** Connect [scan.tsx](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/src/app/(tabs)/scan.tsx) button handlers to `expo-image-picker` to select plant leaf images on native and web.
-2. **Two-Step AI Classification Pipeline:**
-   - Wire a multipart/form-data upload to `/classify` to retrieve the identified crop.
-   - Look up crop-specific facts from the local [vegetables_db.json](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/assets/data/vegetables_db.json).
-   - Send the image + metadata context to the `/diagnose` endpoint.
-3. **SSE Chunked Parser:** Build an `XMLHttpRequest`-based parser to stream AI text live into the client UI.
-4. **Scan Results Routing:** Parse the diagnosis markdown response and render it dynamically inside the Bento Grid cards in [scan-results.tsx](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/src/app/scan-results.tsx).
-5. **Dynamic Follow-Up Chat:** Connect [chat.tsx](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/src/app/chat.tsx) to `/chat` to continue the conversation in the context of the scanned crop.
+5. **Platform Previews**:
+   * **Mobile Device (Expo Go)**: Scan the Metro QR code inside the **Expo Go** application (version matching SDK 54).
+   * **Hermes/Network Debugger**: Chrome DevTools (`chrome://inspect`) target `localhost:8081` connects to the running app. The `XMLHttpRequest` override allows inspection of network traffic in the Chrome DevTools network panel.

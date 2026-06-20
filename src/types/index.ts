@@ -72,6 +72,7 @@ export interface ChatMessage {
 /** Response from the /classify endpoint. */
 export interface ClassifyResponse {
   crop: string;
+  matched: boolean;
 }
 
 /** A single SSE chunk from the /diagnose or /chat stream. */

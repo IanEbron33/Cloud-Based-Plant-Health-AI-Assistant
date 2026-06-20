@@ -57,15 +57,20 @@ const USE_MOCK = __DEV__ && !PROXY_BASE_URL;
  */
 export const classifyCrop = async (
   imageUri: string,
-  crops: string
+  crops: string,
+  model: 'flash' | 'deep'
 ): Promise<ClassifyResponse> => {
   if (USE_MOCK) {
-    console.log('[API Service] Mocking classifyCrop response...');
+    console.log('[API Service] Mocking classifyCrop response with model:', model);
     await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate network latency
     // Mock return of "Talong" or whichever crop key is matched first
     const list = crops.split(',');
     const match = list.find((c) => c.trim() === 'Talong') || list[0] || 'Talong';
-    return { crop: match.trim() };
+    const matched = !imageUri.includes('unrecognized');
+    return {
+      crop: matched ? match.trim() : 'Unknown Crop',
+      matched,
+    };
   }
 
   const formData = new FormData();
@@ -76,6 +81,7 @@ export const classifyCrop = async (
     type: 'image/jpeg',
   } as any);
   formData.append('crops', crops);
+  formData.append('model', model);
 
   const response = await fetch(`${PROXY_BASE_URL}/classify`, {
     method: 'POST',
