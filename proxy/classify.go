@@ -71,7 +71,9 @@ func handleClassify(w http.ResponseWriter, r *http.Request) {
 Identify which crop is in the image. You must choose ONLY from the following list of supported crops:
 [%s]
 
-Respond with ONLY the exact name of the crop from the list. Do not add any punctuation, explanation, introduction, or extra text.`, cropsList)
+If the image does not contain a plant or crop leaf, or if the crop is not in the list of supported crops, you must respond with exactly "NOT_A_PLANT".
+
+Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do not add any punctuation, explanation, introduction, or extra text.`, cropsList)
 
 	geminiReq := GeminiGenerateRequest{
 		Contents: []GeminiRequestContent{
@@ -123,6 +125,19 @@ Respond with ONLY the exact name of the crop from the list. Do not add any punct
 		cleanedCrop = strings.TrimSpace(geminiResp.Candidates[0].Content.Parts[0].Text)
 		cleanedCrop = strings.ReplaceAll(cleanedCrop, "\"", "")
 		cleanedCrop = strings.ReplaceAll(cleanedCrop, "'", "")
+	}
+	cleanedCrop = strings.TrimSpace(cleanedCrop)
+
+	// Intercept NOT_A_PLANT responses early
+	if strings.EqualFold(cleanedCrop, "NOT_A_PLANT") || strings.Contains(strings.ToLower(cleanedCrop), "not_a_plant") {
+		res := ClassifyResponse{
+			Crop:    "",
+			Matched: false,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(res)
+		return
 	}
 
 	// Fuzzy matching

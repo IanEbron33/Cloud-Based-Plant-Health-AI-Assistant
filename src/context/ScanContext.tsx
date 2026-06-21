@@ -167,15 +167,27 @@ export function ScanProvider({ children }: ScanProviderProps) {
             diagnosisResult: parsedResult,
           }));
 
-          showToast({
-            type: 'success',
-            title: 'Scan Completed',
-            message: `Identified crop as ${parsedResult.cropLocalName}. Tap to view results.`,
-            duration: 5000,
-            onPress: () => {
-              router.push({ pathname: '/scan-results', params: { id: savedId } });
-            },
-          });
+          if (parsedResult.confidenceScore < 20) {
+            showToast({
+              type: 'warning',
+              title: 'Low Confidence Scan',
+              message: `Identified as ${parsedResult.cropLocalName} (${parsedResult.confidenceScore}%), but the result may be unreliable. Tap to view details.`,
+              duration: 6000,
+              onPress: () => {
+                router.push({ pathname: '/scan-results', params: { id: savedId } });
+              },
+            });
+          } else {
+            showToast({
+              type: 'success',
+              title: 'Scan Completed',
+              message: `Identified crop as ${parsedResult.cropLocalName}. Tap to view results.`,
+              duration: 5000,
+              onPress: () => {
+                router.push({ pathname: '/scan-results', params: { id: savedId } });
+              },
+            });
+          }
         },
         // onError callback
         (err) => {

@@ -365,6 +365,19 @@ export default function ScanResultsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 110 }}
       >
+        {result.confidenceScore < 20 && (
+          <View className="flex-row items-center bg-amber-50 border border-amber-200 p-4 rounded-[20px] mb-4 shadow-sm">
+            <Ionicons name="warning-outline" size={24} color="#d97706" style={{ marginRight: 12 }} />
+            <View className="flex-1">
+              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-amber-800 text-sm font-bold">
+                Low Confidence Score ({result.confidenceScore}%)
+              </Text>
+              <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-amber-750 text-xs mt-0.5 leading-4">
+                This result may be unreliable. Please try scanning again with a clearer, well-lit, close-up photo of the leaf.
+              </Text>
+            </View>
+          </View>
+        )}
         <BentoGrid>
           {/* TILE 1: HERO */}
           <BentoTile colSpan={2} className="overflow-hidden p-0 rounded-[24px]">
