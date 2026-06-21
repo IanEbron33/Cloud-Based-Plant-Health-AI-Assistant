@@ -13,7 +13,6 @@
  */
 
 import type { ChatMessage, ClassifyResponse, StreamChunk } from '../types';
-import { supabase } from '../lib/supabase';
 import vegetablesDb from '../../assets/data/vegetables_db.json';
 
 // Types for the vegetables database JSON import structure
@@ -84,16 +83,11 @@ export const classifyCrop = async (
   formData.append('crops', crops);
   formData.append('model', model);
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token || '';
-
   const response = await fetch(`${PROXY_BASE_URL}/classify`, {
     method: 'POST',
     body: formData,
     headers: {
       Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
     },
   });
 
@@ -194,14 +188,9 @@ export const diagnoseCrop = async (
     return;
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token || '';
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${PROXY_BASE_URL}/diagnose`);
-    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    xhr.setRequestHeader('apikey', process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '');
 
     // Setup abort signal listener
     if (abortSignal) {
@@ -345,15 +334,10 @@ export const chatWithAI = async (
     return;
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token || '';
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${PROXY_BASE_URL}/chat`);
     xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    xhr.setRequestHeader('apikey', process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '');
 
     if (abortSignal) {
       abortSignal.addEventListener('abort', () => {
