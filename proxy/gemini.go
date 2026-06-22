@@ -46,6 +46,7 @@ type GeminiResponse struct {
 type ClientStreamChunk struct {
 	Text  string `json:"text,omitempty"`
 	Error string `json:"error,omitempty"`
+	Crop  string `json:"crop,omitempty"`
 }
 
 // streamGeminiSSE reads SSE chunks from Gemini and writes them in the client-expected format
@@ -133,5 +134,6 @@ type SystemInstruction struct {
 }
 
 type GenerationConfig struct {
-	Temperature float64 `json:"temperature"`
+	Temperature     float64 `json:"temperature"`
+	MaxOutputTokens int     `json:"maxOutputTokens,omitempty"`
 }

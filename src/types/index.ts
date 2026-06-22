@@ -79,6 +79,7 @@ export interface ClassifyResponse {
 export interface StreamChunk {
   text?: string;
   error?: string;
+  crop?: string;
 }
 
 // ─────────────────────────────────────────────

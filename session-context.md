@@ -4,12 +4,12 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of June 21, 2026)
+## 📅 Project Context (As of June 22, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
 * **Operating Framework:** React Native Expo (Expo Router)
-* **SDK Version:** **Expo SDK 54** (configured for compatibility with physical Expo Go testing)
+* **SDK Version:** **Expo SDK 54** (configured for compatibility with physical Expo Go/Dev Client testing)
 * **Platform Support:** iOS, Android, and Web
 * **Primary Language:** Taglish/English UI
 * **Design Guidelines:** Solid green shades (Mint, Emerald, Forest) with crisp elevations, smooth concentric curves, and borders. **No glassmorphism.**
@@ -76,22 +76,32 @@ Whenever the app starts up, or when a user taps **"Sync Now"** in the History or
 
 ---
 
-## 🤖 AI Proxy Backend (Golang on Hugging Face Spaces)
+## ⚡ Optimized Scan Pipeline (Unified Single SSE Call + Compression)
 
-The AI proxy backend was migrated from Supabase Edge Functions to a **Golang HTTP server** deployed via Docker on **Hugging Face Spaces** (`https://ianpatatas-bugsok-ai.hf.space`).
+To optimize scanning latency, the pipeline has been refactored from a sequential two-step call structure (Classify ➔ Diagnose) into a unified single SSE call with client-side image compression.
+
+### Client-Side Image Compression
+* **Implementation**: Uses `expo-image-manipulator` in `ScanContext.tsx` before sending images to the backend.
+* **Mechanism**: Downscales large images to a maximum width of `1024px` and compresses them to `50% JPEG quality`.
+* **Latency Benefit**: Reduces raw photo sizes (up to 30MB) down to **200–500KB** (~60–150× smaller), significantly accelerating upload time over mobile networks without impacting AI diagnostic accuracy.
+
+### Unified `/scan` Backend Endpoint (Golang on Hugging Face Spaces)
+The AI proxy backend runs on **Hugging Face Spaces** (`https://ianpatatas-bugsok-ai.hf.space`).
 * **Endpoints**:
   - `GET /health`: Server health checks.
-  - `POST /classify`: Crop classification (always uses `gemini-3.1-flash-lite`).
-  - `POST /diagnose`: Structured crop diagnosis (SSE stream: dynamically toggles between `gemini-3.1-flash-lite` [flash] and `gemma-4-26b-a4b-it` [deep]).
-  - `POST /chat`: Follow-up chatbot discussion (SSE stream: dynamic model toggle).
-* **Zero Dependencies**: Go proxy uses only Go standard library components (`net/http`, `encoding/json`, `encoding/base64`, etc.).
+  - `POST /scan`: Unified endpoint. Processes classification and diagnosis in a single API call to minimize network round-trips.
+  - `POST /chat`: Follow-up chatbot discussion (SSE stream).
+* **Model Routing**:
+  - Automatically resolves model preferences: `gemini-3.1-flash-lite` for "flash" and `gemma-4-26b-a4b-it` (or environment custom) for "deep".
+  - A single model handles both steps inside the unified `/scan` call.
+* **First-Line Buffer Strategy**:
+  - The Go server instructs Gemini to output `CLASSIFY: [CropName]` on the first line, followed by the structured diagnosis.
+  - The proxy buffers and parses the first line to identify the crop and perform fuzzy matching against supported crops.
+  - If classification matches a supported crop, the server sends a `{ "crop": "Talong" }` SSE event to transition the app's UI, then streams the remaining diagnostic text directly.
 * **Non-Plant Rejection**:
-  - Prompt modified in `/classify` to output `"NOT_A_PLANT"` if the image does not contain a plant or crop leaf, or if the crop in the image is not in the supported list.
-  - Server intercepts `"NOT_A_PLANT"` responses early and returns `{"crop": "", "matched": false}`.
-  - The client intercepts `matched === false` in `ScanContext.tsx`, halts the pipeline, and alerts the user with a warning/error toast.
+  - If the first line reads `CLASSIFY: NOT_A_PLANT` or does not match supported crops, the server streams an error early, causing the client app to halt and display a warning toast.
 * **Low-Confidence Warning**:
-  - If a scan completes with a confidence score under 20%, the completion toast is styled as a yellow warning (`Low Confidence Scan`).
-  - A persistent warning banner is rendered above the BentoGrid in `scan-results.tsx` alerting the user that the results may be unreliable and prompting a retake.
+  - If a scan completes with a confidence score under 20%, the completion toast is styled as a yellow warning (`Low Confidence Scan`), and a persistent warning banner is rendered above the BentoGrid in `scan-results.tsx` prompting a retake.
 
 ---
 
@@ -105,7 +115,8 @@ The AI proxy backend was migrated from Supabase Edge Functions to a **Golang HTT
 * **Typography:** **Fredoka** Google Font family (loaded asynchronously using `expo-font`)
 * **Icons:** **Lucide Icons** (`lucide-react-native`) and **Ionicons** (`@expo/vector-icons`)
 * **Media Rendering:** **expo-image** (for rendering transparent animated WebP on splash screen)
-* **Local Storage:** `@react-native-async-storage/async-storage` for persisting login cooldown states.
+* **Image Compression**: **expo-image-manipulator** (`~13.0.5`) for client-side resizing and optimization
+* **Local Storage:** `@react-native-async-storage/async-storage` for persisting login lockout/cooldown states.
 
 ---
 
@@ -123,10 +134,9 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   ├── Dockerfile                   # Multi-stage Docker config for HF Spaces
 │   ├── README.md                    # Backend run & deployment instructions
 │   ├── chat.go                      # SSE follow-up chat endpoint
-│   ├── classify.go                  # Crop routing classifier & non-plant rejection logic
-│   ├── diagnose.go                  # SSE diagnosis endpoint (supports model toggle)
 │   ├── gemini.go                    # Shared Gemini API calling and stream handlers
 │   ├── go.mod                       # Go 1.22 module definition
+│   ├── scan.go                      # SSE unified classification & diagnosis endpoint (buffers first line)
 │   └── main.go                      # Entry point, routing, and CORS middleware
 ├── src/
 │   ├── app/
@@ -150,13 +160,13 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   └── CustomTabBar.tsx         # Shared sliding pill floating bottom tab bar with pulse rings
 │   ├── context/
 │   │   ├── AuthContext.tsx          # Global auth state provider (exposes session, profile, and recovery helpers)
-│   │   ├── ScanContext.tsx          # Scan provider (initializes SQLite db, handles low-confidence toast warning)
+│   │   ├── ScanContext.tsx          # Scan provider (initializes SQLite db, handles low-confidence toast warning, runs compression)
 │   │   └── ToastContext.tsx         # Global Custom Toast context provider (exposes toast view states & animations)
 │   ├── services/
 │   │   ├── auth.service.ts          # Supabase authentication service calls wrapper
 │   │   ├── profile.service.ts       # Profiles database & avatars storage calls wrapper
 │   │   ├── scan.service.ts          # SQLite-First operations, Supabase bucket uploads, and bidirectional sync
-│   │   └── api.service.ts           # Go proxy API helper (classifyCrop, diagnoseCrop, SSE streaming)
+│   │   └── api.service.ts           # Go proxy API helper (classifyCrop, scanCrop SSE streaming)
 │   ├── types/
 │   │   └── index.ts                 # Shared TypeScript interfaces and typings
 │   ├── constants/
@@ -174,17 +184,13 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 
 ## 🚀 Current Project Status & Commands
 
-1. **AI Proxy Re-deployment & Code Integration**: **Fully Completed, Verified, and Synced to GitHub**.
-   * Back-end proxy is deployed as a Go HTTP server in a Docker container on HF Spaces.
-   * Prompts and filters reject non-plant scans during classification, and the app gracefully handles and visualizes warning banners and alerts when diagnostic confidence is low.
-2. **Git Repository Status**: 
-   * Committed and pushed to remote repository (`master` branch).
-   * Commit Message: `"Fix the issue when scanning"`.
+1. **AI Proxy Re-deployment**: Deployed and fully operational on Hugging Face Spaces.
+2. **EAS Development Build**: Configured in `eas.json` (development and preview profiles corrected to use the Hugging Face Proxy URL).
 3. **Compilation Status**: Verified with `npx tsc --noEmit` which completes with **0 errors**.
 4. **Dev Server Command**:
    ```bash
-   npx expo start -c
+   npx expo start
    ```
 5. **Platform Previews**:
-   * **Mobile Device (Expo Go)**: Scan the Metro QR code inside the **Expo Go** application (version matching SDK 54).
+   * **Mobile Device (Expo Dev Client)**: Build the development client using EAS, install the APK on the device, and connect to the Metro server.
    * **Hermes/Network Debugger**: Chrome DevTools (`chrome://inspect`) target `localhost:8081` connects to the running app. The `XMLHttpRequest` override allows inspection of network traffic in the Chrome DevTools network panel.

@@ -277,6 +277,165 @@ export const diagnoseCrop = async (
 };
 
 /**
+ * Merged Step 1 & 2 — Classify and diagnose the crop in a single SSE stream.
+ * Sends the image + full database context to /scan and streams the crop identification + diagnosis response.
+ *
+ * @param imageUri - Local URI of the captured/selected image.
+ * @param crops - Comma-separated list of supported crop names.
+ * @param context - JSON string of the entire database context.
+ * @param model - AI model preference: "flash" or "deep".
+ * @param onCropIdentified - Callback fired when the crop is identified.
+ * @param onChunk - Callback fired for each received text chunk.
+ * @param onDone - Callback fired when the stream completes.
+ * @param onError - Callback fired if an error occurs.
+ * @param abortSignal - Optional signal to abort the stream.
+ */
+export const scanCrop = async (
+  imageUri: string,
+  crops: string,
+  context: string,
+  model: 'flash' | 'deep',
+  onCropIdentified: (crop: string) => void,
+  onChunk: (chunk: StreamChunk) => void,
+  onDone: () => void,
+  onError: (error: string) => void,
+  abortSignal?: AbortSignal
+): Promise<void> => {
+  if (USE_MOCK) {
+    console.log('[API Service] Mocking scanCrop SSE stream...');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    if (abortSignal?.aborted) return;
+
+    // Simulate classification event
+    const list = crops.split(',');
+    const match = list.find((c) => c.trim() === 'Talong') || list[0] || 'Talong';
+    const isMatched = !imageUri.includes('unrecognized');
+    
+    if (!isMatched) {
+      onError('Unrecognized image. Please scan a supported crop leaf.');
+      return;
+    }
+
+    onCropIdentified(match.trim());
+
+    // Mock stream chunks
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    const mockText = `- **Crop Identified:** Talong (Solanum melongena)\n- **Condition:** Healthy\n- **Severity:** None\n- **Health Score:** 95%\n- **Confidence Score:** 90%\n- **Symptoms Observed:** Clean green leaves.\n- **Organic Treatment:** N/A\n- **Prevention:** Regular care.\n- **Care Tip:** Keep watering regularly!`;
+    const words = mockText.split(' ');
+    let wordIndex = 0;
+
+    const interval = setInterval(() => {
+      if (abortSignal?.aborted) {
+        clearInterval(interval);
+        return;
+      }
+      if (wordIndex >= words.length) {
+        clearInterval(interval);
+        onDone();
+        return;
+      }
+      const nextWords = words.slice(wordIndex, wordIndex + 3).join(' ') + ' ';
+      onChunk({ text: nextWords });
+      wordIndex += 3;
+    }, 120);
+
+    abortSignal?.addEventListener('abort', () => {
+      clearInterval(interval);
+    });
+
+    return;
+  }
+
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${PROXY_BASE_URL}/scan`);
+
+    if (abortSignal) {
+      abortSignal.addEventListener('abort', () => {
+        xhr.abort();
+        resolve();
+      });
+    }
+
+    const formData = new FormData();
+    formData.append('image', {
+      uri: imageUri,
+      name: 'image.jpg',
+      type: 'image/jpeg',
+    } as any);
+    formData.append('crops', crops);
+    formData.append('context', context);
+    formData.append('model', model);
+
+    let lastProcessedIndex = 0;
+
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 3 || xhr.readyState === 4) {
+        const text = xhr.responseText;
+        const newText = text.substring(lastProcessedIndex);
+
+        const lines = newText.split('\n');
+        const linesToProcess = xhr.readyState === 4 ? lines : lines.slice(0, -1);
+
+        if (xhr.readyState !== 4) {
+          const processedLength = linesToProcess.join('\n').length;
+          if (processedLength > 0) {
+            lastProcessedIndex += processedLength + 1;
+          }
+        }
+
+        for (const line of linesToProcess) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+
+          if (trimmed.startsWith('data: ')) {
+            const dataStr = trimmed.slice(6).trim();
+            if (dataStr === '[DONE]') {
+              onDone();
+              resolve();
+              return;
+            }
+
+            try {
+              const chunk: StreamChunk = JSON.parse(dataStr);
+              if (chunk.error) {
+                onError(chunk.error);
+                resolve();
+                return;
+              }
+              if (chunk.crop) {
+                onCropIdentified(chunk.crop);
+              }
+              if (chunk.text) {
+                onChunk({ text: chunk.text });
+              }
+            } catch (err) {
+              // Ignore partial JSON parse errors
+            }
+          }
+        }
+      }
+
+      if (xhr.readyState === 4) {
+        if (xhr.status < 200 || xhr.status >= 300) {
+          onError(`Server responded with HTTP status code ${xhr.status}`);
+        }
+        resolve();
+      }
+    };
+
+    xhr.onerror = () => {
+      onError('Network request failed');
+      resolve();
+    };
+
+    xhr.send(formData);
+  });
+};
+
+
+/**
  * Step 3 — Send a follow-up chat message via SSE streaming.
  * Posts the conversation history to /chat and streams the AI response.
  *

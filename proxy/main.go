@@ -48,6 +48,7 @@ func main() {
 	mux.HandleFunc("/health", corsMiddleware(handleHealth))
 	mux.HandleFunc("/classify", corsMiddleware(handleClassify))
 	mux.HandleFunc("/diagnose", corsMiddleware(handleDiagnose))
+	mux.HandleFunc("/scan", corsMiddleware(handleScan))
 	mux.HandleFunc("/chat", corsMiddleware(handleChat))
 
 	port := os.Getenv("PORT")

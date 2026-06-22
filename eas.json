@@ -13,7 +13,7 @@
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://ybeciinionwgpthlwztz.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InliZWNpaW5pb253Z3B0aGx3enR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTA5MTcsImV4cCI6MjA5NjgyNjkxN30.EwMP1-R4VndCr8WYVLFZL4B6V9ie7CNmaBAH0e9UXqw",
-        "EXPO_PUBLIC_PROXY_URL": "https://ybeciinionwgpthlwztz.supabase.co/functions/v1/proxy"
+        "EXPO_PUBLIC_PROXY_URL": "https://ianpatatas-bugsok-ai.hf.space"
       }
     },
     "preview": {
@@ -24,7 +24,7 @@
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://ybeciinionwgpthlwztz.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InliZWNpaW5pb253Z3B0aGx3enR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTA5MTcsImV4cCI6MjA5NjgyNjkxN30.EwMP1-R4VndCr8WYVLFZL4B6V9ie7CNmaBAH0e9UXqw",
-        "EXPO_PUBLIC_PROXY_URL": "https://ybeciinionwgpthlwztz.supabase.co/functions/v1/proxy"
+        "EXPO_PUBLIC_PROXY_URL": "https://ianpatatas-bugsok-ai.hf.space"
       }
     },
     "production": {

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { router } from 'expo-router';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { DiagnosisResult, ScanState, ScanActions, ScanContextValue } from '../types';
-import { classifyCrop, diagnoseCrop } from '../services/api.service';
+import { scanCrop } from '../services/api.service';
 import { parseDiagnosis } from '../services/diagnosis-parser';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
@@ -86,48 +87,44 @@ export function ScanProvider({ children }: ScanProviderProps) {
     startLoadingCaptionTimer();
 
     try {
-      // 1. Gather all support crops from local database to guide classifier
-      const supportedCrops = Object.keys(vegetablesDb).join(',');
-
-      // 2. Classify Crop
-      const classification = await classifyCrop(imageUri, supportedCrops, model);
+      // 1. Client-Side Image Compression using expo-image-manipulator
+      let compressedImageUri = imageUri;
+      try {
+        const manipResult = await ImageManipulator.manipulateAsync(
+          imageUri,
+          [{ resize: { width: 1024 } }],
+          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        compressedImageUri = manipResult.uri;
+      } catch (manipErr) {
+        console.warn('[ScanContext] Image compression failed, using original:', manipErr);
+      }
 
       if (abortControllerRef.current.signal.aborted) return;
 
-      if (classification.matched === false) {
-        if (captionIntervalRef.current) clearInterval(captionIntervalRef.current);
-        setState((prev) => ({
-          ...prev,
-          isScanning: false,
-          scanPhase: 'error',
-          errorMessage: 'Unrecognized image. Please scan a supported crop leaf.',
-        }));
-        showToast({
-          type: 'error',
-          title: 'Scan Failed',
-          message: 'Unrecognized image. Please scan a supported crop leaf.',
-          duration: 5000,
-        });
-        return;
-      }
+      // 2. Gather all support crops from local database to guide classifier
+      const supportedCrops = Object.keys(vegetablesDb).join(',');
 
-      const crop = classification.crop;
-      setState((prev) => ({
-        ...prev,
-        identifiedCrop: crop,
-        scanPhase: 'diagnosing',
-      }));
+      // 3. Stringify the entire local database context
+      const fullContextString = JSON.stringify(vegetablesDb);
 
-      // 3. Retrieve local RAG context
-      const cropDb = vegetablesDb[crop as keyof typeof vegetablesDb];
-      const contextString = cropDb ? JSON.stringify(cropDb) : '';
+      let identifiedCropLocal: string | null = null;
 
-      // 4. Diagnose Crop via Stream
-      await diagnoseCrop(
-        imageUri,
-        crop,
-        contextString,
+      // 4. Merged Scan (Classify + Diagnose) via Single SSE Stream
+      await scanCrop(
+        compressedImageUri,
+        supportedCrops,
+        fullContextString,
         model,
+        // onCropIdentified callback
+        (cropName) => {
+          identifiedCropLocal = cropName;
+          setState((prev) => ({
+            ...prev,
+            identifiedCrop: cropName,
+            scanPhase: 'diagnosing',
+          }));
+        },
         // onChunk callback
         (chunk) => {
           if (chunk.text) {
@@ -138,7 +135,8 @@ export function ScanProvider({ children }: ScanProviderProps) {
         async () => {
           if (captionIntervalRef.current) clearInterval(captionIntervalRef.current);
 
-          const parsedResult = parseDiagnosis(accumulatedTextRef.current, crop, imageUri);
+          const finalCrop = identifiedCropLocal || 'Talong';
+          const parsedResult = parseDiagnosis(accumulatedTextRef.current, finalCrop, imageUri);
 
           // Write to SQLite and trigger sync
           let savedId = '';
@@ -146,7 +144,7 @@ export function ScanProvider({ children }: ScanProviderProps) {
             try {
               const savedRow = await saveScan(
                 user.id,
-                crop,
+                finalCrop,
                 parsedResult.condition,
                 parsedResult.severity,
                 parsedResult.healthScore,
@@ -202,9 +200,9 @@ export function ScanProvider({ children }: ScanProviderProps) {
 
           showToast({
             type: 'error',
-            title: 'Diagnosis Failed',
+            title: 'Scan Failed',
             message: err,
-            duration: 4000,
+            duration: 5000,
           });
         },
         abortControllerRef.current.signal
