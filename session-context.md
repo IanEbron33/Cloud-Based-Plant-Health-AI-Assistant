@@ -4,7 +4,7 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of June 20, 2026)
+## 📅 Project Context (As of June 21, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
@@ -50,11 +50,11 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📦 Phase 3: SQLite-First Offline & Bidirectional Sync Architecture
+## 💾 Local SQLite Database & Sync Architecture (SQLite-First)
 
 The application implements **Option C: Bidirectional Sync (SQLite-First)**. The local SQLite database serves as the primary data store, ensuring instant rendering and offline usability, with background synchronization to Supabase.
 
-### 💾 Local SQLite Database Schema
+### Local SQLite Database Schema
 The local database (`bugsok_ai.db`) contains three primary tables:
 1. **`scans`**: Stores crop diagnoses locally. Unsynced scans store a `local_image_path`. Synced scans contain the Supabase bucket `cloud_image_url`. Includes a `synced` flag (0 = Unsynced, 1 = Synced).
 2. **`chat_sessions`**: Stores follow-up chat sessions associated with scans.
@@ -65,7 +65,7 @@ The local database (`bugsok_ai.db`) contains three primary tables:
 * **Pure JavaScript UUIDs**: Replaced `expo-crypto` dynamic loading with a pure JavaScript RFC4122-compliant UUID generator to prevent Metro bundler resolution failures on Android devices.
 * **DevTools Network Hook**: Added a check in `src/app/_layout.tsx` to hook `global.XMLHttpRequest` to `originalXMLHttpRequest` in `__DEV__` mode to allow Chrome DevTools (`chrome://inspect`) to capture network requests when debugging.
 
-### 🔄 Bidirectional Synchronization Logic (`syncData`)
+### Bidirectional Synchronization Logic (`syncData`)
 Whenever the app starts up, or when a user taps **"Sync Now"** in the History or Profile tab:
 1. **Upload Queue**: 
    - Scans with `synced = 0` upload their local images to the `plant-images` Supabase Storage bucket, write to the Supabase database, and update SQLite to `synced = 1`.
@@ -73,6 +73,25 @@ Whenever the app starts up, or when a user taps **"Sync Now"** in the History or
 2. **Download Delta**: 
    - Queries Supabase for new/updated scans, chat sessions, and messages matching the logged-in user.
    - Merges missing records into local SQLite tables using `ON CONFLICT(id) DO UPDATE`.
+
+---
+
+## 🤖 AI Proxy Backend (Golang on Hugging Face Spaces)
+
+The AI proxy backend was migrated from Supabase Edge Functions to a **Golang HTTP server** deployed via Docker on **Hugging Face Spaces** (`https://ianpatatas-bugsok-ai.hf.space`).
+* **Endpoints**:
+  - `GET /health`: Server health checks.
+  - `POST /classify`: Crop classification (always uses `gemini-3.1-flash-lite`).
+  - `POST /diagnose`: Structured crop diagnosis (SSE stream: dynamically toggles between `gemini-3.1-flash-lite` [flash] and `gemma-4-26b-a4b-it` [deep]).
+  - `POST /chat`: Follow-up chatbot discussion (SSE stream: dynamic model toggle).
+* **Zero Dependencies**: Go proxy uses only Go standard library components (`net/http`, `encoding/json`, `encoding/base64`, etc.).
+* **Non-Plant Rejection**:
+  - Prompt modified in `/classify` to output `"NOT_A_PLANT"` if the image does not contain a plant or crop leaf, or if the crop in the image is not in the supported list.
+  - Server intercepts `"NOT_A_PLANT"` responses early and returns `{"crop": "", "matched": false}`.
+  - The client intercepts `matched === false` in `ScanContext.tsx`, halts the pipeline, and alerts the user with a warning/error toast.
+* **Low-Confidence Warning**:
+  - If a scan completes with a confidence score under 20%, the completion toast is styled as a yellow warning (`Low Confidence Scan`).
+  - A persistent warning banner is rendered above the BentoGrid in `scan-results.tsx` alerting the user that the results may be unreliable and prompting a retake.
 
 ---
 
@@ -100,6 +119,15 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   └── images/
 │       ├── mascot-animation.webp    # Bundled transparent animated WebP mascot splash animation (4.0s)
 │       └── mascot-logo.jpeg         # App mascot image (square with 12px rounded radius)
+├── proxy/
+│   ├── Dockerfile                   # Multi-stage Docker config for HF Spaces
+│   ├── README.md                    # Backend run & deployment instructions
+│   ├── chat.go                      # SSE follow-up chat endpoint
+│   ├── classify.go                  # Crop routing classifier & non-plant rejection logic
+│   ├── diagnose.go                  # SSE diagnosis endpoint (supports model toggle)
+│   ├── gemini.go                    # Shared Gemini API calling and stream handlers
+│   ├── go.mod                       # Go 1.22 module definition
+│   └── main.go                      # Entry point, routing, and CORS middleware
 ├── src/
 │   ├── app/
 │   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, wraps providers, Chrome DevTools network hook)
@@ -108,7 +136,7 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   ├── login.tsx                # Redesigned login with mascot logo, lockout timer, & custom toast alerts
 │   │   ├── register.tsx             # Redesigned registration screen with password strength progress bar
 │   │   ├── forgot-password.tsx      # 3-step secure password recovery wizard (Email, 6-digit OTP, Strength-tested Reset)
-│   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard loading data by ID from SQLite/Supabase
+│   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard with low-confidence warning banner
 │   │   ├── chat.tsx                 # Follow-up chat conversation screen querying SQLite logs & saving to SQLite/Supabase
 │   │   └── (tabs)/
 │   │       ├── _layout.tsx          # Custom Tab bar layout (integrates CustomTabBar)
@@ -122,13 +150,13 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   └── CustomTabBar.tsx         # Shared sliding pill floating bottom tab bar with pulse rings
 │   ├── context/
 │   │   ├── AuthContext.tsx          # Global auth state provider (exposes session, profile, and recovery helpers)
-│   │   ├── ScanContext.tsx          # Scan provider (initializes SQLite db and persists scanned diagnoses)
+│   │   ├── ScanContext.tsx          # Scan provider (initializes SQLite db, handles low-confidence toast warning)
 │   │   └── ToastContext.tsx         # Global Custom Toast context provider (exposes toast view states & animations)
 │   ├── services/
 │   │   ├── auth.service.ts          # Supabase authentication service calls wrapper
 │   │   ├── profile.service.ts       # Profiles database & avatars storage calls wrapper
 │   │   ├── scan.service.ts          # SQLite-First operations, Supabase bucket uploads, and bidirectional sync
-│   │   └── api.service.ts           # Supabase Edge Function proxy API (classifyCrop, diagnoseCrop, SSE streaming with JWT verification)
+│   │   └── api.service.ts           # Go proxy API helper (classifyCrop, diagnoseCrop, SSE streaming)
 │   ├── types/
 │   │   └── index.ts                 # Shared TypeScript interfaces and typings
 │   ├── constants/
@@ -146,16 +174,12 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 
 ## 🚀 Current Project Status & Commands
 
-1. **Phase 2, 3, & 4 Completion**: **Fully Completed, Verified, and Synced to GitHub**.
-   * Auth, profile management, and avatars are fully wired with Supabase.
-   * Scans, chat sessions, and message logs are saved locally to SQLite first, providing offline support.
-   * Bidirectional sync is completed and successfully verified.
-   * Backend Go proxy was migrated to a serverless Supabase Edge Function (`proxy`) with Deno/TypeScript, using native zero-dependency REST requests to avoid 503 load issues.
-   * Added Gemini model `gemma-4-26b-a4b-it` support for deep reasoning/thinking modes.
-   * Secured API endpoints using Supabase JWT verification on the gateway level and appended active session tokens to the mobile app request headers.
+1. **AI Proxy Re-deployment & Code Integration**: **Fully Completed, Verified, and Synced to GitHub**.
+   * Back-end proxy is deployed as a Go HTTP server in a Docker container on HF Spaces.
+   * Prompts and filters reject non-plant scans during classification, and the app gracefully handles and visualizes warning banners and alerts when diagnostic confidence is low.
 2. **Git Repository Status**: 
    * Committed and pushed to remote repository (`master` branch).
-   * Commit Message: `"Enforce JWT for proxy"`.
+   * Commit Message: `"Fix the issue when scanning"`.
 3. **Compilation Status**: Verified with `npx tsc --noEmit` which completes with **0 errors**.
 4. **Dev Server Command**:
    ```bash
