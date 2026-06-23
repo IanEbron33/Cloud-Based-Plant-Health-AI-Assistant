@@ -91,7 +91,8 @@ function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index:
           <View className="flex-row justify-between items-center">
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
-              className={`text-base font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+              className={`text-base font-bold ${isDark ? 'text-white' : 'text-stone-900'} flex-1 mr-2`}
+              numberOfLines={1}
             >
               {scan.crop_name}
             </Text>
@@ -106,7 +107,8 @@ function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index:
           <View className="flex-row items-center justify-between mt-1">
             <Text
               style={{ fontFamily: 'Fredoka_400Regular' }}
-              className={`text-xs ${isDark ? 'text-stone-400' : 'text-stone-600'}`}
+              className={`text-xs ${isDark ? 'text-stone-400' : 'text-stone-600'} flex-1 mr-2`}
+              numberOfLines={1}
             >
               {scan.condition_name}
             </Text>
@@ -115,6 +117,7 @@ function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index:
               <Text
                 style={{ fontFamily: 'Fredoka_700Bold' }}
                 className={`text-[9px] font-bold ${textStyle}`}
+                numberOfLines={1}
               >
                 {scan.severity === 'None' ? 'Healthy' : scan.severity}
               </Text>

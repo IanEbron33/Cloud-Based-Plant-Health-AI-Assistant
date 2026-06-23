@@ -317,8 +317,8 @@ export default function ChatScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 80}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
     >
       {/* Header Bar */}
