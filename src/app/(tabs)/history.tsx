@@ -392,6 +392,8 @@ export default function HistoryScreen() {
             </Text>
           </View>
         )}
+        {/* Spacer to prevent overlapping with floating Tab Bar */}
+        <View style={{ height: 110 }} />
       </Animated.ScrollView>
     </View>
   );

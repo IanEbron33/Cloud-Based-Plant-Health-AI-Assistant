@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, useColorScheme, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { Zap, Brain } from 'lucide-react-native';
 import { useScan } from '../context/ScanContext';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +18,34 @@ interface Message {
   timestamp: string;
   modelUsed?: 'flash' | 'deep';
 }
+
+const MascotAvatar = ({ size = 32 }: { size?: number }) => {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        overflow: 'hidden',
+        backgroundColor: '#ecfdf5',
+        borderWidth: 1,
+        borderColor: '#a7f3d0',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <Image
+        source={require('../../assets/images/mascot-transparent.png')}
+        style={{
+          width: size * 1.55,
+          height: size * 1.55,
+          transform: [{ translateY: size * 0.16 }],
+        }}
+        contentFit="contain"
+      />
+    </View>
+  );
+};
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -287,7 +317,8 @@ export default function ChatScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 80}
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
     >
       {/* Header Bar */}
@@ -340,8 +371,8 @@ export default function ChatScreen() {
           >
             {/* AI Avatar */}
             {msg.sender === 'ai' && (
-              <View className="w-8 h-8 rounded-full bg-emerald-600 items-center justify-center mr-2.5 mt-1">
-                <Ionicons name="leaf" size={14} color="white" />
+              <View style={{ marginRight: 10, marginTop: 4 }}>
+                <MascotAvatar size={32} />
               </View>
             )}
 
@@ -378,12 +409,17 @@ export default function ChatScreen() {
                 </Text>
 
                 {msg.sender === 'ai' && msg.modelUsed && (
-                  <View className="bg-emerald-950/20 px-1.5 py-0.5 rounded ml-2">
+                  <View className="bg-emerald-950/20 px-1.5 py-0.5 rounded ml-2 flex-row items-center">
+                    {msg.modelUsed === 'flash' ? (
+                      <Zap size={10} color="#10b981" style={{ marginRight: 3 }} />
+                    ) : (
+                      <Brain size={10} color="#10b981" style={{ marginRight: 3 }} />
+                    )}
                     <Text
                       style={{ fontFamily: 'Fredoka_700Bold' }}
                       className="text-[8px] text-emerald-500 font-bold uppercase"
                     >
-                      {msg.modelUsed === 'flash' ? '⚡ Flash' : '🧠 Deep'}
+                      {msg.modelUsed === 'flash' ? 'Flash' : 'Deep'}
                     </Text>
                   </View>
                 )}
@@ -395,8 +431,8 @@ export default function ChatScreen() {
         {/* Typing Loader Indicator */}
         {isTyping && (
           <View className="flex-row items-center mb-4">
-            <View className="w-8 h-8 rounded-full bg-emerald-600 items-center justify-center mr-2.5">
-              <Ionicons name="leaf" size={14} color="white" />
+            <View style={{ marginRight: 10 }}>
+              <MascotAvatar size={32} />
             </View>
             <View
               className={`rounded-[24px] px-5 py-3.5 border ${
@@ -437,10 +473,15 @@ export default function ChatScreen() {
         >
           <TouchableOpacity
             onPress={() => setActiveModel('flash')}
-            className={`px-3 py-1 rounded-full flex-row items-center ${
+            className={`px-3 py-1.5 rounded-full flex-row items-center ${
               activeModel === 'flash' ? 'bg-emerald-600' : ''
             }`}
           >
+            <Zap
+              size={11}
+              color={activeModel === 'flash' ? '#ffffff' : (isDark ? '#78716c' : '#57534e')}
+              style={{ marginRight: 4 }}
+            />
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
               className={`text-[10px] font-bold ${
@@ -451,23 +492,28 @@ export default function ChatScreen() {
                   : 'text-stone-600'
               }`}
             >
-              ⚡ Flash
+              Flash
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => setActiveModel('deep')}
-            className={`px-3 py-1 rounded-full flex-row items-center ${
+            className={`px-3 py-1.5 rounded-full flex-row items-center ${
               activeModel === 'deep' ? 'bg-emerald-600' : ''
             }`}
           >
+            <Brain
+              size={11}
+              color={activeModel === 'deep' ? '#ffffff' : (isDark ? '#78716c' : '#57534e')}
+              style={{ marginRight: 4 }}
+            />
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
               className={`text-[10px] font-bold ${
                 activeModel === 'deep' ? 'text-white' : isDark ? 'text-stone-500' : 'text-stone-600'
               }`}
             >
-              🧠 Deep
+              Deep
             </Text>
           </TouchableOpacity>
         </View>

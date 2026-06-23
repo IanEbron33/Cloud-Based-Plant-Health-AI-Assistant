@@ -383,6 +383,8 @@ export default function ProfileScreen() {
         </Animated.View>
 
       </View>
+      {/* Spacer to prevent overlapping with floating Tab Bar */}
+      <View style={{ height: 110 }} />
     </ScrollView>
   );
 }

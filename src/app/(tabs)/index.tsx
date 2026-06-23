@@ -485,6 +485,8 @@ export default function HomeScreen() {
         </Animated.View>
 
       </View>
+      {/* Spacer to prevent overlapping with floating Tab Bar */}
+      <View style={{ height: 110 }} />
     </ScrollView>
   );
 }
