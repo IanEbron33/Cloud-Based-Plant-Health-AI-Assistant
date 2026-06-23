@@ -165,7 +165,7 @@ export default function ChatScreen() {
   const loadChatSession = async () => {
     if (!scanId || !user) {
       // General transient fallback session
-      const greetingText = 'Hello! I am Bugsok AI, your crops care assistant. How can I help you with your crops today?';
+      const greetingText = 'Hello! I am Bugsok AI, as your plant care assistant. How can I help you with your crops today?';
       setChatCropName('Plant');
       setChatCondition('General Care');
       setMessages([
@@ -197,7 +197,9 @@ export default function ChatScreen() {
       const mapped = dbMsgs.map((m) => ({
         id: m.id,
         sender: m.sender,
-        text: m.message,
+        text: m.message
+          .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
+          .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
         timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         modelUsed: m.model_used as 'flash' | 'deep' | undefined,
       }));
@@ -205,10 +207,10 @@ export default function ChatScreen() {
       if (mapped.length === 0) {
         // If it's a new session, persist the initial greeting in SQLite/Supabase using resolved details
         const greetingText = scanRow
-          ? `Hello! I am Bugsok AI, your crops care assistant. I noticed from the analysis that your **${scanRow.crop_name}** has **${scanRow.condition_name}** with a severity of **${scanRow.severity}** (${scanRow.health_score}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
+          ? `Hello! I am Bugsok AI, as your plant care assistant. I noticed from the analysis that your **${scanRow.crop_name}** has **${scanRow.condition_name}** with a severity of **${scanRow.severity}** (${scanRow.health_score}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
           : diagnosisResult
-            ? `Hello! I am Bugsok AI, your crops care assistant. I noticed from the analysis that your **${diagnosisResult.cropLocalName}** has **${diagnosisResult.condition}** with a severity of **${diagnosisResult.severity}** (${diagnosisResult.healthScore}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
-            : `Hello! I am Bugsok AI, your crops care assistant. How can I help you with your ${resolvedCropName} today?`;
+            ? `Hello! I am Bugsok AI, as your plant care assistant. I noticed from the analysis that your **${diagnosisResult.cropLocalName}** has **${diagnosisResult.condition}** with a severity of **${diagnosisResult.severity}** (${diagnosisResult.healthScore}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
+            : `Hello! I am Bugsok AI, as your plant care assistant. How can I help you with your ${resolvedCropName} today?`;
 
         await saveChatMessage(sessId, 'ai', greetingText, 'flash');
 
@@ -216,7 +218,9 @@ export default function ChatScreen() {
         setMessages(reloaded.map((m) => ({
           id: m.id,
           sender: m.sender,
-          text: m.message,
+          text: m.message
+            .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
+            .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
           timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           modelUsed: m.model_used as 'flash' | 'deep' | undefined,
           isNew: true,
@@ -342,7 +346,9 @@ export default function ChatScreen() {
                 return {
                   id: m.id,
                   sender: m.sender,
-                  text: m.message,
+                  text: m.message
+                    .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
+                    .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
                   timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                   modelUsed: m.model_used as 'flash' | 'deep' | undefined,
                   isNew: isLast && wasTyping ? true : false,

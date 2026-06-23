@@ -117,6 +117,7 @@ The follow-up chat is fully localized and styled to support interactive, structu
   * Standard bullet lists are converted dynamically to circular bullet points (`• `).
 * **Snappy Typewriter Animation**: Custom chunk-based typing simulator increments in chunks of `4` characters per frame tick (reducing latency for paragraph loads to 2–3s) and schedules scrolling updates only every `12` characters to eliminate layout layout-calculation jitter.
 * **Bugsok AI Branding**: Renders a `"Bugsok AI"` name label tag above all chatbot messages and loaders, aligned side-by-side with the Mascot profile avatar.
+* **Retroactive Greeting Migration**: Dynamically replaces historical greeting texts (`"Hello! I am your plant care assistant"` or `"Bugsok AI, your crops care assistant"`) with the updated `"Hello! I am Bugsok AI, as your plant care assistant"` string during list mapping. This ensures that even existing chat sessions saved in the local SQLite database reflect the latest branding instantly without needing to clear local data.
 * **Dynamic Loading/Thinking Indicator**: The typing indicator adapts based on the active model. In Flash mode, it displays `"Bugsok is typing..."`. In Deep mode, since reasoning takes longer, it dynamically cycles through reasoning stages every 2.5s (e.g. `"Bugsok is analyzing the crop symptoms..."`, `"Bugsok is in deep thinking..."`, `"Bugsok is formulating treatment options..."`) to keep the user engaged.
 
 ---
