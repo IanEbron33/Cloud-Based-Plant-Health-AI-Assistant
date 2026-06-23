@@ -1,15 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, useColorScheme, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Zap, Brain } from 'lucide-react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Brain, Zap } from 'lucide-react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import vegetablesDb from '../../assets/data/vegetables_db.json';
+import { useAuth } from '../context/AuthContext';
 import { useScan } from '../context/ScanContext';
 import { useToast } from '../context/ToastContext';
-import { useAuth } from '../context/AuthContext';
 import { chatWithAI } from '../services/api.service';
-import { getOrCreateChatSession, saveChatMessage, fetchChatMessages } from '../services/scan.service';
-import vegetablesDb from '../../assets/data/vegetables_db.json';
+import { fetchChatMessages, fetchScanById, getOrCreateChatSession, saveChatMessage } from '../services/scan.service';
 
 interface Message {
   id: string;
@@ -17,6 +17,7 @@ interface Message {
   text: string;
   timestamp: string;
   modelUsed?: 'flash' | 'deep';
+  isNew?: boolean;
 }
 
 const MascotAvatar = ({ size = 32 }: { size?: number }) => {
@@ -27,9 +28,9 @@ const MascotAvatar = ({ size = 32 }: { size?: number }) => {
         height: size,
         borderRadius: size / 2,
         overflow: 'hidden',
-        backgroundColor: '#ecfdf5',
+        backgroundColor: '#FFFFFF',
         borderWidth: 1,
-        borderColor: '#a7f3d0',
+        borderColor: '#32b043ff',
         justifyContent: 'center',
         alignItems: 'center',
       }}
@@ -46,6 +47,96 @@ const MascotAvatar = ({ size = 32 }: { size?: number }) => {
     </View>
   );
 };
+
+function TypewriterBubble({
+  text,
+  isUser,
+  isDark,
+  onHeightChange,
+  renderMessageText,
+}: {
+  text: string;
+  isUser: boolean;
+  isDark: boolean;
+  onHeightChange?: () => void;
+  renderMessageText: (text: string, isUser: boolean) => React.ReactNode;
+}) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (index < text.length) {
+      const timer = setTimeout(() => {
+        setIndex((prev) => {
+          const next = Math.min(prev + 4, text.length);
+          if (next % 12 === 0 && onHeightChange) {
+            onHeightChange();
+          }
+          return next;
+        });
+      }, 8);
+      return () => clearTimeout(timer);
+    } else if (index === text.length && onHeightChange) {
+      onHeightChange();
+    }
+  }, [index, text]);
+
+  const visibleText = text.slice(0, index);
+  return <View>{renderMessageText(visibleText, isUser)}</View>;
+}
+
+function TypingIndicator({ activeModel, isDark }: { activeModel: 'flash' | 'deep'; isDark: boolean }) {
+  const deepThinkingPhrases = [
+    "Bugsok is analyzing the crop symptoms...",
+    "Bugsok is in deep thinking...",
+    "Bugsok is cross-referencing treatments...",
+    "Bugsok is formulating treatment options...",
+    "Bugsok is preparing your customized advice..."
+  ];
+
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    if (activeModel !== 'deep') return;
+
+    const interval = setInterval(() => {
+      setPhraseIndex((prev) => (prev + 1) % deepThinkingPhrases.length);
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [activeModel]);
+
+  const textToShow = activeModel === 'deep'
+    ? deepThinkingPhrases[phraseIndex]
+    : "Bugsok is typing...";
+
+  return (
+    <View className="flex-row mb-4 justify-start">
+      <View style={{ marginRight: 10, marginTop: 4 }}>
+        <MascotAvatar size={32} />
+      </View>
+      <View className="flex-col max-w-[80%]">
+        <Text
+          style={{ fontFamily: 'Fredoka_700Bold' }}
+          className={`text-[11px] font-bold mb-1 ml-1 ${isDark ? 'text-stone-300' : 'text-stone-600'}`}
+        >
+          Bugsok AI
+        </Text>
+        <View
+          className={`rounded-[24px] px-5 py-3.5 border ${
+            isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-150 shadow-sm'
+          }`}
+        >
+          <Text
+            style={{ fontFamily: 'Fredoka_400Regular' }}
+            className="text-stone-400 text-xs italic"
+          >
+            {textToShow}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -67,13 +158,16 @@ export default function ChatScreen() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(false);
 
-  const cropName = diagnosisResult?.cropLocalName || identifiedCrop || 'Plant';
+  const [chatCropName, setChatCropName] = useState<string>('Plant');
+  const [chatCondition, setChatCondition] = useState<string>('General Care');
 
   // Load chat session from SQLite/Supabase
   const loadChatSession = async () => {
     if (!scanId || !user) {
       // General transient fallback session
-      const greetingText = 'Hello! I am your plant care assistant. How can I help you with your crops today?';
+      const greetingText = 'Hello! I am Bugsok AI, your crops care assistant. How can I help you with your crops today?';
+      setChatCropName('Plant');
+      setChatCondition('General Care');
       setMessages([
         {
           id: '1',
@@ -89,7 +183,14 @@ export default function ChatScreen() {
 
     setIsLoadingSession(true);
     try {
-      const sessId = await getOrCreateChatSession(scanId, user.id, cropName);
+      const scanRow = fetchScanById(scanId, user.id);
+      const resolvedCropName = scanRow ? scanRow.crop_name : (diagnosisResult?.cropLocalName || identifiedCrop || 'Plant');
+      const resolvedCondition = scanRow ? scanRow.condition_name : (diagnosisResult?.condition || 'General Care');
+
+      setChatCropName(resolvedCropName);
+      setChatCondition(resolvedCondition);
+
+      const sessId = await getOrCreateChatSession(scanId, user.id, resolvedCropName);
       setSessionId(sessId);
 
       const dbMsgs = fetchChatMessages(sessId);
@@ -102,10 +203,12 @@ export default function ChatScreen() {
       }));
 
       if (mapped.length === 0) {
-        // If it's a new session, persist the initial greeting in SQLite/Supabase
-        const greetingText = diagnosisResult
-          ? `Hello! I am your plant care assistant. I noticed from the analysis that your **${diagnosisResult.cropLocalName}** has **${diagnosisResult.condition}** with a severity of **${diagnosisResult.severity}** (${diagnosisResult.healthScore}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
-          : `Hello! I am your plant care assistant. How can I help you with your ${cropName} today?`;
+        // If it's a new session, persist the initial greeting in SQLite/Supabase using resolved details
+        const greetingText = scanRow
+          ? `Hello! I am Bugsok AI, your crops care assistant. I noticed from the analysis that your **${scanRow.crop_name}** has **${scanRow.condition_name}** with a severity of **${scanRow.severity}** (${scanRow.health_score}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
+          : diagnosisResult
+            ? `Hello! I am Bugsok AI, your crops care assistant. I noticed from the analysis that your **${diagnosisResult.cropLocalName}** has **${diagnosisResult.condition}** with a severity of **${diagnosisResult.severity}** (${diagnosisResult.healthScore}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
+            : `Hello! I am Bugsok AI, your crops care assistant. How can I help you with your ${resolvedCropName} today?`;
 
         await saveChatMessage(sessId, 'ai', greetingText, 'flash');
 
@@ -116,6 +219,7 @@ export default function ChatScreen() {
           text: m.message,
           timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+          isNew: true,
         })));
       } else {
         setMessages(mapped);
@@ -171,7 +275,7 @@ export default function ChatScreen() {
     setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
 
     // Get DB metadata context for the current crop
-    const cropKey = identifiedCrop || diagnosisResult?.cropLocalName || 'Talong';
+    const cropKey = chatCropName;
     const cropDb = vegetablesDb[cropKey as keyof typeof vegetablesDb];
     const contextString = cropDb ? JSON.stringify(cropDb) : '';
 
@@ -212,6 +316,7 @@ export default function ChatScreen() {
                   text: accumulatedText,
                   timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                   modelUsed: activeModel,
+                  isNew: true,
                 },
               ];
             }
@@ -228,13 +333,22 @@ export default function ChatScreen() {
             await saveChatMessage(sessionId, 'ai', accumulatedText, activeModel);
             // Reload from DB to ensure local message sync state and timestamp match
             const dbMsgs = fetchChatMessages(sessionId);
-            setMessages(dbMsgs.map((m) => ({
-              id: m.id,
-              sender: m.sender,
-              text: m.message,
-              timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              modelUsed: m.model_used as 'flash' | 'deep' | undefined,
-            })));
+            setMessages((prev) => {
+              const lastPrevMsg = prev[prev.length - 1];
+              const wasTyping = lastPrevMsg && lastPrevMsg.sender === 'ai' && lastPrevMsg.isNew;
+              
+              return dbMsgs.map((m, idx) => {
+                const isLast = idx === dbMsgs.length - 1;
+                return {
+                  id: m.id,
+                  sender: m.sender,
+                  text: m.message,
+                  timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+                  isNew: isLast && wasTyping ? true : false,
+                };
+              });
+            });
           } catch (err) {
             console.error('[Chat Screen] Save AI response error:', err);
           }
@@ -275,9 +389,9 @@ export default function ChatScreen() {
       }
     }
 
-    const greetingText = diagnosisResult
-      ? `Hello! I am your plant care assistant. I noticed from the analysis that your **${diagnosisResult.cropLocalName}** has **${diagnosisResult.condition}** with a severity of **${diagnosisResult.severity}** (${diagnosisResult.healthScore}% health score).\n\nDo you have any questions about its treatment, prevention, or care?`
-      : `Hello! I am your plant care assistant. How can I help you with your ${cropName} today?`;
+    const greetingText = chatCondition !== 'General Care'
+      ? `Hello! I am your plant care assistant. I noticed from the analysis that your **${chatCropName}** has **${chatCondition}**.\n\nDo you have any questions about its treatment, prevention, or care?`
+      : `Hello! I am your plant care assistant. How can I help you with your ${chatCropName} today?`;
 
     // Persist new initial greeting
     if (sessionId) {
@@ -289,6 +403,7 @@ export default function ChatScreen() {
         text: m.message,
         timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+        isNew: true,
       })));
     } else {
       setMessages([
@@ -303,8 +418,66 @@ export default function ChatScreen() {
     }
   };
 
-  const headerTitle = `${cropName} Follow-up Chat`;
-  const subtitle = diagnosisResult?.condition || 'General Care';
+  const renderMessageText = (text: string, isUser: boolean) => {
+    // Replace markdown asterisk (*) or dash (-) bullets with proper • bullets
+    const formattedText = text.replace(/^(\s*)[\*-]\s/gm, '$1• ');
+    const boldParts = formattedText.split('**');
+    return (
+      <Text
+        style={{ fontFamily: 'Fredoka_400Regular' }}
+        className={`text-sm leading-6 ${isUser
+          ? 'text-white font-medium'
+          : isDark
+            ? 'text-stone-200'
+            : 'text-stone-800'
+          }`}
+      >
+        {boldParts.map((boldPart, boldIndex) => {
+          if (boldIndex % 2 === 1) {
+            // This is bold text (highlighted)
+            return (
+              <Text
+                key={`bold-${boldIndex}`}
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className={
+                  isUser
+                    ? 'text-emerald-100 font-bold'
+                    : 'text-emerald-600 dark:text-emerald-400 font-bold'
+                }
+              >
+                {boldPart}
+              </Text>
+            );
+          } else {
+            // This is regular text, but may contain *italics*
+            const italicParts = boldPart.split('*');
+            return italicParts.map((italicPart, italicIndex) => {
+              if (italicIndex % 2 === 1) {
+                // This is italic text (Option 2: soft green/mint italic accent)
+                return (
+                  <Text
+                    key={`italic-${boldIndex}-${italicIndex}`}
+                    style={{ fontFamily: 'Fredoka_700Bold', fontStyle: 'italic' }}
+                    className={
+                      isUser
+                        ? 'text-emerald-200 font-bold italic'
+                        : 'text-emerald-500 dark:text-emerald-400 font-bold italic'
+                    }
+                  >
+                    {italicPart}
+                  </Text>
+                );
+              }
+              return italicPart;
+            });
+          }
+        })}
+      </Text>
+    );
+  };
+
+  const headerTitle = `${chatCropName} Follow-up Chat`;
+  const subtitle = chatCondition;
 
   if (isLoadingSession) {
     return (
@@ -325,9 +498,8 @@ export default function ChatScreen() {
       <View className="pt-14 pb-4 px-6 flex-row items-center border-b border-stone-800/5 justify-between bg-white">
         <TouchableOpacity
           onPress={() => router.back()}
-          className={`w-10 h-10 rounded-2xl items-center justify-center border ${
-            isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200'
-          }`}
+          className={`w-10 h-10 rounded-2xl items-center justify-center border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200'
+            }`}
         >
           <Ionicons name="arrow-back" size={20} color={isDark ? '#e7e5e4' : '#292524'} />
         </TouchableOpacity>
@@ -349,9 +521,8 @@ export default function ChatScreen() {
 
         <TouchableOpacity
           onPress={handleClearChat}
-          className={`w-10 h-10 rounded-2xl items-center justify-center border ${
-            isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200'
-          }`}
+          className={`w-10 h-10 rounded-2xl items-center justify-center border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200'
+            }`}
         >
           <Ionicons name="trash-outline" size={18} color="#ef4444" />
         </TouchableOpacity>
@@ -376,106 +547,92 @@ export default function ChatScreen() {
               </View>
             )}
 
-            {/* Bubble */}
-            <View
-              className={`max-w-[80%] rounded-[24px] px-4 py-3 ${
-                msg.sender === 'user'
+            {/* Bubble & Optional Header container */}
+            <View className={`flex-col ${msg.sender === 'user' ? 'max-w-[80%] items-end' : 'max-w-[80%]'}`}>
+              {msg.sender === 'ai' && (
+                <Text
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className={`text-[11px] font-bold mb-1 ml-1 ${isDark ? 'text-stone-300' : 'text-stone-600'}`}
+                >
+                  Bugsok AI
+                </Text>
+              )}
+              <View
+                className={`rounded-[24px] px-4 py-3 ${msg.sender === 'user'
                   ? 'bg-emerald-600 rounded-tr-sm'
                   : isDark
-                  ? 'bg-stone-900 border border-stone-850 rounded-tl-sm'
-                  : 'bg-white border border-stone-150 rounded-tl-sm shadow-sm'
-              }`}
-            >
-              <Text
-                style={{ fontFamily: 'Fredoka_400Regular' }}
-                className={`text-sm leading-5 ${
-                  msg.sender === 'user'
-                    ? 'text-white font-medium'
-                    : isDark
-                    ? 'text-stone-200'
-                    : 'text-stone-800'
-                }`}
+                    ? 'bg-stone-900 border border-stone-850 rounded-tl-sm'
+                    : 'bg-white border border-stone-150 rounded-tl-sm shadow-sm'
+                  }`}
               >
-                {msg.text}
-              </Text>
-
-              {/* Footer info: time & model tag */}
-              <View className="flex-row items-center justify-between mt-2">
-                <Text
-                  style={{ fontFamily: 'Fredoka_400Regular' }}
-                  className={`text-[9px] ${msg.sender === 'user' ? 'text-emerald-200' : 'text-stone-500'}`}
-                >
-                  {msg.timestamp}
-                </Text>
-
-                {msg.sender === 'ai' && msg.modelUsed && (
-                  <View className="bg-emerald-950/20 px-1.5 py-0.5 rounded ml-2 flex-row items-center">
-                    {msg.modelUsed === 'flash' ? (
-                      <Zap size={10} color="#10b981" style={{ marginRight: 3 }} />
-                    ) : (
-                      <Brain size={10} color="#10b981" style={{ marginRight: 3 }} />
-                    )}
-                    <Text
-                      style={{ fontFamily: 'Fredoka_700Bold' }}
-                      className="text-[8px] text-emerald-500 font-bold uppercase"
-                    >
-                      {msg.modelUsed === 'flash' ? 'Flash' : 'Deep'}
-                    </Text>
-                  </View>
+                {msg.sender === 'ai' && msg.isNew ? (
+                  <TypewriterBubble
+                    text={msg.text}
+                    isUser={false}
+                    isDark={isDark}
+                    onHeightChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+                    renderMessageText={renderMessageText}
+                  />
+                ) : (
+                  renderMessageText(msg.text, msg.sender === 'user')
                 )}
+
+                {/* Footer info: time & model tag */}
+                <View className="flex-row items-center justify-between mt-2">
+                  <Text
+                    style={{ fontFamily: 'Fredoka_400Regular' }}
+                    className={`text-[9px] ${msg.sender === 'user' ? 'text-emerald-200' : 'text-stone-500'}`}
+                  >
+                    {msg.timestamp}
+                  </Text>
+
+                  {msg.sender === 'ai' && msg.modelUsed && (
+                    <View className="bg-emerald-950/20 px-1.5 py-0.5 rounded ml-2 flex-row items-center">
+                      {msg.modelUsed === 'flash' ? (
+                        <Zap size={10} color="#10b981" style={{ marginRight: 3 }} />
+                      ) : (
+                        <Brain size={10} color="#10b981" style={{ marginRight: 3 }} />
+                      )}
+                      <Text
+                        style={{ fontFamily: 'Fredoka_700Bold' }}
+                        className="text-[8px] text-emerald-500 font-bold uppercase"
+                      >
+                        {msg.modelUsed === 'flash' ? 'Flash' : 'Deep'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
           </View>
         ))}
 
         {/* Typing Loader Indicator */}
-        {isTyping && (
-          <View className="flex-row items-center mb-4">
-            <View style={{ marginRight: 10 }}>
-              <MascotAvatar size={32} />
-            </View>
-            <View
-              className={`rounded-[24px] px-5 py-3.5 border ${
-                isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-150 shadow-sm'
-              }`}
-            >
-              <Text
-                style={{ fontFamily: 'Fredoka_400Regular' }}
-                className="text-stone-400 text-xs italic"
-              >
-                AI is typing...
-              </Text>
-            </View>
-          </View>
-        )}
+        {isTyping && <TypingIndicator activeModel={activeModel} isDark={isDark} />}
       </ScrollView>
 
       {/* Model Toggle pill bar directly above input */}
       <View
-        className={`px-6 py-2 border-t flex-row items-center justify-between ${
-          isDark ? 'bg-stone-900/40 border-stone-850' : 'bg-stone-100/80 border-stone-200'
-        }`}
+        className={`px-6 py-2 border-t flex-row items-center justify-between ${isDark ? 'bg-stone-900/40 border-stone-850' : 'bg-stone-100/80 border-stone-200'
+          }`}
       >
         <Text
           style={{ fontFamily: 'Fredoka_700Bold' }}
-          className={`text-[10px] font-bold uppercase tracking-wider ${
-            isDark ? 'text-stone-500' : 'text-stone-400'
-          }`}
+          className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'
+            }`}
         >
           Model:
         </Text>
 
         {/* Toggle pill button */}
         <View
-          className={`flex-row p-1 rounded-full ${
-            isDark ? 'bg-stone-950 border border-stone-850' : 'bg-stone-200/50'
-          }`}
+          className={`flex-row p-1 rounded-full ${isDark ? 'bg-stone-950 border border-stone-850' : 'bg-stone-200/50'
+            }`}
         >
           <TouchableOpacity
             onPress={() => setActiveModel('flash')}
-            className={`px-3 py-1.5 rounded-full flex-row items-center ${
-              activeModel === 'flash' ? 'bg-emerald-600' : ''
-            }`}
+            className={`px-3 py-1.5 rounded-full flex-row items-center ${activeModel === 'flash' ? 'bg-emerald-600' : ''
+              }`}
           >
             <Zap
               size={11}
@@ -484,13 +641,12 @@ export default function ChatScreen() {
             />
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
-              className={`text-[10px] font-bold ${
-                activeModel === 'flash'
-                  ? 'text-white'
-                  : isDark
+              className={`text-[10px] font-bold ${activeModel === 'flash'
+                ? 'text-white'
+                : isDark
                   ? 'text-stone-500'
                   : 'text-stone-600'
-              }`}
+                }`}
             >
               Flash
             </Text>
@@ -498,9 +654,8 @@ export default function ChatScreen() {
 
           <TouchableOpacity
             onPress={() => setActiveModel('deep')}
-            className={`px-3 py-1.5 rounded-full flex-row items-center ${
-              activeModel === 'deep' ? 'bg-emerald-600' : ''
-            }`}
+            className={`px-3 py-1.5 rounded-full flex-row items-center ${activeModel === 'deep' ? 'bg-emerald-600' : ''
+              }`}
           >
             <Brain
               size={11}
@@ -509,9 +664,8 @@ export default function ChatScreen() {
             />
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
-              className={`text-[10px] font-bold ${
-                activeModel === 'deep' ? 'text-white' : isDark ? 'text-stone-500' : 'text-stone-600'
-              }`}
+              className={`text-[10px] font-bold ${activeModel === 'deep' ? 'text-white' : isDark ? 'text-stone-500' : 'text-stone-600'
+                }`}
             >
               Deep
             </Text>
@@ -521,19 +675,17 @@ export default function ChatScreen() {
 
       {/* Chat input block */}
       <View
-        className={`px-5 py-4 border-t flex-row items-center ${
-          isDark ? 'bg-stone-950 border-stone-850' : 'bg-white border-stone-150'
-        }`}
+        className={`px-5 py-4 border-t flex-row items-center ${isDark ? 'bg-stone-950 border-stone-850' : 'bg-white border-stone-150'
+          }`}
       >
         <View
-          className={`flex-1 flex-row items-center px-4 rounded-full border ${
-            isDark ? 'bg-stone-900 border-stone-800' : 'bg-stone-50 border-stone-250'
-          }`}
+          className={`flex-1 flex-row items-center px-4 rounded-full border ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-stone-50 border-stone-250'
+            }`}
         >
           <TextInput
             value={inputText}
             onChangeText={setInputText}
-            placeholder={identifiedCrop ? `Ask about ${identifiedCrop}...` : 'Ask about your plant...'}
+            placeholder={chatCropName !== 'Plant' ? `Ask about ${chatCropName}...` : 'Ask about your plant...'}
             placeholderTextColor="#a8a29e"
             className={`flex-1 py-3 text-sm ${isDark ? 'text-white' : 'text-stone-900'}`}
           />

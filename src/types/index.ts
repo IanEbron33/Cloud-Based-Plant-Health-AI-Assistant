@@ -115,6 +115,7 @@ export interface ScanState {
   diagnosisResult: DiagnosisResult | null;
   errorMessage: string | null;
   loadingCaption: string;
+  lastSavedScanId: string | null;
 }
 
 /** Methods exposed by the ScanContext provider. */

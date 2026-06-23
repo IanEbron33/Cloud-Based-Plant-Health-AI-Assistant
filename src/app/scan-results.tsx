@@ -27,6 +27,7 @@ export default function ScanResultsScreen() {
     startScan,
     cancelScan,
     clearResults,
+    lastSavedScanId,
   } = useScan();
 
   const [dbResult, setDbResult] = useState<DiagnosisResult | null>(null);
@@ -335,7 +336,7 @@ export default function ScanResultsScreen() {
   // State 6: Completed (Show results)
   const result = (id ? dbResult : diagnosisResult) as DiagnosisResult;
   const severityData = getSeverityData(result.severity);
-  const scanRecordId = id || '';
+  const scanRecordId = id || lastSavedScanId || '';
 
   return (
     <View className="flex-1 bg-stone-50">

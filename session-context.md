@@ -4,7 +4,7 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of June 22, 2026)
+## 📅 Project Context (As of June 23, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
@@ -102,6 +102,22 @@ The AI proxy backend runs on **Hugging Face Spaces** (`https://ianpatatas-bugsok
   - If the first line reads `CLASSIFY: NOT_A_PLANT` or does not match supported crops, the server streams an error early, causing the client app to halt and display a warning toast.
 * **Low-Confidence Warning**:
   - If a scan completes with a confidence score under 20%, the completion toast is styled as a yellow warning (`Low Confidence Scan`), and a persistent warning banner is rendered above the BentoGrid in `scan-results.tsx` prompting a retake.
+
+---
+
+## 💬 Follow-up Chat System & Assistant UX
+
+The follow-up chat is fully localized and styled to support interactive, structured diagnostic consultations:
+
+* **SQLite Context Lookup**: Ensures chat sessions loaded from history pull correct metadata (e.g. crop name `Sili`, condition `Downy Mildew`) directly from SQLite records (`fetchScanById`), resolving default fallback errors.
+* **Strict English-Only Prompting**: Backend Go proxy chatbot instructions force the model to output purely English responses, eliminating Taglish mixtures or random dialect switches.
+* **Advanced Text Styling Parser**: Client-side parser in `chat.tsx` processes raw markdown markers and transforms them:
+  * Double asterisks (`**bold text**`) are rendered in **bold emerald green**.
+  * Single asterisks (`*italic accent*` e.g., culinary recipes like `*Tinola*`, `*Sinigang*`) are rendered in **bold-italic soft mint green**.
+  * Standard bullet lists are converted dynamically to circular bullet points (`• `).
+* **Snappy Typewriter Animation**: Custom chunk-based typing simulator increments in chunks of `4` characters per frame tick (reducing latency for paragraph loads to 2–3s) and schedules scrolling updates only every `12` characters to eliminate layout layout-calculation jitter.
+* **Bugsok AI Branding**: Renders a `"Bugsok AI"` name label tag above all chatbot messages and loaders, aligned side-by-side with the Mascot profile avatar.
+* **Dynamic Loading/Thinking Indicator**: The typing indicator adapts based on the active model. In Flash mode, it displays `"Bugsok is typing..."`. In Deep mode, since reasoning takes longer, it dynamically cycles through reasoning stages every 2.5s (e.g. `"Bugsok is analyzing the crop symptoms..."`, `"Bugsok is in deep thinking..."`, `"Bugsok is formulating treatment options..."`) to keep the user engaged.
 
 ---
 

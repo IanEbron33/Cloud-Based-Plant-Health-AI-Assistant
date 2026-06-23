@@ -70,8 +70,10 @@ Use ONLY the following verified crop database as your reference:
 Rules:
 - Stay within the scope of the 59 crops in the database.
 - If the user asks about a crop or topic not in the database, politely say you can only help with the supported Philippine crops.
-- Use warm, encouraging Taglish when appropriate.
-- Provide actionable, practical advice suitable for backyard farming.`, payload.Context)
+- Respond ONLY in clear, friendly, and helpful English. Do not use Tagalog or Taglish.
+- Provide actionable, practical advice suitable for backyard farming.
+- Highlight key terms (such as severity level, crop names, or specific organic treatments) by enclosing them in double asterisks, e.g., **High** or **Neem Oil**, so the application can style them in green and bold.
+- Use circular bullet points (•) instead of asterisks (*) or dashes (-) when presenting lists.`, payload.Context)
 
 	// Map to Gemini contents
 	contents := make([]GeminiRequestContent, len(payload.Messages))

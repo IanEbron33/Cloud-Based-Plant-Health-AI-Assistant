@@ -28,6 +28,7 @@ export function ScanProvider({ children }: ScanProviderProps) {
     diagnosisResult: null,
     errorMessage: null,
     loadingCaption: 'Identifying crop type...',
+    lastSavedScanId: null,
   });
 
   const accumulatedTextRef = useRef<string>('');
@@ -73,6 +74,7 @@ export function ScanProvider({ children }: ScanProviderProps) {
       diagnosisResult: null,
       errorMessage: null,
       loadingCaption: 'Identifying crop type...',
+      lastSavedScanId: null,
     });
 
     accumulatedTextRef.current = '';
@@ -163,6 +165,7 @@ export function ScanProvider({ children }: ScanProviderProps) {
             isScanning: false,
             scanPhase: 'done',
             diagnosisResult: parsedResult,
+            lastSavedScanId: savedId,
           }));
 
           if (parsedResult.confidenceScore < 20) {
@@ -244,6 +247,7 @@ export function ScanProvider({ children }: ScanProviderProps) {
       scannedImageUri: null,
       identifiedCrop: null,
       diagnosisResult: null,
+      lastSavedScanId: null,
     }));
 
     showToast({
@@ -268,6 +272,7 @@ export function ScanProvider({ children }: ScanProviderProps) {
       diagnosisResult: null,
       errorMessage: null,
       loadingCaption: 'Identifying crop type...',
+      lastSavedScanId: null,
     });
   };
 
