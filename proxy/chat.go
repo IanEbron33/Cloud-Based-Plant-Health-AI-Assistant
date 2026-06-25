@@ -93,10 +93,12 @@ Rules:
 	genConfig := &GenerationConfig{
 		Temperature: 0.5,
 	}
-	// Gemma 4-31B-IT is a hybrid-thinking model; set thinkingLevel="MINIMAL"
-	// to prevent internal <think> reasoning tokens from leaking into the response.
+	// Gemma 4-31B-IT is a hybrid-thinking model; enable deep thinking and stream thought blocks to client.
 	if modelType == "deep" {
-		genConfig.ThinkingConfig = &ThinkingConfig{ThinkingLevel: "MINIMAL"}
+		genConfig.ThinkingConfig = &ThinkingConfig{
+			ThinkingLevel:   "HIGH",
+			IncludeThoughts: true,
+		}
 	}
 
 	geminiReq := GeminiGenerateRequest{
@@ -128,7 +130,7 @@ Rules:
 		return
 	}
 
-	err = streamGeminiSSE(w, resp)
+	err = streamGeminiSSE(w, resp, false) // filterThoughts = false (stream thoughts as separate fields)
 	if err != nil {
 		log.Printf("[Chat] Error streaming Gemini response: %v\n", err)
 	}

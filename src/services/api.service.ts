@@ -541,8 +541,8 @@ export const chatWithAI = async (
                 resolve();
                 return;
               }
-              if (chunk.text) {
-                onChunk({ text: chunk.text });
+              if (chunk.text || chunk.thought) {
+                onChunk({ text: chunk.text, thought: chunk.thought });
               }
             } catch (err) {
               // Ignore partial JSON parse failures in stream events

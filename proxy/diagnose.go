@@ -89,10 +89,12 @@ Mix English and Filipino naturally (Taglish) when appropriate.`, crop, crop, con
 	genConfig := &GenerationConfig{
 		Temperature: 0.4,
 	}
-	// Gemma 4-31B-IT is a hybrid-thinking model; set thinkingLevel="MINIMAL"
-	// to prevent internal <think> reasoning tokens from leaking into the response.
+	// Gemma 4-31B-IT is a hybrid-thinking model; enable deep thinking but filter it out from final response stream.
 	if modelType == "deep" {
-		genConfig.ThinkingConfig = &ThinkingConfig{ThinkingLevel: "MINIMAL"}
+		genConfig.ThinkingConfig = &ThinkingConfig{
+			ThinkingLevel:   "HIGH",
+			IncludeThoughts: true,
+		}
 	}
 
 	geminiReq := GeminiGenerateRequest{
@@ -136,7 +138,7 @@ Mix English and Filipino naturally (Taglish) when appropriate.`, crop, crop, con
 		return
 	}
 
-	err = streamGeminiSSE(w, resp)
+	err = streamGeminiSSE(w, resp, true) // filterThoughts = true
 	if err != nil {
 		log.Printf("[Diagnose] Error streaming Gemini response: %v\n", err)
 	}

@@ -15,6 +15,7 @@ interface Message {
   id: string;
   sender: 'user' | 'ai';
   text: string;
+  thought?: string;
   timestamp: string;
   modelUsed?: 'flash' | 'deep';
   isNew?: boolean;
@@ -47,6 +48,92 @@ const MascotAvatar = ({ size = 32 }: { size?: number }) => {
     </View>
   );
 };
+
+function CollapsibleThought({ thought, isDark }: { thought: string; isDark: boolean }) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!thought || !thought.trim()) return null;
+
+  return (
+    <View
+      className={`mt-1 mb-2 rounded-[16px] overflow-hidden border ${
+        isDark ? 'bg-stone-900 border-stone-800' : 'bg-stone-50 border-stone-200'
+      }`}
+    >
+      <TouchableOpacity
+        onPress={() => setExpanded(!expanded)}
+        activeOpacity={0.7}
+        className={`px-4 py-2.5 flex-row items-center justify-between ${
+          isDark ? 'bg-stone-850' : 'bg-stone-100'
+        }`}
+      >
+        <View className="flex-row items-center">
+          <Ionicons name="bulb" size={13} color="#10b981" style={{ marginRight: 6 }} />
+          <Text
+            style={{ fontFamily: 'Fredoka_700Bold' }}
+            className={`text-[10px] font-bold uppercase tracking-wider ${
+              isDark ? 'text-stone-300' : 'text-stone-700'
+            }`}
+          >
+            Thinking Process
+          </Text>
+        </View>
+        <Ionicons
+          name={expanded ? 'chevron-up' : 'chevron-down'}
+          size={14}
+          color={isDark ? '#a8a29e' : '#78716c'}
+        />
+      </TouchableOpacity>
+      {expanded && (
+        <View className="px-4 py-3 border-t border-stone-200/40 dark:border-stone-800/40">
+          <Text
+            style={{ fontFamily: 'Fredoka_400Regular' }}
+            className={`text-xs leading-5 italic ${
+              isDark ? 'text-stone-400' : 'text-stone-500'
+            }`}
+          >
+            {thought}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+function ActiveTextLoading({ activeModel }: { activeModel: 'flash' | 'deep' }) {
+  const phrases = activeModel === 'deep' 
+    ? [
+        "Bugsok is analyzing the crop symptoms...",
+        "Bugsok is in deep thinking...",
+        "Bugsok is formulating treatment options...",
+        "Bugsok is preparing your customized advice..."
+      ]
+    : [
+        "Bugsok is typing..."
+      ];
+
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    if (activeModel !== 'deep') return;
+    const interval = setInterval(() => {
+      setPhraseIndex((prev) => (prev + 1) % phrases.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [activeModel]);
+
+  return (
+    <View className="flex-row items-center py-1">
+      <ActivityIndicator size="small" color="#10b981" style={{ marginRight: 8 }} />
+      <Text
+        style={{ fontFamily: 'Fredoka_400Regular' }}
+        className="text-stone-400 text-xs italic"
+      >
+        {phrases[phraseIndex]}
+      </Text>
+    </View>
+  );
+}
 
 function TypewriterBubble({
   text,
@@ -154,6 +241,7 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(false);
 
@@ -193,15 +281,22 @@ export default function ChatScreen() {
       setSessionId(sessId);
 
       const dbMsgs = fetchChatMessages(sessId);
-      const mapped = dbMsgs.map((m) => ({
-        id: m.id,
-        sender: m.sender,
-        text: m.message
-          .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
-          .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
-        timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        modelUsed: m.model_used as 'flash' | 'deep' | undefined,
-      }));
+      const mapped = dbMsgs.map((m) => {
+        const thoughtMatch = m.message.match(/<thought>([\s\S]*?)<\/thought>/);
+        const thought = thoughtMatch ? thoughtMatch[1] : undefined;
+        const cleanText = m.message.replace(/<thought>[\s\S]*?<\/thought>/, '');
+
+        return {
+          id: m.id,
+          sender: m.sender,
+          text: cleanText
+            .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
+            .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
+          thought,
+          timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+        };
+      });
 
       if (mapped.length === 0) {
         // If it's a new session, persist the initial greeting in SQLite/Supabase using resolved details
@@ -214,16 +309,23 @@ export default function ChatScreen() {
         await saveChatMessage(sessId, 'ai', greetingText, 'flash');
 
         const reloaded = fetchChatMessages(sessId);
-        setMessages(reloaded.map((m) => ({
-          id: m.id,
-          sender: m.sender,
-          text: m.message
-            .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
-            .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
-          timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          modelUsed: m.model_used as 'flash' | 'deep' | undefined,
-          isNew: true,
-        })));
+        setMessages(reloaded.map((m) => {
+          const thoughtMatch = m.message.match(/<thought>([\s\S]*?)<\/thought>/);
+          const thought = thoughtMatch ? thoughtMatch[1] : undefined;
+          const cleanText = m.message.replace(/<thought>[\s\S]*?<\/thought>/, '');
+
+          return {
+            id: m.id,
+            sender: m.sender,
+            text: cleanText
+              .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
+              .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
+            thought,
+            timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+            isNew: true,
+          };
+        }));
       } else {
         setMessages(mapped);
       }
@@ -264,6 +366,7 @@ export default function ChatScreen() {
 
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
+    setIsGenerating(true);
 
     // Persist user message in DB
     if (sessionId) {
@@ -289,6 +392,7 @@ export default function ChatScreen() {
     }));
 
     let accumulatedText = '';
+    let accumulatedThought = '';
     const aiMsgId = (Date.now() + 1).toString();
 
     // Abort any active chat stream
@@ -303,6 +407,30 @@ export default function ChatScreen() {
       activeModel,
       // onChunk callback
       (chunk) => {
+        if (chunk.thought) {
+          accumulatedThought += chunk.thought;
+          setIsTyping(false); // Hide standard typing text bubble when thought streams in
+          setMessages((prev) => {
+            const exists = prev.some((m) => m.id === aiMsgId);
+            if (exists) {
+              return prev.map((m) => (m.id === aiMsgId ? { ...m, thought: accumulatedThought } : m));
+            } else {
+              return [
+                ...prev,
+                {
+                  id: aiMsgId,
+                  sender: 'ai',
+                  text: '',
+                  thought: accumulatedThought,
+                  timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  modelUsed: activeModel,
+                  isNew: true,
+                },
+              ];
+            }
+          });
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }
         if (chunk.text) {
           accumulatedText += chunk.text;
           setIsTyping(false); // Hide standard typing text bubble when text streams in
@@ -317,6 +445,7 @@ export default function ChatScreen() {
                   id: aiMsgId,
                   sender: 'ai',
                   text: accumulatedText,
+                  thought: accumulatedThought,
                   timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                   modelUsed: activeModel,
                   isNew: true,
@@ -330,10 +459,15 @@ export default function ChatScreen() {
       // onDone callback
       async () => {
         setIsTyping(false);
-        // Persist completed AI message in DB
+        setIsGenerating(false);
+        // Persist completed AI message in DB (with thoughts encoded)
+        const finalMsgText = accumulatedThought 
+          ? `<thought>${accumulatedThought}</thought>${accumulatedText}`
+          : accumulatedText;
+
         if (sessionId) {
           try {
-            await saveChatMessage(sessionId, 'ai', accumulatedText, activeModel);
+            await saveChatMessage(sessionId, 'ai', finalMsgText, activeModel);
             // Reload from DB to ensure local message sync state and timestamp match
             const dbMsgs = fetchChatMessages(sessionId);
             setMessages((prev) => {
@@ -342,12 +476,17 @@ export default function ChatScreen() {
 
               return dbMsgs.map((m, idx) => {
                 const isLast = idx === dbMsgs.length - 1;
+                const thoughtMatch = m.message.match(/<thought>([\s\S]*?)<\/thought>/);
+                const thought = thoughtMatch ? thoughtMatch[1] : undefined;
+                const cleanText = m.message.replace(/<thought>[\s\S]*?<\/thought>/, '');
+
                 return {
                   id: m.id,
                   sender: m.sender,
-                  text: m.message
+                  text: cleanText
                     .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
                     .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
+                  thought,
                   timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                   modelUsed: m.model_used as 'flash' | 'deep' | undefined,
                   isNew: isLast && wasTyping ? true : false,
@@ -363,6 +502,7 @@ export default function ChatScreen() {
       // onError callback
       (err) => {
         setIsTyping(false);
+        setIsGenerating(false);
         showToast({
           type: 'error',
           title: 'Chat Failed',
@@ -399,14 +539,21 @@ export default function ChatScreen() {
     if (sessionId) {
       await saveChatMessage(sessionId, 'ai', greetingText, 'flash');
       const dbMsgs = fetchChatMessages(sessionId);
-      setMessages(dbMsgs.map((m) => ({
-        id: m.id,
-        sender: m.sender,
-        text: m.message,
-        timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        modelUsed: m.model_used as 'flash' | 'deep' | undefined,
-        isNew: true,
-      })));
+      setMessages(dbMsgs.map((m) => {
+        const thoughtMatch = m.message.match(/<thought>([\s\S]*?)<\/thought>/);
+        const thought = thoughtMatch ? thoughtMatch[1] : undefined;
+        const cleanText = m.message.replace(/<thought>[\s\S]*?<\/thought>/, '');
+
+        return {
+          id: m.id,
+          sender: m.sender,
+          text: cleanText,
+          thought,
+          timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          modelUsed: m.model_used as 'flash' | 'deep' | undefined,
+          isNew: true,
+        };
+      }));
     } else {
       setMessages([
         {
@@ -567,14 +714,22 @@ export default function ChatScreen() {
                     : 'bg-white border border-stone-150 rounded-tl-sm shadow-sm'
                   }`}
               >
+                {msg.sender === 'ai' && msg.thought ? (
+                  <CollapsibleThought thought={msg.thought} isDark={isDark} />
+                ) : null}
+
                 {msg.sender === 'ai' && msg.isNew ? (
-                  <TypewriterBubble
-                    text={msg.text}
-                    isUser={false}
-                    isDark={isDark}
-                    onHeightChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-                    renderMessageText={renderMessageText}
-                  />
+                  msg.text.trim() ? (
+                    <TypewriterBubble
+                      text={msg.text}
+                      isUser={false}
+                      isDark={isDark}
+                      onHeightChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+                      renderMessageText={renderMessageText}
+                    />
+                  ) : isGenerating ? (
+                    <ActiveTextLoading activeModel={activeModel} />
+                  ) : null
                 ) : (
                   renderMessageText(msg.text, msg.sender === 'user')
                 )}

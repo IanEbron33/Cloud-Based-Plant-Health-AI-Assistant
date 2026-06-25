@@ -29,12 +29,15 @@ func getGeminiAPIKey() string {
 	return os.Getenv("GEMINI_API_KEY")
 }
 
+type GeminiPart struct {
+	Text    string `json:"text"`
+	Thought bool   `json:"thought,omitempty"`
+}
+
 // Gemini candidate structures for JSON parsing
 type GeminiCandidate struct {
 	Content struct {
-		Parts []struct {
-			Text string `json:"text"`
-		} `json:"parts"`
+		Parts []GeminiPart `json:"parts"`
 	} `json:"content"`
 }
 
@@ -44,13 +47,14 @@ type GeminiResponse struct {
 
 // ClientStreamChunk matches the structure the client's api.service.ts parses
 type ClientStreamChunk struct {
-	Text  string `json:"text,omitempty"`
-	Error string `json:"error,omitempty"`
-	Crop  string `json:"crop,omitempty"`
+	Text    string `json:"text,omitempty"`
+	Thought string `json:"thought,omitempty"`
+	Error   string `json:"error,omitempty"`
+	Crop    string `json:"crop,omitempty"`
 }
 
 // streamGeminiSSE reads SSE chunks from Gemini and writes them in the client-expected format
-func streamGeminiSSE(w http.ResponseWriter, resp *http.Response) error {
+func streamGeminiSSE(w http.ResponseWriter, resp *http.Response, filterThoughts bool) error {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -90,14 +94,25 @@ func streamGeminiSSE(w http.ResponseWriter, resp *http.Response) error {
 			}
 
 			if len(geminiResp.Candidates) > 0 && len(geminiResp.Candidates[0].Content.Parts) > 0 {
-				text := geminiResp.Candidates[0].Content.Parts[0].Text
-				if text != "" {
-					chunk := ClientStreamChunk{Text: text}
-					chunkBytes, err := json.Marshal(chunk)
-					if err == nil {
-						fmt.Fprintf(w, "data: %s\n\n", string(chunkBytes))
-						flusher.Flush()
+				part := geminiResp.Candidates[0].Content.Parts[0]
+				if part.Thought && filterThoughts {
+					continue
+				}
+
+				var chunk ClientStreamChunk
+				if part.Thought {
+					chunk = ClientStreamChunk{Thought: part.Text}
+				} else {
+					if part.Text == "" {
+						continue
 					}
+					chunk = ClientStreamChunk{Text: part.Text}
+				}
+
+				chunkBytes, err := json.Marshal(chunk)
+				if err == nil {
+					fmt.Fprintf(w, "data: %s\n\n", string(chunkBytes))
+					flusher.Flush()
 				}
 			}
 		}
@@ -136,7 +151,9 @@ type SystemInstruction struct {
 // ThinkingConfig controls the internal reasoning budget for hybrid-thinking models (e.g. Gemma 4-31B-IT).
 // Setting ThinkingLevel to "MINIMAL" suppresses all thought tokens.
 type ThinkingConfig struct {
-	ThinkingLevel string `json:"thinkingLevel,omitempty"`
+	ThinkingLevel   string `json:"thinkingLevel,omitempty"`
+	ThinkingBudget  int    `json:"thinkingBudget,omitempty"`
+	IncludeThoughts bool   `json:"includeThoughts,omitempty"`
 }
 
 type GenerationConfig struct {

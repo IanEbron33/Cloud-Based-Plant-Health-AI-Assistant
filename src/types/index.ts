@@ -78,6 +78,7 @@ export interface ClassifyResponse {
 /** A single SSE chunk from the /diagnose or /chat stream. */
 export interface StreamChunk {
   text?: string;
+  thought?: string;
   error?: string;
   crop?: string;
 }
