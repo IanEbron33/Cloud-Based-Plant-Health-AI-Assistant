@@ -215,6 +215,11 @@ Mix English and Filipino naturally (Taglish) when appropriate.`, matchedCrop, co
 	modelName := resolveModel(modelType)
 	apiURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:streamGenerateContent?key=%s&alt=sse", modelName, apiKey)
 
+	genConfig := &GenerationConfig{
+		Temperature:     0.4,
+		MaxOutputTokens: 1024,
+	}
+
 	geminiReq := GeminiGenerateRequest{
 		Contents: []GeminiRequestContent{
 			{
@@ -234,10 +239,12 @@ Mix English and Filipino naturally (Taglish) when appropriate.`, matchedCrop, co
 				{Text: systemInstruction},
 			},
 		},
-		GenerationConfig: &GenerationConfig{
-			Temperature:     0.4,
-			MaxOutputTokens: 1024,
-		},
+		GenerationConfig: genConfig,
+	}
+	// Gemma 4-31B-IT is a hybrid-thinking model; set thinkingLevel="MINIMAL"
+	// to prevent internal <think> reasoning tokens from leaking into the response.
+	if modelType == "deep" {
+		geminiReq.ThinkingConfig = &ThinkingConfig{ThinkingLevel: "MINIMAL"}
 	}
 
 	reqBytes, err := json.Marshal(geminiReq)

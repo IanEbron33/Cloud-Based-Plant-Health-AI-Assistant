@@ -125,12 +125,19 @@ type GeminiRequestContent struct {
 
 type GeminiGenerateRequest struct {
 	Contents          []GeminiRequestContent `json:"contents"`
-	SystemInstruction *SystemInstruction    `json:"systemInstruction,omitempty"`
-	GenerationConfig  *GenerationConfig     `json:"generationConfig,omitempty"`
+	SystemInstruction *SystemInstruction     `json:"systemInstruction,omitempty"`
+	GenerationConfig  *GenerationConfig      `json:"generationConfig,omitempty"`
+	ThinkingConfig    *ThinkingConfig        `json:"thinkingConfig,omitempty"`
 }
 
 type SystemInstruction struct {
 	Parts []GeminiRequestPart `json:"parts"`
+}
+
+// ThinkingConfig controls the internal reasoning budget for hybrid-thinking models (e.g. Gemma 4-31B-IT).
+// Setting ThinkingLevel to "MINIMAL" suppresses all thought tokens.
+type ThinkingConfig struct {
+	ThinkingLevel string `json:"thinkingLevel,omitempty"`
 }
 
 type GenerationConfig struct {

@@ -90,6 +90,10 @@ Rules:
 		}
 	}
 
+	genConfig := &GenerationConfig{
+		Temperature: 0.5,
+	}
+
 	geminiReq := GeminiGenerateRequest{
 		Contents: contents,
 		SystemInstruction: &SystemInstruction{
@@ -97,9 +101,12 @@ Rules:
 				{Text: systemInstruction},
 			},
 		},
-		GenerationConfig: &GenerationConfig{
-			Temperature: 0.5,
-		},
+		GenerationConfig: genConfig,
+	}
+	// Gemma 4-31B-IT is a hybrid-thinking model; set thinkingLevel="MINIMAL"
+	// to prevent internal <think> reasoning tokens from leaking into the response.
+	if modelType == "deep" {
+		geminiReq.ThinkingConfig = &ThinkingConfig{ThinkingLevel: "MINIMAL"}
 	}
 
 	reqBytes, err := json.Marshal(geminiReq)

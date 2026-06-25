@@ -86,6 +86,10 @@ Respond in this exact format:
 Keep your language warm, supportive, and accessible to Filipino farmers.
 Mix English and Filipino naturally (Taglish) when appropriate.`, crop, crop, contextJSON)
 
+	genConfig := &GenerationConfig{
+		Temperature: 0.4,
+	}
+
 	geminiReq := GeminiGenerateRequest{
 		Contents: []GeminiRequestContent{
 			{
@@ -105,9 +109,12 @@ Mix English and Filipino naturally (Taglish) when appropriate.`, crop, crop, con
 				{Text: systemInstruction},
 			},
 		},
-		GenerationConfig: &GenerationConfig{
-			Temperature: 0.4,
-		},
+		GenerationConfig: genConfig,
+	}
+	// Gemma 4-31B-IT is a hybrid-thinking model; set thinkingLevel="MINIMAL"
+	// to prevent internal <think> reasoning tokens from leaking into the response.
+	if modelType == "deep" {
+		geminiReq.ThinkingConfig = &ThinkingConfig{ThinkingLevel: "MINIMAL"}
 	}
 
 	reqBytes, err := json.Marshal(geminiReq)
