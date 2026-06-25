@@ -3,8 +3,8 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Brain, Zap } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
-import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import vegetablesDb from '../../assets/data/vegetables_db.json';
 import { useAuth } from '../context/AuthContext';
 import { useScan } from '../context/ScanContext';
@@ -249,7 +249,7 @@ export default function ChatScreen() {
 
   // Animation values
   const chevronRotation = useSharedValue(0);
-  
+
   // Dropdown states & values
   const [shouldRenderDropdown, setShouldRenderDropdown] = useState(false);
   const dropdownOpacity = useSharedValue(0);
@@ -742,20 +742,18 @@ export default function ChatScreen() {
             <View className="flex-row items-center mt-0.5">
               <Text
                 style={{ fontFamily: 'Fredoka_700Bold' }}
-                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
-                  chatCondition.toLowerCase().includes('healthy')
-                    ? (isDark ? 'bg-emerald-950/40 text-emerald-400' : 'bg-emerald-50 text-emerald-600')
-                    : (isDark ? 'bg-amber-950/40 text-amber-400' : 'bg-amber-50 text-amber-600')
-                }`}
+                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${chatCondition.toLowerCase().includes('healthy')
+                  ? (isDark ? 'bg-emerald-950/40 text-emerald-400' : 'bg-emerald-50 text-emerald-600')
+                  : (isDark ? 'bg-amber-950/40 text-amber-400' : 'bg-amber-50 text-amber-600')
+                  }`}
               >
                 {chatCondition}
               </Text>
             </View>
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
-              className={`text-[8px] font-bold uppercase tracking-widest mt-1.5 ${
-                isDark ? 'text-emerald-400/80' : 'text-emerald-600/80'
-              }`}
+              className={`text-[8px] font-bold uppercase tracking-widest mt-1.5 ${isDark ? 'text-emerald-400/80' : 'text-emerald-600/80'
+                }`}
             >
               Follow Up
             </Text>
@@ -1019,14 +1017,13 @@ export default function ChatScreen() {
         >
           <Animated.View
             style={[deleteModalCardStyle]}
-            className={`w-full max-w-[280px] rounded-[32px] p-6 items-center border shadow-2xl ${
-              isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-150'
-            }`}
+            className={`w-full max-w-[280px] rounded-[32px] p-6 items-center border shadow-2xl ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-150'
+              }`}
           >
             {/* Mascot Image */}
             <Image
-              source={require('../../assets/images/mascot-transparent.png')}
-              style={{ width: 100, height: 100, marginBottom: 12 }}
+              source={require('../../assets/images/mascot-transparent-sad.png')}
+              style={{ width: 130, height: 130, marginBottom: 12 }}
               contentFit="contain"
             />
 
@@ -1050,9 +1047,8 @@ export default function ChatScreen() {
               <TouchableOpacity
                 onPress={() => setDeleteModalVisible(false)}
                 activeOpacity={0.7}
-                className={`flex-1 py-2.5 rounded-full mr-1.5 items-center border ${
-                  isDark ? 'bg-stone-800 border-stone-700' : 'bg-stone-100 border-stone-200'
-                }`}
+                className={`flex-1 py-2.5 rounded-full mr-1.5 items-center border ${isDark ? 'bg-stone-800 border-stone-700' : 'bg-stone-100 border-stone-200'
+                  }`}
               >
                 <Text
                   style={{ fontFamily: 'Fredoka_700Bold' }}

@@ -4,23 +4,23 @@
     "slug": "Plant-Health-Tracker",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/mascot-logo.jpeg",
+    "icon": "./assets/images/mascot-logo.png",
     "scheme": "planthealthtracker",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/images/mascot-logo.jpeg"
+      "icon": "./assets/images/mascot-logo.png"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#3f7446",
-        "foregroundImage": "./assets/images/mascot-logo.jpeg"
+        "foregroundImage": "./assets/images/mascot-logo.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.PlantHealthTracker"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/mascot-logo.jpeg"
+      "favicon": "./assets/images/mascot-logo.png"
     },
     "plugins": [
       "expo-router",
@@ -29,7 +29,7 @@
         {
           "backgroundColor": "#ffffff",
           "android": {
-            "image": "./assets/images/mascot-logo.jpeg",
+            "image": "./assets/images/mascot-logo.png",
             "imageWidth": 76
           }
         }
