@@ -56,24 +56,21 @@ function CollapsibleThought({ thought, isDark }: { thought: string; isDark: bool
 
   return (
     <View
-      className={`mt-1 mb-2 rounded-[16px] overflow-hidden border ${
-        isDark ? 'bg-stone-900 border-stone-800' : 'bg-stone-50 border-stone-200'
-      }`}
+      className={`mt-1 mb-2 rounded-[16px] overflow-hidden border ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-stone-50 border-stone-200'
+        }`}
     >
       <TouchableOpacity
         onPress={() => setExpanded(!expanded)}
         activeOpacity={0.7}
-        className={`px-4 py-2.5 flex-row items-center justify-between ${
-          isDark ? 'bg-stone-850' : 'bg-stone-100'
-        }`}
+        className={`px-4 py-2.5 flex-row items-center justify-between ${isDark ? 'bg-stone-850' : 'bg-stone-100'
+          }`}
       >
         <View className="flex-row items-center">
           <Ionicons name="bulb" size={13} color="#10b981" style={{ marginRight: 6 }} />
           <Text
             style={{ fontFamily: 'Fredoka_700Bold' }}
-            className={`text-[10px] font-bold uppercase tracking-wider ${
-              isDark ? 'text-stone-300' : 'text-stone-700'
-            }`}
+            className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-stone-300' : 'text-stone-700'
+              }`}
           >
             Thinking Process
           </Text>
@@ -88,9 +85,8 @@ function CollapsibleThought({ thought, isDark }: { thought: string; isDark: bool
         <View className="px-4 py-3 border-t border-stone-200/40 dark:border-stone-800/40">
           <Text
             style={{ fontFamily: 'Fredoka_400Regular' }}
-            className={`text-xs leading-5 italic ${
-              isDark ? 'text-stone-400' : 'text-stone-500'
-            }`}
+            className={`text-xs leading-5 italic ${isDark ? 'text-stone-400' : 'text-stone-500'
+              }`}
           >
             {thought}
           </Text>
@@ -101,16 +97,16 @@ function CollapsibleThought({ thought, isDark }: { thought: string; isDark: bool
 }
 
 function ActiveTextLoading({ activeModel }: { activeModel: 'flash' | 'deep' }) {
-  const phrases = activeModel === 'deep' 
+  const phrases = activeModel === 'deep'
     ? [
-        "Bugsok is analyzing the crop symptoms...",
-        "Bugsok is in deep thinking...",
-        "Bugsok is formulating treatment options...",
-        "Bugsok is preparing your customized advice..."
-      ]
+      "Bugsok is analyzing the crop symptoms...",
+      "Bugsok is in deep thinking...",
+      "Bugsok is formulating treatment options...",
+      "Bugsok is preparing your customized advice..."
+    ]
     : [
-        "Bugsok is typing..."
-      ];
+      "Bugsok is typing..."
+    ];
 
   const [phraseIndex, setPhraseIndex] = useState(0);
 
@@ -238,6 +234,7 @@ export default function ChatScreen() {
 
   // Model selection state: 'flash' vs 'deep'
   const [activeModel, setActiveModel] = useState<'flash' | 'deep'>('flash');
+  const [modelDropdownVisible, setModelDropdownVisible] = useState(false);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -461,7 +458,7 @@ export default function ChatScreen() {
         setIsTyping(false);
         setIsGenerating(false);
         // Persist completed AI message in DB (with thoughts encoded)
-        const finalMsgText = accumulatedThought 
+        const finalMsgText = accumulatedThought
           ? `<thought>${accumulatedThought}</thought>${accumulatedText}`
           : accumulatedText;
 
@@ -644,10 +641,11 @@ export default function ChatScreen() {
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
     >
       {/* Header Bar */}
-      <View className="pt-14 pb-4 px-6 flex-row items-center border-b border-stone-800/5 justify-between bg-white">
+      <View className={`pt-14 pb-4 px-6 flex-row items-center border-b justify-between ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200/80 shadow-sm'
+        }`}>
         <TouchableOpacity
           onPress={() => router.back()}
-          className={`w-10 h-10 rounded-2xl items-center justify-center border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200'
+          className={`w-10 h-10 rounded-2xl items-center justify-center border ${isDark ? 'bg-stone-950 border-stone-800' : 'bg-white border-stone-200'
             }`}
         >
           <Ionicons name="arrow-back" size={20} color={isDark ? '#e7e5e4' : '#292524'} />
@@ -662,7 +660,8 @@ export default function ChatScreen() {
           </Text>
           <Text
             style={{ fontFamily: 'Fredoka_700Bold' }}
-            className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mt-0.5"
+            className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'
+              }`}
           >
             {subtitle}
           </Text>
@@ -670,11 +669,115 @@ export default function ChatScreen() {
 
         <TouchableOpacity
           onPress={handleClearChat}
-          className={`w-10 h-10 rounded-2xl items-center justify-center border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200'
+          className={`w-10 h-10 rounded-2xl items-center justify-center border ${isDark ? 'bg-stone-950 border-stone-800' : 'bg-white border-stone-200'
             }`}
         >
           <Ionicons name="trash-outline" size={18} color="#ef4444" />
         </TouchableOpacity>
+      </View>
+
+      {/* Model Switcher Area (Top-Left corner of white canvas) */}
+      <View
+        className={`px-6 py-2.5 flex-row justify-start items-center relative z-40 ${isDark ? 'bg-stone-950' : 'bg-stone-50/50'
+          }`}
+      >
+        <TouchableOpacity
+          onPress={() => setModelDropdownVisible(!modelDropdownVisible)}
+          activeOpacity={0.85}
+          className={`flex-row items-center px-3 py`}
+        >
+          {activeModel === 'flash' ? (
+            <Zap size={16} color="#10b981" style={{ marginRight: 4 }} />
+          ) : (
+            <Brain size={16} color="#10b981" style={{ marginRight: 4 }} />
+          )}
+          <Text
+            style={{ fontFamily: 'Fredoka_700Bold' }}
+            className={`text-[12px] font-bold ${isDark ? 'text-stone-300' : 'text-stone-700'}`}
+          >
+            {activeModel === 'flash' ? 'Flash' : 'Deep Think'}
+          </Text>
+          <Ionicons name={modelDropdownVisible ? 'chevron-up' : 'chevron-down'} size={14} color={isDark ? '#a8a29e' : '#78716c'} style={{ marginLeft: 4 }} />
+        </TouchableOpacity>
+
+        {/* Collapsible Model Dropdown Overlay relative to this button */}
+        {modelDropdownVisible && (
+          <View
+            className={`absolute left-6 w-[280px] border shadow-2xl p-4 rounded-3xl z-[100] top-[48px] ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-150'
+              }`}
+          >
+
+            <TouchableOpacity
+              onPress={() => {
+                setActiveModel('flash');
+                setModelDropdownVisible(false);
+              }}
+              activeOpacity={0.7}
+              className={`flex-row items-center justify-between p-3 rounded-2xl ${activeModel === 'flash'
+                ? (isDark ? 'bg-stone-800/80' : 'bg-emerald-50')
+                : 'bg-transparent'
+                }`}
+            >
+              <View className="flex-row items-center flex-1 mr-4">
+                <View className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 items-center justify-center mr-3">
+                  <Zap size={15} color="#10b981" />
+                </View>
+                <View className="flex-1">
+                  <Text
+                    style={{ fontFamily: 'Fredoka_700Bold' }}
+                    className={`text-xs font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+                  >
+                    Flash Mode
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'Fredoka_400Regular' }}
+                    className="text-stone-500 dark:text-stone-400 text-[10px] mt-0.5"
+                  >
+                    Fastest answers, short & mascot-friendly.
+                  </Text>
+                </View>
+              </View>
+              {activeModel === 'flash' && (
+                <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                setActiveModel('deep');
+                setModelDropdownVisible(false);
+              }}
+              activeOpacity={0.7}
+              className={`flex-row items-center justify-between p-3 rounded-2xl mt-1.5 ${activeModel === 'deep'
+                ? (isDark ? 'bg-stone-800/80' : 'bg-emerald-50')
+                : 'bg-transparent'
+                }`}
+            >
+              <View className="flex-row items-center flex-1 mr-4">
+                <View className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 items-center justify-center mr-3">
+                  <Brain size={15} color="#10b981" />
+                </View>
+                <View className="flex-1">
+                  <Text
+                    style={{ fontFamily: 'Fredoka_700Bold' }}
+                    className={`text-xs font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+                  >
+                    Deep Think Mode
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'Fredoka_400Regular' }}
+                    className="text-stone-500 dark:text-stone-400 text-[10px] mt-0.5"
+                  >
+                    Detailed reasoning & analytical consultation.
+                  </Text>
+                </View>
+              </View>
+              {activeModel === 'deep' && (
+                <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Messages Scroll viewport */}
@@ -768,67 +871,7 @@ export default function ChatScreen() {
         {isTyping && <TypingIndicator activeModel={activeModel} isDark={isDark} />}
       </ScrollView>
 
-      {/* Model Toggle pill bar directly above input */}
-      <View
-        className={`px-6 py-2 border-t flex-row items-center justify-between ${isDark ? 'bg-stone-900/40 border-stone-850' : 'bg-stone-100/80 border-stone-200'
-          }`}
-      >
-        <Text
-          style={{ fontFamily: 'Fredoka_700Bold' }}
-          className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'
-            }`}
-        >
-          Model:
-        </Text>
 
-        {/* Toggle pill button */}
-        <View
-          className={`flex-row p-1 rounded-full ${isDark ? 'bg-stone-950 border border-stone-850' : 'bg-stone-200/50'
-            }`}
-        >
-          <TouchableOpacity
-            onPress={() => setActiveModel('flash')}
-            className={`px-3 py-1.5 rounded-full flex-row items-center ${activeModel === 'flash' ? 'bg-emerald-600' : ''
-              }`}
-          >
-            <Zap
-              size={11}
-              color={activeModel === 'flash' ? '#ffffff' : (isDark ? '#78716c' : '#57534e')}
-              style={{ marginRight: 4 }}
-            />
-            <Text
-              style={{ fontFamily: 'Fredoka_700Bold' }}
-              className={`text-[10px] font-bold ${activeModel === 'flash'
-                ? 'text-white'
-                : isDark
-                  ? 'text-stone-500'
-                  : 'text-stone-600'
-                }`}
-            >
-              Flash
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setActiveModel('deep')}
-            className={`px-3 py-1.5 rounded-full flex-row items-center ${activeModel === 'deep' ? 'bg-emerald-600' : ''
-              }`}
-          >
-            <Brain
-              size={11}
-              color={activeModel === 'deep' ? '#ffffff' : (isDark ? '#78716c' : '#57534e')}
-              style={{ marginRight: 4 }}
-            />
-            <Text
-              style={{ fontFamily: 'Fredoka_700Bold' }}
-              className={`text-[10px] font-bold ${activeModel === 'deep' ? 'text-white' : isDark ? 'text-stone-500' : 'text-stone-600'
-                }`}
-            >
-              Deep
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
       {/* Chat input block */}
       <View
