@@ -20,7 +20,7 @@ By replacing the locally trained vision model and local SLM with a cloud-based G
 4. **Step 2: Local RAG Context Injection:** The app looks up the identified crop name (e.g., "Talong") in the local `vegetables_db.json` and extracts only that crop's metadata section (~800 tokens).
 5. **Step 3: Grounded Cloud AI Diagnosis:** The app sends the image + the single crop's metadata to the selected model (⚡ Flash or 🧠 Deep Thinking) via the Go Proxy.
    - **⚡ Flash** → `gemini-3.1-flash-lite` — Returns a fast, concise diagnosis in 1-2 seconds.
-   - **🧠 Deep Thinking** → `gemma-4-31b` — Returns a deep, detailed analysis with rich reasoning in 8-15 seconds.
+   - **🧠 Deep Thinking** → `gemma-4-31b-it` — Returns a deep, detailed analysis with rich reasoning in 8-15 seconds.
 6. **Go Proxy Relaying:** The Go Proxy (running on Google Cloud Run) securely attaches the Gemini API Key, relays the request, and handles the streamed response.
 7. **Streamed Response UX:** The proxy streams the response back to the React Native app, displaying words live as they are generated.
 8. **Follow-Up Chat:** The user can ask follow-up questions in a chatbot UI. The app maintains conversation context and applies the same model toggle.
@@ -43,7 +43,7 @@ Camera / Gallery → [ Step 1: Flash Classifier ] → [ Step 2: Local RAG ] → 
 | **Image Capture** | React Native Camera + Image Picker | Native device camera or gallery | Device Camera Sensor / Storage | Captures the plant photo and compresses it locally to 720p/1080p JPEG. |
 | **Step 1 Classifier** | Cloud Router via Go Proxy | `gemini-3.1-flash-lite` | Cloud (Google servers) | Automatically identifies the crop from the 59 supported crops in under 1 second (~350 tokens). |
 | **⚡ Flash Mode** | Go Proxy + Gemini API | `gemini-3.1-flash-lite` | Cloud (Google servers) | Fast, lightweight diagnosis. Injects only the local RAG crop data. Returns concise response in 1-2 seconds. |
-| **🧠 Deep Thinking Mode** | Go Proxy + Gemini API | `gemma-4-31b` | Cloud (Google servers) | Thorough diagnosis with deep reasoning. Injects only the local RAG crop data. Returns response in 8-15 seconds. |
+| **🧠 Deep Thinking Mode** | Go Proxy + Gemini API | `gemma-4-31b-it` | Cloud (Google servers) | Thorough diagnosis with deep reasoning. Injects only the local RAG crop data. Returns response in 8-15 seconds. |
 | **Secure Proxy Server** | Go (Golang) Web Server | Custom Go Service on Google Cloud Run | Cloud (Google Run - Free Tier) | Secures the Gemini API Key. Manages the connection, sends requests, and handles raw HTTP stream relay (SSE) to client with zero timeout limits. |
 | **Follow-Up Chatbot** | Go Proxy + Gemini API | User's selected model (⚡ or 🧠) | Cloud (Google servers) | Handles follow-up questions. Users can switch models mid-chat. |
 | **Knowledge Base** | Local JavaScript Map / JSON | Bundled `vegetables_db.json` (< 1MB) | Device Storage / RAM | Stores grounded crop facts. Injects only the single identified crop metadata into Step 3 to save 96% token cost. |
@@ -106,7 +106,7 @@ The existing `vegetables_db.json` database is **fully retained** as-is. It serve
 
 | | ⚡ **Flash** | 🧠 **Deep Thinking** |
 |---|---|---|
-| **Model** | `gemini-3.1-flash-lite` | `gemma-4-31b` |
+| **Model** | `gemini-3.1-flash-lite` | `gemma-4-31b-it` |
 | **Speed** | Very fast (1–3 seconds) | Slower (5–15 seconds) |
 | **Response Style** | Concise bullet points, direct answers | Detailed paragraphs, thorough explanations |
 | **Best For** | Quick field scans, fast checks while farming | Learning about diseases, in-depth understanding |
@@ -132,7 +132,7 @@ The ⚡ / 🧠 toggle is available in **two places** across the app:
 | **Deployment Platform** | Google Cloud Run (Free Tier - 2 million requests/month) |
 | **Step 1 Model (Classifier)** | `gemini-3.1-flash-lite` (~350 tokens) |
 | **Step 3 Model (⚡ Flash)** | `gemini-3.1-flash-lite` (~1,100 tokens with targeted context) |
-| **Step 3 Model (🧠 Deep)** | `gemma-4-31b` (~1,100 tokens with targeted context) |
+| **Step 3 Model (🧠 Deep)** | `gemma-4-31b-it` (~1,100 tokens with targeted context) |
 | **Output** | Server-Sent Events (SSE) Streamed Text |
 | **Combined Free Tier** | Up to 2,000 RPD total (500 Flash + 1,500 Deep Thinking) |
 
@@ -427,7 +427,7 @@ Stores individual chat bubbles.
 | `id` | UUID | Both | Primary Key. Generated on client. |
 | `session_id` | UUID | Both | Foreign Key to `chat_sessions.id`. |
 | `sender` | Text | Both | `"user"` or `"ai"`. |
-| `model_used` | Text | Both | `"gemini-3.1-flash-lite"` or `"gemma-4-31b"`. |
+| `model_used` | Text | Both | `"gemini-3.1-flash-lite"` or `"gemma-4-31b-it"`. |
 | `message` | Text | Both | Text body of the message. |
 | `synced` | Boolean | SQLite Only | Sync status. |
 | `created_at` | Timestamp | Both | Message timestamp. |

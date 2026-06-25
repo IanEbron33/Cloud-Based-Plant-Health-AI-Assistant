@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       // Model resolution
       let modelName = "gemini-3.1-flash-lite";
       if (modelType === "deep") {
-        modelName = Deno.env.get("DEEP_MODEL") || "gemma-4-26b-a4b-it";
+        modelName = Deno.env.get("DEEP_MODEL") || "gemma-4-31b-it";
       } else {
         modelName = Deno.env.get("FLASH_MODEL") || "gemini-3.1-flash-lite";
       }
@@ -185,7 +185,7 @@ Respond with ONLY the exact name of the crop from the list. Do not add any punct
       // Model resolution
       let modelName = "gemini-3.1-flash-lite";
       if (modelType === "deep") {
-        modelName = Deno.env.get("DEEP_MODEL") || "gemma-4-26b-a4b-it";
+        modelName = Deno.env.get("DEEP_MODEL") || "gemma-4-31b-it";
       } else {
         modelName = Deno.env.get("FLASH_MODEL") || "gemini-3.1-flash-lite";
       }
@@ -329,7 +329,7 @@ Mix English and Filipino naturally (Taglish) when appropriate.`;
       // Model resolution
       let modelName = "gemini-3.1-flash-lite";
       if (modelType === "deep") {
-        modelName = Deno.env.get("DEEP_MODEL") || "gemma-4-26b-a4b-it";
+        modelName = Deno.env.get("DEEP_MODEL") || "gemma-4-31b-it";
       } else {
         modelName = Deno.env.get("FLASH_MODEL") || "gemini-3.1-flash-lite";
       }

@@ -16,7 +16,7 @@ This directory contains the Go implementation of the proxy server, designed to r
 ## Environment Variables
 - **`GEMINI_API_KEY`**: Required. Your Gemini developer API key.
 - **`FLASH_MODEL`**: Optional. Defaults to `gemini-3.1-flash-lite`.
-- **`DEEP_MODEL`**: Optional. Defaults to `gemma-4-26b-a4b-it`.
+- **`DEEP_MODEL`**: Optional. Defaults to `gemma-4-31b-it`.
 - **`PORT`**: Optional. Defaults to `7860` (Hugging Face default).
 
 ## Local Development

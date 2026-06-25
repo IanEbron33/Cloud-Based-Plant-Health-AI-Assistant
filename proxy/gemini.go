@@ -16,7 +16,7 @@ func resolveModel(modelType string) string {
 		if envDeep := os.Getenv("DEEP_MODEL"); envDeep != "" {
 			return envDeep
 		}
-		return "gemma-4-26b-a4b-it"
+		return "gemma-4-31b-it"
 	}
 	if envFlash := os.Getenv("FLASH_MODEL"); envFlash != "" {
 		return envFlash

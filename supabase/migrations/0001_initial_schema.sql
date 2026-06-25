@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
 );
 
 COMMENT ON TABLE public.chat_messages IS 'Individual chat message bubbles from the user or AI model.';
-COMMENT ON COLUMN public.chat_messages.model_used IS 'e.g. "gemini-3.1-flash-lite" or "gemma-4-31b"';
+COMMENT ON COLUMN public.chat_messages.model_used IS 'e.g. "gemini-3.1-flash-lite" or "gemma-4-31b-it"';
 
 
 -- ============================================================
