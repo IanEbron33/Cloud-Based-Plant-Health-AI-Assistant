@@ -92,7 +92,7 @@ The AI proxy backend runs on **Hugging Face Spaces** (`https://ianpatatas-bugsok
   - `POST /scan`: Unified endpoint. Processes classification and diagnosis in a single API call to minimize network round-trips.
   - `POST /chat`: Follow-up chatbot discussion (SSE stream).
 * **Model Routing**:
-  - Automatically resolves model preferences: `gemini-3.1-flash-lite` for "flash" and `gemma-4-26b-a4b-it` (or environment custom) for "deep".
+  - Automatically resolves model preferences: `gemini-3.1-flash-lite` for "flash" and `gemma-4-31b-it` (or environment custom) for "deep".
   - A single model handles both steps inside the unified `/scan` call.
 * **First-Line Buffer Strategy**:
   - The Go server instructs Gemini to output `CLASSIFY: [CropName]` on the first line, followed by the structured diagnosis.
@@ -119,6 +119,10 @@ The follow-up chat is fully localized and styled to support interactive, structu
 * **Bugsok AI Branding**: Renders a `"Bugsok AI"` name label tag above all chatbot messages and loaders, aligned side-by-side with the Mascot profile avatar.
 * **Retroactive Greeting Migration**: Dynamically replaces historical greeting texts (`"Hello! I am your plant care assistant"` or `"Bugsok AI, your crops care assistant"`) with the updated `"Hello! I am Bugsok AI, as your plant care assistant"` string during list mapping. This ensures that even existing chat sessions saved in the local SQLite database reflect the latest branding instantly without needing to clear local data.
 * **Dynamic Loading/Thinking Indicator**: The typing indicator adapts based on the active model. In Flash mode, it displays `"Bugsok is typing..."`. In Deep mode, since reasoning takes longer, it dynamically cycles through reasoning stages every 2.5s (e.g. `"Bugsok is analyzing the crop symptoms..."`, `"Bugsok is in deep thinking..."`, `"Bugsok is formulating treatment options..."`) to keep the user engaged.
+* **Differentiated Chat Modes**:
+  - **Flash Mode (⚡)**: Designed for low latency. Generates short, concise responses (exactly 2–4 sentences), uses 1–2 agricultural/farming emojis, does not ask follow-up questions, allows brief bullet points/lists, and sets a token output cap of `256` tokens.
+  - **Deep Think Mode (🧠)**: Designed for detailed reasoning. Generates detailed, structured, precise, and comprehensive answers, allows detailed bulleted lists, streams thinking/reasoning blocks dynamically into a collapsible UI panel, ends with a contextually smart follow-up question referencing an unasked aspect of the topic, and sets a token output cap of `1024` tokens.
+  - **Error Handling (502 / 500)**: Note that if Deep Think Mode throws a 502 error, it is caused by the Go proxy receiving an HTTP 500 error from the Google Gemini API when using the default model `gemma-4-31b-it`. This can be resolved by deploying/configuring the `DEEP_MODEL` environment variable in the Hugging Face Space settings to a model matching the developer's API key permissions (e.g., `gemini-2.5-pro` or another authorized thinking model).
 
 ---
 
