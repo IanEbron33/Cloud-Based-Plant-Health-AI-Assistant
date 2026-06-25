@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useScan } from '../context/ScanContext';
 import { useToast } from '../context/ToastContext';
 import { chatWithAI } from '../services/api.service';
-import { fetchChatMessages, fetchScanById, getOrCreateChatSession, saveChatMessage } from '../services/scan.service';
+import { clearChatMessages, fetchChatMessages, fetchScanById, getOrCreateChatSession, saveChatMessage } from '../services/scan.service';
 
 interface Message {
   id: string;
@@ -122,9 +122,8 @@ function TypingIndicator({ activeModel, isDark }: { activeModel: 'flash' | 'deep
           Bugsok AI
         </Text>
         <View
-          className={`rounded-[24px] px-5 py-3.5 border ${
-            isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-150 shadow-sm'
-          }`}
+          className={`rounded-[24px] px-5 py-3.5 border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-150 shadow-sm'
+            }`}
         >
           <Text
             style={{ fontFamily: 'Fredoka_400Regular' }}
@@ -340,7 +339,7 @@ export default function ChatScreen() {
             setMessages((prev) => {
               const lastPrevMsg = prev[prev.length - 1];
               const wasTyping = lastPrevMsg && lastPrevMsg.sender === 'ai' && lastPrevMsg.isNew;
-              
+
               return dbMsgs.map((m, idx) => {
                 const isLast = idx === dbMsgs.length - 1;
                 return {
@@ -381,14 +380,11 @@ export default function ChatScreen() {
 
     if (sessionId) {
       try {
-        const { supabase } = require('../lib/supabase');
-        const SQLite = require('expo-sqlite');
-        const db = SQLite.openDatabaseSync('bugsok_ai.db');
-
         // Delete locally
-        db.runSync('DELETE FROM chat_messages WHERE session_id = ?', [sessionId]);
+        clearChatMessages(sessionId);
 
         // Delete remotely
+        const { supabase } = require('../lib/supabase');
         await supabase.from('chat_messages').delete().eq('session_id', sessionId);
       } catch (err) {
         console.error('[Chat Screen] Clear messages error:', err);

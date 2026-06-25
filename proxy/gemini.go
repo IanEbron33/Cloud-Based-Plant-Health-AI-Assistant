@@ -127,7 +127,6 @@ type GeminiGenerateRequest struct {
 	Contents          []GeminiRequestContent `json:"contents"`
 	SystemInstruction *SystemInstruction     `json:"systemInstruction,omitempty"`
 	GenerationConfig  *GenerationConfig      `json:"generationConfig,omitempty"`
-	ThinkingConfig    *ThinkingConfig        `json:"thinkingConfig,omitempty"`
 }
 
 type SystemInstruction struct {
@@ -141,6 +140,7 @@ type ThinkingConfig struct {
 }
 
 type GenerationConfig struct {
-	Temperature     float64 `json:"temperature"`
-	MaxOutputTokens int     `json:"maxOutputTokens,omitempty"`
+	Temperature     float64         `json:"temperature"`
+	MaxOutputTokens int             `json:"maxOutputTokens,omitempty"`
+	ThinkingConfig  *ThinkingConfig `json:"thinkingConfig,omitempty"`
 }

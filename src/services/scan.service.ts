@@ -13,14 +13,56 @@ import { supabase } from '../lib/supabase';
 import { DiagnosisResult } from '../types';
 import { parseDiagnosis } from './diagnosis-parser';
 
-// Local DB instance getter
-let dbInstance: any = null;
-const getDB = () => {
-  if (!dbInstance) {
-    dbInstance = SQLite.openDatabaseSync('bugsok_ai.db');
+// Local DB instance getter with self-healing connection retry proxy
+let rawDbInstance: any = null;
+
+const getRawDB = () => {
+  if (!rawDbInstance) {
+    rawDbInstance = SQLite.openDatabaseSync('bugsok_ai.db');
   }
-  return dbInstance;
+  return rawDbInstance;
 };
+
+const dbProxy = {
+  execSync(sql: string): any {
+    try {
+      return getRawDB().execSync(sql);
+    } catch (err) {
+      console.warn('[Scan Service] execSync failed, resetting connection and retrying...', err);
+      rawDbInstance = null;
+      return getRawDB().execSync(sql);
+    }
+  },
+  runSync(sql: string, ...params: any[]): any {
+    try {
+      return getRawDB().runSync(sql, ...params);
+    } catch (err) {
+      console.warn('[Scan Service] runSync failed, resetting connection and retrying...', err);
+      rawDbInstance = null;
+      return getRawDB().runSync(sql, ...params);
+    }
+  },
+  getFirstSync(sql: string, ...params: any[]): any {
+    try {
+      return getRawDB().getFirstSync(sql, ...params);
+    } catch (err) {
+      console.warn('[Scan Service] getFirstSync failed, resetting connection and retrying...', err);
+      rawDbInstance = null;
+      return getRawDB().getFirstSync(sql, ...params);
+    }
+  },
+  getAllSync(sql: string, ...params: any[]): any {
+    try {
+      return getRawDB().getAllSync(sql, ...params);
+    } catch (err) {
+      console.warn('[Scan Service] getAllSync failed, resetting connection and retrying...', err);
+      rawDbInstance = null;
+      return getRawDB().getAllSync(sql, ...params);
+    }
+  }
+};
+
+const getDB = () => dbProxy;
 
 // Pure JS UUID generator to avoid bundle resolution issues on expo-crypto
 const generateUUID = (): string => {
@@ -543,5 +585,17 @@ export const syncData = async (userId: string): Promise<boolean> => {
   } catch (err) {
     console.error('[Scan Service] syncData error:', err);
     return false;
+  }
+};
+
+/**
+ * Clear all chat messages for a session locally.
+ */
+export const clearChatMessages = (sessionId: string): void => {
+  try {
+    const db = getDB();
+    db.runSync('DELETE FROM chat_messages WHERE session_id = ?', [sessionId]);
+  } catch (err) {
+    console.error('[Scan Service] clearChatMessages error:', err);
   }
 };
