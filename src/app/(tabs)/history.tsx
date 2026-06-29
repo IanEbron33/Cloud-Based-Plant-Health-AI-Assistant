@@ -78,7 +78,7 @@ function HistoryScanCard({ scan, onPress, isDark }: { scan: LocalScanRow; onPres
           <View className="flex-row justify-between items-start">
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
-              className={`text-base font-bold ${isDark ? 'text-white' : 'text-stone-900'} flex-1 mr-2`}
+              className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'} flex-1 mr-2`}
               numberOfLines={1}
             >
               {scan.crop_name}

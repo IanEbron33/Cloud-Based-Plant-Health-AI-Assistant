@@ -401,10 +401,19 @@ export default function ScanResultsScreen() {
           </BentoTile>
 
           {/* Row 1: Health & Diagnostic */}
-          <View className="flex-row justify-between w-full mb-3 items-stretch">
-            {/* TILE 2: HEALTH STATUS */}
-            <BentoTile title="HEALTH" icon={<Ionicons name="heart-outline" size={18} color="#ef4444" />} className="mb-0">
-              <View className="items-center justify-center py-1">
+          <BentoTile
+            title="HEALTH & DIAGNOSTIC"
+            colSpan={2}
+            icon={
+              <View className="flex-row items-center">
+                <Ionicons name="heart-outline" size={18} color="#ef4444" style={{ marginRight: 6 }} />
+                <Ionicons name="flask-outline" size={18} color="#3b82f6" />
+              </View>
+            }
+          >
+            <View className="flex-row items-center py-1">
+              {/* Left Column: Health Gauge */}
+              <View className="items-center justify-center pr-6 border-r border-stone-200" style={{ minWidth: 100 }}>
                 <CircularProgress
                   percentage={result.healthScore}
                   color={severityData.color}
@@ -422,75 +431,84 @@ export default function ScanResultsScreen() {
                     : 'EXCELLENT'}
                 </Text>
               </View>
-            </BentoTile>
 
-            {/* TILE 3: DIAGNOSTIC */}
-            <BentoTile
-              title="DIAGNOSTIC"
-              icon={<Ionicons name="flask-outline" size={18} color="#3b82f6" />}
-              className="mb-0"
-            >
-              <View className="py-0.5">
-                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-xs font-semibold leading-5 mb-2.5 text-stone-700">
+              {/* Right Column: Diagnostic Info */}
+              <View className="flex-1 pl-6 py-0.5">
+                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-sm font-bold text-stone-900 leading-5 mb-2">
                   {result.condition}
                 </Text>
 
-                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">
-                  SEVERITY
-                </Text>
-                <Text
-                  style={{ fontFamily: 'Fredoka_700Bold', color: severityData.color }}
-                  className="text-xs font-semibold mt-0.5 mb-2.5"
-                >
-                  {severityData.text}
-                </Text>
+                <View className="mb-2">
+                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">
+                    SEVERITY
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'Fredoka_700Bold', color: severityData.color }}
+                    className="text-xs font-semibold mt-0.5"
+                  >
+                    {severityData.text}
+                  </Text>
+                </View>
 
-                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">
-                  CONFIDENCE
+                <View>
+                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">
+                    CONFIDENCE
+                  </Text>
+                  <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-xs font-semibold text-stone-700 mt-0.5">
+                    {result.confidenceScore}% Confidence
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </BentoTile>
+
+          {/* Row 2: Crop Details (Watering & Category) */}
+          <BentoTile
+            title="CROP DETAILS"
+            colSpan={2}
+            icon={
+              <View className="flex-row items-center">
+                <Ionicons name="water-outline" size={18} color="#60a5fa" style={{ marginRight: 6 }} />
+                <Ionicons name="options-outline" size={18} color="#10b981" />
+              </View>
+            }
+          >
+            <View className="py-1">
+              {/* Category & Status Row */}
+              <View className="flex-row justify-between mb-3">
+                <View className="flex-1">
+                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">
+                    CATEGORY
+                  </Text>
+                  <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-xs font-semibold text-stone-700 mt-0.5">
+                    {result.category}
+                  </Text>
+                </View>
+
+                <View className="flex-1 pl-4 border-l border-stone-200">
+                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">
+                    STATUS
+                  </Text>
+                  <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-xs font-semibold text-stone-700 mt-0.5">
+                    {result.ecologicalStatus}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Divider */}
+              <View className="h-[1px] bg-stone-200 w-full mb-3" />
+
+              {/* Watering Section */}
+              <View>
+                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-xs font-bold text-stone-900 mb-1">
+                  {result.wateringFrequency}
                 </Text>
-                <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-xs font-semibold mt-0.5 text-stone-700">
-                  {result.confidenceScore}% Confidence
+                <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-xs leading-5 text-stone-600">
+                  {result.wateringDescription}
                 </Text>
               </View>
-            </BentoTile>
-          </View>
-
-          {/* Row 2: Watering & Category */}
-          <View className="flex-row justify-between w-full mb-3 items-stretch">
-            {/* TILE 4: WATERING NEEDS */}
-            <BentoTile
-              title="WATERING"
-              icon={<Ionicons name="water-outline" size={18} color="#60a5fa" />}
-              className="mb-0"
-            >
-              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-xs font-semibold text-stone-700">
-                {result.wateringFrequency}
-              </Text>
-              <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-[11px] leading-4 mt-1.5 text-stone-600">
-                {result.wateringDescription}
-              </Text>
-            </BentoTile>
-
-            {/* TILE 5: CATEGORY */}
-            <BentoTile
-              title="CATEGORY"
-              icon={<Ionicons name="options-outline" size={18} color="#10b981" />}
-              className="mb-0"
-            >
-              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">
-                CATEGORY
-              </Text>
-              <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-xs font-semibold mt-0.5 mb-2.5 text-stone-700">
-                {result.category}
-              </Text>
-              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">
-                STATUS
-              </Text>
-              <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-xs font-semibold mt-0.5 text-stone-700">
-                {result.ecologicalStatus}
-              </Text>
-            </BentoTile>
-          </View>
+            </View>
+          </BentoTile>
 
           {/* TILE 6: SYMPTOMS FOUND */}
           <BentoTile

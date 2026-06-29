@@ -37,7 +37,7 @@ export function BentoTile({
     >
       {title && (
         <View className="flex-row items-center justify-between mb-2 pb-2 border-b border-stone-200">
-          <Text className="text-[11px] font-bold uppercase tracking-wider text-stone-900 flex-1 mr-2">
+          <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[11px] uppercase tracking-wider text-stone-900 flex-1 mr-2">
             {title}
           </Text>
           {icon && <View>{icon}</View>}
