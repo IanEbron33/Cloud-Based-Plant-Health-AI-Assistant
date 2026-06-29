@@ -1,5 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { FredokaText as Text } from './themed-text';
 
 interface BentoGridProps {
@@ -8,7 +9,7 @@ interface BentoGridProps {
 
 export function BentoGrid({ children }: BentoGridProps) {
   return (
-    <View className="flex-row flex-wrap justify-between">
+    <View className="flex-row flex-wrap justify-between w-full">
       {children}
     </View>
   );
@@ -20,20 +21,26 @@ interface BentoTileProps {
   children: React.ReactNode;
   colSpan?: 1 | 2; // 1 = half width, 2 = full width
   className?: string;
+  index?: number; // Optional index for staggered entering animation
 }
 
-export function BentoTile({ 
-  title, 
-  icon, 
-  children, 
-  colSpan = 1, 
-  className = '' 
+export function BentoTile({
+  title,
+  icon,
+  children,
+  colSpan = 1,
+  className = '',
+  index
 }: BentoTileProps) {
+  const enteringAnim = typeof index === 'number'
+    ? FadeInDown.duration(400).delay(index * 390)
+    : undefined;
+
   return (
-    <View 
-      className={`p-4 rounded-[24px] mb-3 border border-stone-200 bg-white shadow-sm ${
-        colSpan === 1 ? 'w-[48.5%]' : 'w-full'
-      } ${className}`}
+    <Animated.View
+      entering={enteringAnim}
+      className={`p-4 rounded-[24px] mb-3 border border-stone-200 bg-white shadow-sm ${colSpan === 1 ? 'w-[48.5%]' : 'w-full'
+        } ${className}`}
     >
       {title && (
         <View className="flex-row items-center justify-between mb-2 pb-2 border-b border-stone-200">
@@ -46,6 +53,6 @@ export function BentoTile({
       <View className="flex-1 justify-center mt-1">
         {children}
       </View>
-    </View>
+    </Animated.View>
   );
 }

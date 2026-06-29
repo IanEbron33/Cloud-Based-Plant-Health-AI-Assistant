@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Image, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
-import { FredokaText as Text } from '@/components/themed-text';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { BentoGrid, BentoTile } from '@/components/BentoGrid';
 import CircularProgress from '@/components/CircularProgress';
-import { useScan } from '../context/ScanContext';
+import { FredokaText as Text } from '@/components/themed-text';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Easing, Image, ScrollView, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { DiagnosisResult } from '../types';
-import { fetchScanById } from '../services/scan.service';
+import { useScan } from '../context/ScanContext';
 import { parseDiagnosis } from '../services/diagnosis-parser';
+import { fetchScanById } from '../services/scan.service';
+import { DiagnosisResult } from '../types';
 
 export default function ScanResultsScreen() {
   const router = useRouter();
@@ -382,7 +382,7 @@ export default function ScanResultsScreen() {
         )}
         <BentoGrid>
           {/* TILE 1: HERO */}
-          <BentoTile colSpan={2} className="overflow-hidden p-0 rounded-[24px]">
+          <BentoTile colSpan={2} className="overflow-hidden p-0 rounded-[24px]" index={0}>
             <View className="h-44 relative bg-stone-300 rounded-[23px] overflow-hidden">
               <Image source={{ uri: result.imageUri }} className="w-full h-full object-cover rounded-[23px]" />
               {/* Darkening Overlay gradient */}
@@ -404,6 +404,7 @@ export default function ScanResultsScreen() {
           <BentoTile
             title="HEALTH & DIAGNOSTIC"
             colSpan={2}
+            index={1}
             icon={
               <View className="flex-row items-center">
                 <Ionicons name="heart-outline" size={18} color="#ef4444" style={{ marginRight: 6 }} />
@@ -427,8 +428,8 @@ export default function ScanResultsScreen() {
                   {result.healthScore <= 30
                     ? 'CRITICAL'
                     : result.healthScore <= 70
-                    ? 'WARNING'
-                    : 'EXCELLENT'}
+                      ? 'WARNING'
+                      : 'EXCELLENT'}
                 </Text>
               </View>
 
@@ -466,6 +467,7 @@ export default function ScanResultsScreen() {
           <BentoTile
             title="CROP DETAILS"
             colSpan={2}
+            index={2}
             icon={
               <View className="flex-row items-center">
                 <Ionicons name="water-outline" size={18} color="#60a5fa" style={{ marginRight: 6 }} />
@@ -514,6 +516,7 @@ export default function ScanResultsScreen() {
           <BentoTile
             title="SYMPTOMS FOUND"
             colSpan={2}
+            index={3}
             icon={<Ionicons name="eye-outline" size={18} color="#f59e0b" />}
           >
             <View className="space-y-1.5 py-1">
@@ -532,6 +535,7 @@ export default function ScanResultsScreen() {
           <BentoTile
             title="TREATMENT (ORGANIC)"
             colSpan={2}
+            index={4}
             icon={<Ionicons name="medkit-outline" size={18} color="#10b981" />}
           >
             <View className="space-y-2 py-1">
@@ -552,6 +556,7 @@ export default function ScanResultsScreen() {
           <BentoTile
             title="PREVENTION"
             colSpan={2}
+            index={5}
             icon={<Ionicons name="shield-checkmark-outline" size={18} color="#059669" />}
           >
             <View className="space-y-2 py-1">
@@ -575,6 +580,7 @@ export default function ScanResultsScreen() {
           <BentoTile
             title="ADDITIONAL CARE TIP"
             colSpan={2}
+            index={6}
             icon={<Ionicons name="bulb-outline" size={18} color="#f59e0b" />}
             className="border-emerald-600/20 bg-emerald-50/20"
           >
