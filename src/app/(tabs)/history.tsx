@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, useColorScheme, Animated, ActivityIndicator } from 'react-native';
+import { View, ScrollView, TextInput, TouchableOpacity, Image, useColorScheme, Animated, ActivityIndicator } from 'react-native';
+import { FredokaText as Text } from '@/components/themed-text';
 import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';

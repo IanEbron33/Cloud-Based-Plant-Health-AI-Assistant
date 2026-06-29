@@ -1,7 +1,6 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Modal,
   FlatList,
@@ -10,6 +9,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
+import { FredokaText as Text } from './themed-text';
 import { Calendar, Check } from 'lucide-react-native';
 
 const ITEM_HEIGHT = 44;

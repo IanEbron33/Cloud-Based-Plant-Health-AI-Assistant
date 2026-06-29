@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -12,6 +11,7 @@ import {
   ActivityIndicator,
   useColorScheme,
 } from 'react-native';
+import { FredokaText as Text } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';

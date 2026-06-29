@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useNavigation } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Animated, Image, ScrollView, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { FredokaText as Text } from '@/components/themed-text';
 import { useAuth } from '../../context/AuthContext';
 import { fetchUserScans, fetchScanStats, LocalScanRow } from '../../services/scan.service';
 

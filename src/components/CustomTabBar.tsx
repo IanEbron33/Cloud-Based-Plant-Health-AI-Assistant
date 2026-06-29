@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Easing } from 'react-native';
+import { Animated, Dimensions, Platform, StyleSheet, TouchableOpacity, View, ActivityIndicator, Easing } from 'react-native';
+import { FredokaText as Text } from './themed-text';
 import { router } from 'expo-router';
 import { useScan } from '../context/ScanContext';
 

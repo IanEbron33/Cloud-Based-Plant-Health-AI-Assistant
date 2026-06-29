@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, Alert, Platform } from 'react-native';
+import { View, TouchableOpacity, Image, Alert, Platform } from 'react-native';
+import { FredokaText as Text } from './themed-text';
 import { Pencil, ImagePlus } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 

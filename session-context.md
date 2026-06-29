@@ -109,6 +109,14 @@ The AI proxy backend runs on **Hugging Face Spaces** (`https://ianpatatas-bugsok
 
 The follow-up chat is fully localized and styled to support interactive, structured diagnostic consultations:
 
+* **Header Redesign (Option A Layout)**: Left-aligned layout consisting of `[Back Button] [Mascot Avatar] [Bugsok AI Title, Condition Status Badge, and Follow Up Subtitle] [Green Trash Button]`. The subtitle "Follow Up" is aligned directly below the status badge, and the trash button uses emerald green (`#10b981`).
+* **Auto-Growing Message Input Box**: Standard input converted to a multiline text area (`minHeight: 38`, `maxHeight: 120`) styled as a rounded rectangle (`rounded-[22px]`). Layout aligns wrapper items to `items-end` to keep the Send button aligned at the bottom-right as the input area expands vertically.
+* **Custom Delete Confirmation Modal**: Custom overlay replacing standard OS alert notifications. Features a semi-transparent black backdrop (`bg-black/60`) and a centered card carrying the transparent `mascot-transparent-sad.png` scaled up to `130x130`, with a warning details body and Cancellation/Clear button actions.
+* **Smooth Overlay Transitions**: 
+  - Timing-based 180-degree rotation transition on the chevron icon in the AI Mode Switcher.
+  - Dropdown options menu slides down and fades in over 200ms when opened, and transitions back up and fades out over 150ms when closed before unmounting.
+  - Delete modal backdrop fades in, and the card container smoothly scales up from `0.9` to `1.0` using timing-based quadratic ease-out transitions (`Easing.out(Easing.quad)`) over 200ms to prevent spring bounces.
+* **High-Quality 512x512 PNG Mascot Logo**: Resized the original square mascot icon to a high-quality `512x512` PNG at `assets/images/mascot-logo.png` and updated all config references in `app.json` (`icon`, `ios.icon`, `android.adaptiveIcon.foregroundImage`, `web.favicon`, splash screen image) to prevent launcher scaling and compression artifacts.
 * **SQLite Context Lookup**: Ensures chat sessions loaded from history pull correct metadata (e.g. crop name `Sili`, condition `Downy Mildew`) directly from SQLite records (`fetchScanById`), resolving default fallback errors.
 * **Strict English-Only Prompting**: Backend Go proxy chatbot instructions force the model to output purely English responses, eliminating Taglish mixtures or random dialect switches.
 * **Advanced Text Styling Parser**: Client-side parser in `chat.tsx` processes raw markdown markers and transforms them:
@@ -150,7 +158,8 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   └── vegetables_db.json       # Crop database context (~143KB)
 │   └── images/
 │       ├── mascot-animation.webp    # Bundled transparent animated WebP mascot splash animation (4.0s)
-│       └── mascot-logo.jpeg         # App mascot image (square with 12px rounded radius)
+│       ├── mascot-logo.png          # App mascot image (512x512 high quality square PNG)
+│       └── mascot-transparent-sad.png # Sad transparent mascot for delete modal
 ├── proxy/
 │   ├── Dockerfile                   # Multi-stage Docker config for HF Spaces
 │   ├── README.md                    # Backend run & deployment instructions

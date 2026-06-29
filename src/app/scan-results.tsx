@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Image, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
+import { FredokaText as Text } from '@/components/themed-text';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BentoGrid, BentoTile } from '@/components/BentoGrid';

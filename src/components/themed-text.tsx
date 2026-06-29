@@ -30,6 +30,38 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   );
 }
 
+export function FredokaText({ style, ...rest }: TextProps) {
+  const flatStyle = StyleSheet.flatten(style) || {};
+
+  let fontFamily = flatStyle.fontFamily;
+  if (!fontFamily) {
+    const isBoldWeight =
+      flatStyle.fontWeight === 'bold' ||
+      flatStyle.fontWeight === '700' ||
+      flatStyle.fontWeight === '800' ||
+      flatStyle.fontWeight === '900';
+
+    fontFamily = isBoldWeight ? 'Fredoka_700Bold' : 'Fredoka_400Regular';
+  }
+
+  const isCustomFont = fontFamily === 'Fredoka_700Bold' || fontFamily === 'Fredoka_400Regular';
+  const resolvedStyle = {
+    fontFamily,
+    ...(isCustomFont ? { fontWeight: undefined } : {}),
+  };
+
+  return (
+    <Text
+      style={[
+        style,
+        resolvedStyle,
+      ]}
+      {...rest}
+    />
+  );
+}
+
+
 const styles = StyleSheet.create({
   small: {
     fontSize: 14,

@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useState, useEffect } from 'react';
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View, ActivityIndicator } from 'react-native';
+import { Image, ScrollView, TextInput, TouchableOpacity, useColorScheme, View, ActivityIndicator } from 'react-native';
+import { FredokaText as Text } from '@/components/themed-text';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';

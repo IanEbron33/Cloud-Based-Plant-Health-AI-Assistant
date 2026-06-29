@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useNavigation } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, ScrollView, Text, TouchableOpacity, useColorScheme, View, Image, ActivityIndicator } from 'react-native';
+import { Animated, ScrollView, TouchableOpacity, useColorScheme, View, Image, ActivityIndicator } from 'react-native';
+import { FredokaText as Text } from '@/components/themed-text';
 import { useAuth } from '../../context/AuthContext';
 import { fetchScanStats, syncData } from '../../services/scan.service';
 

@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
+import { FredokaText as Text } from '@/components/themed-text';
 import { useAuth } from '../context/AuthContext';
 
 export default function SplashScreen() {

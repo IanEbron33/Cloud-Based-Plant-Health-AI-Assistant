@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { FredokaText as Text } from './themed-text';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, {
   useSharedValue,

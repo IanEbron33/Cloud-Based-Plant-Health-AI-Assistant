@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, useColorScheme, Animated, Dimensions } from 'react-native';
+import { View, useColorScheme, Animated, Dimensions } from 'react-native';
+import { FredokaText as Text } from '@/components/themed-text';
 import { Ionicons } from '@expo/vector-icons';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
