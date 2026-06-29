@@ -193,14 +193,14 @@ Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do
 	// ==========================================
 	// STEP 3: Streaming Diagnosis Call
 	// ==========================================
-	systemInstruction := fmt.Sprintf(`You are a Filipino agricultural plant health assistant. The user has uploaded a photo of a %s leaf.
+	systemInstruction := fmt.Sprintf(`You are an agricultural plant health assistant. The user has uploaded a photo of a %s leaf.
 
 You must analyze the image and diagnose its health condition, grounding your response ONLY in the following verified database metadata for the identified crop:
 %s
 
 Respond in this exact format:
 - **Crop Identified:** [Local Name] ([Scientific Name])
-- **Condition:** [Condition Name — bilingual]
+- **Condition:** [Condition Name — in English only]
 - **Severity:** [Level]
 - **Health Score:** [Provide a dynamic estimated health percentage from 0%% to 100%% based on visual leaf decay and diagnostic severity]%%
 - **Confidence Score:** [Provide a dynamic confidence score from 0%% to 100%% indicating how certain you are of this diagnosis based on image clarity, leaf symptom visibility, and similarity to database descriptions]%%
@@ -209,8 +209,8 @@ Respond in this exact format:
 - **Prevention:** [From database]
 - **Care Tip:** [A friendly, localized tip]
 
-Keep your language warm, supportive, and accessible to Filipino farmers.
-Mix English and Filipino naturally (Taglish) when appropriate.`, matchedCrop, contextJSON)
+Keep your language warm, supportive, and accessible to farmers.
+Provide your response strictly and entirely in English. Do not mix with Tagalog, Taglish, or any other languages. All terms, details, and descriptions must be in English only.`, matchedCrop, contextJSON)
 
 	modelName := resolveModel(modelType)
 	apiURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:streamGenerateContent?key=%s&alt=sse", modelName, apiKey)

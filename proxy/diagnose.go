@@ -66,7 +66,7 @@ func handleDiagnose(w http.ResponseWriter, r *http.Request) {
 	modelName := resolveModel(modelType)
 	apiURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:streamGenerateContent?key=%s&alt=sse", modelName, apiKey)
 
-	systemInstruction := fmt.Sprintf(`You are a Filipino agricultural plant health assistant. The user has uploaded a photo of a %s leaf.
+	systemInstruction := fmt.Sprintf(`You are an agricultural plant health assistant. The user has uploaded a photo of a %s leaf.
 Analyze the image and diagnose its health condition.
 
 You must ground your response ONLY in the following verified database metadata for %s:
@@ -74,7 +74,7 @@ You must ground your response ONLY in the following verified database metadata f
 
 Respond in this exact format:
 - **Crop Identified:** [Local Name] ([Scientific Name])
-- **Condition:** [Condition Name — bilingual]
+- **Condition:** [Condition Name — in English only]
 - **Severity:** [Level]
 - **Health Score:** [Provide a dynamic estimated health percentage from 0%% to 100%% based on visual leaf decay and diagnostic severity]%%
 - **Confidence Score:** [Provide a dynamic confidence score from 0%% to 100%% indicating how certain you are of this diagnosis based on image clarity, leaf symptom visibility, and similarity to database descriptions]%%
@@ -83,8 +83,8 @@ Respond in this exact format:
 - **Prevention:** [From database]
 - **Care Tip:** [A friendly, localized tip]
 
-Keep your language warm, supportive, and accessible to Filipino farmers.
-Mix English and Filipino naturally (Taglish) when appropriate.`, crop, crop, contextJSON)
+Keep your language warm, supportive, and accessible to farmers.
+Provide your response strictly and entirely in English. Do not mix with Tagalog, Taglish, or any other languages. All terms, details, and descriptions must be in English only.`, crop, crop, contextJSON)
 
 	genConfig := &GenerationConfig{
 		Temperature: 0.4,
