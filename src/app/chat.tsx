@@ -539,35 +539,44 @@ export default function ChatScreen() {
 
         if (sessionId) {
           try {
-            await saveChatMessage(sessionId, 'ai', finalMsgText, activeModel);
-            // Reload from DB to ensure local message sync state and timestamp match
-            const dbMsgs = fetchChatMessages(sessionId);
-            setMessages((prev) => {
-              const lastPrevMsg = prev[prev.length - 1];
-              const wasTyping = lastPrevMsg && lastPrevMsg.sender === 'ai' && lastPrevMsg.isNew;
-
-              return dbMsgs.map((m, idx) => {
-                const isLast = idx === dbMsgs.length - 1;
-                const thoughtMatch = m.message.match(/<thought>([\s\S]*?)<\/thought>/);
-                const thought = thoughtMatch ? thoughtMatch[1] : undefined;
-                const cleanText = m.message.replace(/<thought>[\s\S]*?<\/thought>/, '');
-
-                return {
-                  id: m.id,
-                  sender: m.sender,
-                  text: cleanText
-                    .replace(/Hello! I am your plant care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant')
-                    .replace(/Hello! I am Bugsok AI, your crops care assistant/g, 'Hello! I am Bugsok AI, as your plant care assistant'),
-                  thought,
-                  timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                  modelUsed: m.model_used as 'flash' | 'deep' | undefined,
-                  isNew: isLast && wasTyping ? true : false,
-                };
-              });
-            });
+            const savedMsgId = await saveChatMessage(sessionId, 'ai', finalMsgText, activeModel);
+            // Finalize local state message in-place to avoid full list reload visual flash/jank
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiMsgId
+                  ? {
+                      ...m,
+                      id: savedMsgId,
+                      isNew: false,
+                    }
+                  : m
+              )
+            );
           } catch (err) {
             console.error('[Chat Screen] Save AI response error:', err);
+            // Fallback: finalize in-place using temp ID
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiMsgId
+                  ? {
+                      ...m,
+                      isNew: false,
+                    }
+                  : m
+              )
+            );
           }
+        } else {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === aiMsgId
+                ? {
+                    ...m,
+                    isNew: false,
+                  }
+                : m
+            )
+          );
         }
         scrollViewRef.current?.scrollToEnd({ animated: true });
       },

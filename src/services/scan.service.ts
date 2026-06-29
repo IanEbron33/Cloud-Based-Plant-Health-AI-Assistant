@@ -424,7 +424,7 @@ export const saveChatMessage = async (
   sender: 'user' | 'ai',
   message: string,
   modelUsed?: string
-): Promise<void> => {
+): Promise<string> => {
   const db = getDB();
   const messageId = generateUUID();
   const createdAt = new Date().toISOString();
@@ -449,6 +449,8 @@ export const saveChatMessage = async (
       db.runSync('UPDATE chat_messages SET synced = 1 WHERE id = ?', [messageId]);
     }
   });
+
+  return messageId;
 };
 
 /**
