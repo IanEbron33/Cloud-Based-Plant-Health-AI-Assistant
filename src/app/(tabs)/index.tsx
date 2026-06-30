@@ -1,11 +1,11 @@
+import { FredokaText as Text } from '@/components/themed-text';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, ScrollView, TouchableOpacity, useColorScheme, View } from 'react-native';
-import { FredokaText as Text } from '@/components/themed-text';
-import { useAuth } from '../../context/AuthContext';
-import { fetchUserScans, fetchScanStats, LocalScanRow } from '../../services/scan.service';
 import { DAILY_TIPS } from '../../constants/tips';
+import { useAuth } from '../../context/AuthContext';
+import { fetchScanStats, fetchUserScans, LocalScanRow } from '../../services/scan.service';
 
 // Reusable card component to encapsulate press scale animations cleanly
 function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index: number; isDark: boolean; onPress: () => void }) {
@@ -75,9 +75,8 @@ function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index:
         onPressOut={handlePressOut}
         onPress={onPress}
         activeOpacity={0.9}
-        className={`flex-row p-4 rounded-3xl items-center border ${
-          isDark ? 'bg-stone-900 border-stone-880' : 'bg-white border-stone-100 shadow-sm'
-        }`}
+        className={`flex-row p-4 rounded-3xl items-center border ${isDark ? 'bg-stone-900 border-stone-880' : 'bg-white border-stone-100 shadow-sm'
+          }`}
         style={{ marginBottom: 12 }}
       >
         {/* Crop Image */}
@@ -292,7 +291,7 @@ export default function HomeScreen() {
   } else if (highestSeverity === 'Moderate' || highestSeverity === 'Low') {
     mascotSource = require('../../../assets/images/mascot-concerned.png');
   } else {
-    mascotSource = require('../../../assets/images/mascot-transparent.png');
+    mascotSource = require('../../../assets/images/mascot-happy.png');
   }
 
   // Get day of the year to index the daily tip
