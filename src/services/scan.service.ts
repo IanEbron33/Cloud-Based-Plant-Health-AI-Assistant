@@ -118,6 +118,17 @@ export const initLocalDatabase = (): void => {
           created_at TEXT DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (session_id) REFERENCES chat_sessions (id) ON DELETE CASCADE
       );
+
+      CREATE TABLE IF NOT EXISTS general_chat_messages (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          sender TEXT CHECK(sender IN ('user', 'ai')),
+          model_used TEXT,
+          message TEXT NOT NULL,
+          attached_scan_id TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (attached_scan_id) REFERENCES scans (id) ON DELETE SET NULL
+      );
     `);
     console.log('[Scan Service] SQLite Database initialized successfully.');
   } catch (error) {
@@ -599,5 +610,75 @@ export const clearChatMessages = (sessionId: string): void => {
     db.runSync('DELETE FROM chat_messages WHERE session_id = ?', [sessionId]);
   } catch (err) {
     console.error('[Scan Service] clearChatMessages error:', err);
+  }
+};
+
+/**
+ * Local General Chat Message SQLite representation.
+ */
+export interface LocalGeneralChatMessage {
+  id: string;
+  user_id: string;
+  sender: 'user' | 'ai';
+  model_used: string;
+  message: string;
+  attached_scan_id: string | null;
+  created_at: string;
+}
+
+/**
+ * Fetch all general chat messages for a user.
+ */
+export const fetchGeneralChatMessages = (userId: string): LocalGeneralChatMessage[] => {
+  try {
+    const db = getDB();
+    return db.getAllSync(
+      'SELECT * FROM general_chat_messages WHERE user_id = ? ORDER BY created_at ASC',
+      [userId]
+    ) as LocalGeneralChatMessage[];
+  } catch (err) {
+    console.error('[Scan Service] fetchGeneralChatMessages error:', err);
+    return [];
+  }
+};
+
+/**
+ * Save a general chat message locally.
+ */
+export const saveGeneralChatMessage = async (
+  userId: string,
+  sender: 'user' | 'ai',
+  message: string,
+  modelUsed: string,
+  attachedScanId: string | null
+): Promise<string> => {
+  try {
+    const db = getDB();
+    const messageId = generateUUID();
+    const createdAt = new Date().toISOString();
+
+    db.runSync(
+      `INSERT INTO general_chat_messages (id, user_id, sender, model_used, message, attached_scan_id, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [messageId, userId, sender, modelUsed, message, attachedScanId, createdAt]
+    );
+
+    return messageId;
+  } catch (err) {
+    console.error('[Scan Service] saveGeneralChatMessage error:', err);
+    throw err;
+  }
+};
+
+/**
+ * Clear all general chat messages for a user.
+ */
+export const clearGeneralChat = async (userId: string): Promise<void> => {
+  try {
+    const db = getDB();
+    db.runSync('DELETE FROM general_chat_messages WHERE user_id = ?', [userId]);
+  } catch (err) {
+    console.error('[Scan Service] clearGeneralChat error:', err);
+    throw err;
   }
 };
