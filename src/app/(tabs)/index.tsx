@@ -7,6 +7,9 @@ import { DAILY_TIPS } from '../../constants/tips';
 import { useAuth } from '../../context/AuthContext';
 import { fetchScanStats, fetchUserScans, LocalScanRow } from '../../services/scan.service';
 
+// Store session greeting index once per app launch session
+const sessionGreetingIndex = Math.floor(Math.random() * 4);
+
 // Reusable card component to encapsulate press scale animations cleanly
 function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index: number; isDark: boolean; onPress: () => void }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -148,7 +151,6 @@ export default function HomeScreen() {
   const [recentScans, setRecentScans] = useState<LocalScanRow[]>([]);
   const [stats, setStats] = useState({ total: 0, infected: 0, synced: 0 });
   const [highestSeverity, setHighestSeverity] = useState<'None' | 'Low' | 'Moderate' | 'High'>('None');
-  const [greetingIndex, setGreetingIndex] = useState(0);
 
   // Animated values for entrance animations
   const bannerAnim = useRef(new Animated.Value(0)).current;
@@ -180,9 +182,6 @@ export default function HomeScreen() {
         setHighestSeverity('Low');
       }
     }
-
-    // Set a stable random index for greeting pools on focus
-    setGreetingIndex(Math.floor(Math.random() * 4));
   };
 
   // Reload SQLite data whenever the screen gains navigation focus
@@ -282,7 +281,7 @@ export default function HomeScreen() {
     greetingPool = warningGreetings;
   }
 
-  const mascotSpeechBubbleText = greetingPool[greetingIndex] || greetingPool[0];
+  const mascotSpeechBubbleText = greetingPool[sessionGreetingIndex] || greetingPool[0];
 
   // Select mascot image based on highestSeverity (Option C placeholder mapping)
   let mascotSource;
@@ -385,7 +384,20 @@ export default function HomeScreen() {
           </Animated.View>
 
           {/* Speech Bubble */}
-          <View className="bg-emerald-600 dark:bg-emerald-700 p-4 rounded-2xl rounded-bl-none shadow-sm shadow-emerald-800/10">
+          <View className="bg-emerald-600 dark:bg-emerald-700 p-4 rounded-2xl shadow-sm shadow-emerald-800/10 relative">
+            {/* Speech Bubble Tail Pointer */}
+            <View
+              style={{
+                position: 'absolute',
+                left: -5,
+                top: '100%',
+                marginTop: -6,
+                width: 12,
+                height: 12,
+                backgroundColor: '#059669', // matches bg-emerald-600 (emerald green)
+                transform: [{ rotate: '45deg' }],
+              }}
+            />
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
               className="text-white text-base font-bold"
