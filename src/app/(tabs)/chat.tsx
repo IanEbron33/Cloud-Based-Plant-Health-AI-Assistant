@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Animated as RNAnimated,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -230,6 +231,7 @@ export default function ChatScreen() {
   const [attachedScan, setAttachedScan] = useState<LocalScanRow | null>(null);
   const [pickerModalVisible, setPickerModalVisible] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const keyboardHeight = useRef(new RNAnimated.Value(0)).current;
 
   // Animations
   const chevronRotation = useSharedValue(0);
@@ -303,14 +305,31 @@ export default function ChatScreen() {
 
   // Monitor keyboard visibility to dynamically space input bar above bottom tab bar
   useEffect(() => {
-    const showSub = Keyboard.addListener(
-      Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow',
-      () => setIsKeyboardVisible(true)
-    );
-    const hideSub = Keyboard.addListener(
-      Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide',
-      () => setIsKeyboardVisible(false)
-    );
+    const showEvent = Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
+    const hideEvent = Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setIsKeyboardVisible(true);
+      if (Platform.OS === 'android') {
+        RNAnimated.timing(keyboardHeight, {
+          toValue: e.endCoordinates.height + 10,
+          duration: 150,
+          useNativeDriver: false,
+        }).start();
+      }
+    });
+
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setIsKeyboardVisible(false);
+      if (Platform.OS === 'android') {
+        RNAnimated.timing(keyboardHeight, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: false,
+        }).start();
+      }
+    });
+
     return () => {
       showSub.remove();
       hideSub.remove();
@@ -689,7 +708,7 @@ export default function ChatScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       className="flex-1 bg-stone-50"
     >
       {/* HEADER SECTION */}
@@ -878,12 +897,13 @@ export default function ChatScreen() {
       </ScrollView>
 
       {/* INPUT / DOCK FOOTER */}
-      <View
+      <RNAnimated.View
         className="bg-white border-t border-stone-150"
         style={{
           paddingHorizontal: 16,
           paddingTop: 12,
           paddingBottom: isKeyboardVisible ? 14 : 96,
+          marginBottom: Platform.OS === 'android' ? keyboardHeight : 0,
         }}
       >
         {/* Option A: Attached Diagnosis Preview Chip */}
@@ -941,7 +961,7 @@ export default function ChatScreen() {
             <TextInput
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Ask about crops or attach a..."
+              placeholder="Ask about crops..."
               placeholderTextColor="#a8a29e"
               multiline
               style={{
@@ -977,7 +997,7 @@ export default function ChatScreen() {
             />
           </TouchableOpacity>
         </View>
-      </View>
+      </RNAnimated.View>
 
       {/* SCAN PICKER MODAL (Bottom Sheet overlay) */}
       <Modal
