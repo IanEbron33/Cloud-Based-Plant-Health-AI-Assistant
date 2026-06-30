@@ -5,6 +5,7 @@ import { Animated, Image, ScrollView, TouchableOpacity, useColorScheme, View } f
 import { FredokaText as Text } from '@/components/themed-text';
 import { useAuth } from '../../context/AuthContext';
 import { fetchUserScans, fetchScanStats, LocalScanRow } from '../../services/scan.service';
+import { DAILY_TIPS } from '../../constants/tips';
 
 // Reusable card component to encapsulate press scale animations cleanly
 function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index: number; isDark: boolean; onPress: () => void }) {
@@ -92,7 +93,7 @@ function ScanCard({ scan, index, isDark, onPress }: { scan: LocalScanRow; index:
           <View className="flex-row justify-between items-center">
             <Text
               style={{ fontFamily: 'Fredoka_700Bold' }}
-              className={`text-base font-bold ${isDark ? 'text-white' : 'text-stone-900'} flex-1 mr-2`}
+              className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'} flex-1 mr-2`}
               numberOfLines={1}
             >
               {scan.crop_name}
@@ -147,6 +148,8 @@ export default function HomeScreen() {
   const { user, profile } = useAuth();
   const [recentScans, setRecentScans] = useState<LocalScanRow[]>([]);
   const [stats, setStats] = useState({ total: 0, infected: 0, synced: 0 });
+  const [highestSeverity, setHighestSeverity] = useState<'None' | 'Low' | 'Moderate' | 'High'>('None');
+  const [greetingIndex, setGreetingIndex] = useState(0);
 
   // Animated values for entrance animations
   const bannerAnim = useRef(new Animated.Value(0)).current;
@@ -163,6 +166,24 @@ export default function HomeScreen() {
     setRecentScans(scans.slice(0, 3));
     const counts = fetchScanStats(user.id);
     setStats(counts);
+
+    // Compute highest severity of active infected scans
+    const activeInfected = scans.filter(s => s.severity !== 'None');
+    if (activeInfected.length === 0) {
+      setHighestSeverity('None');
+    } else {
+      const severities = activeInfected.map(s => s.severity);
+      if (severities.includes('High')) {
+        setHighestSeverity('High');
+      } else if (severities.includes('Moderate')) {
+        setHighestSeverity('Moderate');
+      } else {
+        setHighestSeverity('Low');
+      }
+    }
+
+    // Set a stable random index for greeting pools on focus
+    setGreetingIndex(Math.floor(Math.random() * 4));
   };
 
   // Reload SQLite data whenever the screen gains navigation focus
@@ -222,11 +243,88 @@ export default function HomeScreen() {
   };
 
   const displayName = profile?.full_name || 'Grower';
-  const mascotSpeechBubbleText = stats.infected === 0
-    ? "All your plants are looking healthy! Keep up the good work."
-    : stats.infected === 1
-    ? "You have 1 infected plant in your recent scans. Let's analyze it."
-    : `You have ${stats.infected} infected plants in your recent scans. Let's analyze them.`;
+
+  // Dynamically calculate time-of-day greeting
+  const getTimeOfDayGreeting = () => {
+    const hours = new Date().getHours();
+    if (hours >= 5 && hours < 12) return 'Good Morning';
+    if (hours >= 12 && hours < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+  const timeOfDayGreeting = getTimeOfDayGreeting();
+
+  // State-based categorized greeting pools (4 items each)
+  const healthyGreetings = [
+    "All your plants are looking healthy! Keep up the good work.",
+    "Good news! 0 infected plants found. Let's keep our garden thriving!",
+    "All clear! Your crops are in top shape. Bugsok is happy to see them grow!",
+    "Beautiful day! Your plant companions are shining and pest-free today."
+  ];
+
+  const warningGreetings = [
+    "I noticed a few mild symptoms in your scans. We should keep an eye on them.",
+    `We have ${stats.infected} crops showing warning signs. Let's check their care tips.`,
+    "We spotted some leaf issues. Let's make sure they get the right organic treatment.",
+    "Some plants need a bit of attention. Let's review the active warning cases."
+  ];
+
+  const criticalGreetings = [
+    "Oh no! We have critical plant infections. Let's look at the treatment options immediately!",
+    "A scan shows severe damage. We must take action now to save the crop!",
+    "High severity infection detected. Check the recommended organic remedies right away.",
+    "Bugsok is worried! Some plants have severe symptoms. Let's treat them before they spread."
+  ];
+
+  // Select active pool based on highestSeverity
+  let greetingPool = healthyGreetings;
+  if (highestSeverity === 'High') {
+    greetingPool = criticalGreetings;
+  } else if (highestSeverity === 'Moderate' || highestSeverity === 'Low') {
+    greetingPool = warningGreetings;
+  }
+
+  const mascotSpeechBubbleText = greetingPool[greetingIndex] || greetingPool[0];
+
+  // Select mascot image based on highestSeverity (Option C placeholder mapping)
+  let mascotSource;
+  if (highestSeverity === 'High') {
+    mascotSource = require('../../../assets/images/mascot-worried.png');
+  } else if (highestSeverity === 'Moderate' || highestSeverity === 'Low') {
+    mascotSource = require('../../../assets/images/mascot-concerned.png');
+  } else {
+    mascotSource = require('../../../assets/images/mascot-transparent.png');
+  }
+
+  // Get day of the year to index the daily tip
+  const getDayOfYear = () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+  };
+
+  const dayOfYear = getDayOfYear();
+  const dailyTip = DAILY_TIPS[dayOfYear % DAILY_TIPS.length];
+
+  const renderTipText = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const clean = part.slice(2, -2);
+        return (
+          <Text
+            key={idx}
+            style={{ fontFamily: 'Fredoka_700Bold' }}
+            className="text-emerald-600 dark:text-emerald-400 font-bold"
+          >
+            {clean}
+          </Text>
+        );
+      }
+      return part;
+    });
+  };
 
   return (
     <ScrollView
@@ -256,7 +354,6 @@ export default function HomeScreen() {
           <Ionicons name="person" size={18} color={isDark ? '#a8a29e' : '#059669'} />
         </TouchableOpacity>
       </Animated.View>
-
       {/* Mascot Highlight Card */}
       <Animated.View
         style={{
@@ -283,7 +380,7 @@ export default function HomeScreen() {
             }}
           >
             <Image
-              source={require('../../../assets/images/mascot-transparent.png')}
+              source={mascotSource}
               style={{ width: 205, height: 245, resizeMode: 'contain' }}
             />
           </Animated.View>
@@ -294,7 +391,7 @@ export default function HomeScreen() {
               style={{ fontFamily: 'Fredoka_700Bold' }}
               className="text-white text-base font-bold"
             >
-              Hello, {displayName}!
+              {timeOfDayGreeting}, {displayName}!
             </Text>
             <Text
               style={{ fontFamily: 'Fredoka_400Regular' }}
@@ -484,7 +581,7 @@ export default function HomeScreen() {
             style={{ fontFamily: 'Fredoka_400Regular' }}
             className={`text-sm leading-6 ${isDark ? 'text-stone-300' : 'text-stone-600'}`}
           >
-            To prevent <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-emerald-600 dark:text-emerald-400">Bacterial Wilt</Text> in eggplant and chili, avoid planting them in soil where tomatoes were recently harvested. Rotate crops with corn or legumes (peanuts, string beans) for 2 to 3 years.
+            {renderTipText(dailyTip)}
           </Text>
         </Animated.View>
 
