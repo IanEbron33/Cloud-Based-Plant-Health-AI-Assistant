@@ -55,10 +55,11 @@ This document captures the current state, architecture, and files of the project
 The application implements **Option C: Bidirectional Sync (SQLite-First)**. The local SQLite database serves as the primary data store, ensuring instant rendering and offline usability, with background synchronization to Supabase.
 
 ### Local SQLite Database Schema
-The local database (`bugsok_ai.db`) contains three primary tables:
+The local database (`bugsok_ai.db`) contains four primary tables:
 1. **`scans`**: Stores crop diagnoses locally. Unsynced scans store a `local_image_path`. Synced scans contain the Supabase bucket `cloud_image_url`. Includes a `synced` flag (0 = Unsynced, 1 = Synced).
 2. **`chat_sessions`**: Stores follow-up chat sessions associated with scans.
 3. **`chat_messages`**: Stores individual messages for each session.
+4. **`general_chat_messages`**: Stores general conversation messages and references attached scan keys (`attached_scan_id` referencing `scans(id)` with `ON DELETE SET NULL`).
 
 * **Tagalog Database Keys**: Crops are saved in the database using their Tagalog keys (e.g. `Talong`, `Kamatis`, `Sili`, `Ampalaya`) to match the localized content rules.
 * **Auto-Resume Chat Sessions**: When entering the chat screen from a scan results page, the app automatically fetches and resumes the latest active chat session for that scan instead of starting a new one.
@@ -134,6 +135,26 @@ The follow-up chat is fully localized and styled to support interactive, structu
 
 ---
 
+## 💬 General Chat Tab & Option A Attachment System
+
+Implemented a fully-featured dedicated general chat screen in the main navigation tab layout:
+
+* **Interactive Header**: Features a decluttered AI model selector dropdown (`w-56` width prevents text-wrapping issues) to switch between Flash (⚡) and Deep Think (🧠) modes, plus a green trash button that opens a mascot-styled delete confirmation dialog.
+* **Option A Attachment System**:
+  * Added clip `📎` button in the dock which slides up a bottom sheet modal displaying the user's past scans history (rendered in the same high-fidelity layout as the History screen, showing image, crop name, condition, severity bar, and date).
+  * Selecting a scan locks it as a persistent context chip above the input box (detachable via `✕` action).
+  * Automatically injects the attached crop's metadata profile and diagnosis text into the AI context during SSE streaming, and tags the corresponding AI bubble with a green `Linked: [Crop] — [Condition]` flag.
+  * **Auto-crop detection fallback**: If no scan is attached, the app parses prompt text for mentioned crop keywords (like "Talong" or "Tomato") and injects the corresponding vegetable profile automatically.
+* **Scope Guardrails**: Intercepts prompts for non-agricultural topics (such as mathematics, formulas, and software programming/coding) and politely rejects them to keep the focus strictly on plant health.
+* **Custom Keyboard Avoidance**:
+  * Disabled `KeyboardAvoidingView` layout behavior on Android to avoid duplicate padding and ghost gaps caused by nested Tab Navigator layout limits.
+  * Implemented manual keyboard listeners that dynamically animate the `marginBottom` of the input container to `e.endCoordinates.height + 10` using `RNAnimated` timing curves on Android.
+  * Adjusts the message scroll view's bottom padding dynamically to guarantee that message bubbles can always be scrolled fully above the keyboard when typing.
+  * Uses standard `behavior="padding"` on iOS.
+* **Branding & Consistency**: Reuses the exact message text formatting parser (`text-sm leading-6` sizes, bold green key terms, circular bullet points) to match the follow-up chat screens perfectly.
+
+---
+
 ## 🛠️ Technology Stack & Dependencies
 
 * **Core:** React 19.1.0, React Native 0.81.5
@@ -183,6 +204,7 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │       ├── index.tsx            # Home Dashboard (Live counts from SQLite stats, recent scans list, tips)
 │   │       ├── history.tsx          # Past scans (Search, filter, offline sync status, manual "Sync Now" banner)
 │   │       ├── scan.tsx             # Camera preview guidelines frame with solid rounded-[24px] border, custom sliding AI mode toggle
+│   │       ├── chat.tsx             # General Chat tab screen with Flash/Deep switcher and scan history picker modal
 │   │       └── profile.tsx          # User profile info, SQLite vs Supabase counts, and sync dashboard
 │   ├── components/
 │   │   ├── BentoGrid.tsx            # Bento layout tiles (colSpan helper wrapper)

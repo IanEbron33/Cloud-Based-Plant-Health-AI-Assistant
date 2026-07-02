@@ -12,8 +12,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#3f7446",
-        "foregroundImage": "./assets/images/mascot-logo.png"
+        "backgroundColor": "#427646",
+        "foregroundImage": "./assets/images/mascot-adaptive-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.PlantHealthTracker"
