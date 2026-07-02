@@ -29,10 +29,16 @@ import { useToast } from '../../context/ToastContext';
 import { chatWithAI } from '../../services/api.service';
 import {
   clearGeneralChat,
-  fetchGeneralChatMessages,
+  createGeneralChatSession,
+  deleteGeneralChatSession,
+  fetchGeneralChatMessagesBySession,
+  fetchGeneralChatSessions,
   fetchUserScans,
+  LocalGeneralChatSessionRow,
   LocalScanRow,
-  saveGeneralChatMessage
+  pinGeneralChatSession,
+  saveGeneralChatMessage,
+  updateGeneralChatSessionTitle
 } from '../../services/scan.service';
 
 interface Message {
@@ -226,6 +232,12 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // General Chat Sessions & Sidebar states
+  const [sessions, setSessions] = useState<LocalGeneralChatSessionRow[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [activeMenuSessionId, setActiveMenuSessionId] = useState<string | null>(null);
+
   // Attachment states
   const [scanHistory, setScanHistory] = useState<LocalScanRow[]>([]);
   const [attachedScan, setAttachedScan] = useState<LocalScanRow | null>(null);
@@ -243,13 +255,67 @@ export default function ChatScreen() {
   const deleteModalOpacity = useSharedValue(0);
   const deleteModalScale = useSharedValue(0.9);
 
-  // Load chat messages on mount/session load
-  const loadMessages = async () => {
+  const sidebarTranslateX = useSharedValue(-280);
+  const sidebarBackdropOpacity = useSharedValue(0);
+
+  const animatedSidebarStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: sidebarTranslateX.value }],
+    };
+  });
+
+  const animatedSidebarBackdropStyle = useAnimatedStyle(() => {
+    return {
+      opacity: sidebarBackdropOpacity.value,
+    };
+  });
+
+  const toggleSidebar = (visible: boolean) => {
+    if (visible) {
+      setSidebarVisible(true);
+      sidebarTranslateX.value = withTiming(0, { duration: 250 });
+      sidebarBackdropOpacity.value = withTiming(1, { duration: 250 });
+    } else {
+      sidebarBackdropOpacity.value = withTiming(0, { duration: 200 });
+      sidebarTranslateX.value = withTiming(-280, { duration: 200 }, (finished) => {
+        if (finished) {
+          runOnJS(setSidebarVisible)(false);
+        }
+      });
+    }
+  };
+
+  // Load sessions from SQLite
+  const loadSessions = async (activeIdToSet?: string | null) => {
     if (!user) return;
     try {
-      const dbMsgs = fetchGeneralChatMessages(user.id);
+      const dbSess = fetchGeneralChatSessions(user.id);
+      setSessions(dbSess);
+
+      if (dbSess.length === 0) {
+        // Create an initial session
+        const newId = await createGeneralChatSession(user.id, 'New Chat');
+        const reloaded = fetchGeneralChatSessions(user.id);
+        setSessions(reloaded);
+        setActiveSessionId(newId);
+      } else {
+        if (activeIdToSet) {
+          setActiveSessionId(activeIdToSet);
+        } else if (!activeSessionId) {
+          setActiveSessionId(dbSess[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('[General Chat] Load sessions error:', err);
+    }
+  };
+
+  // Load messages for a specific session ID
+  const loadMessagesForSession = async (sessionId: string) => {
+    if (!user) return;
+    try {
+      const dbMsgs = fetchGeneralChatMessagesBySession(sessionId);
       const formatted = dbMsgs.map((m) => {
-        // Parse thoughts if they are encoded like `<thought>...</thought>`
         let text = m.message;
         let thought = '';
         const match = text.match(/<thought>([\s\S]*?)<\/thought>/);
@@ -258,7 +324,6 @@ export default function ChatScreen() {
           text = text.replace(/<thought>[\s\S]*?<\/thought>/, '');
         }
 
-        // Retrieve attached scan details
         let attachedDetails = null;
         if (m.attached_scan_id) {
           const scans = fetchUserScans(user.id);
@@ -288,7 +353,7 @@ export default function ChatScreen() {
       setMessages(formatted);
       setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: false }), 150);
     } catch (err) {
-      console.error('[General Chat] Load messages error:', err);
+      console.error('[General Chat] Load messages for session error:', err);
     }
   };
 
@@ -299,9 +364,17 @@ export default function ChatScreen() {
   };
 
   useEffect(() => {
-    loadMessages();
-    loadScanHistoryData();
+    if (user) {
+      loadSessions();
+      loadScanHistoryData();
+    }
   }, [user]);
+
+  useEffect(() => {
+    if (activeSessionId) {
+      loadMessagesForSession(activeSessionId);
+    }
+  }, [activeSessionId]);
 
   // Monitor keyboard visibility to dynamically space input bar above bottom tab bar
   useEffect(() => {
@@ -445,6 +518,7 @@ export default function ChatScreen() {
       await clearGeneralChat(user.id);
       setMessages([]);
       setDeleteModalVisible(false);
+      await loadSessions(null);
       showToast({
         type: 'success',
         title: 'Chat Cleared',
@@ -490,8 +564,17 @@ export default function ChatScreen() {
         'user',
         userMsgText,
         activeModel,
-        activeAttached ? activeAttached.id : null
+        activeAttached ? activeAttached.id : null,
+        activeSessionId!
       );
+
+      // Automatically rename session title if it's currently a default title
+      const currentSession = sessions.find((s) => s.id === activeSessionId);
+      if (currentSession && (currentSession.title === 'New Chat' || currentSession.title === 'Legacy Session')) {
+        const truncatedTitle = userMsgText.length > 30 ? userMsgText.slice(0, 30) + '...' : userMsgText;
+        await updateGeneralChatSessionTitle(activeSessionId!, truncatedTitle);
+        loadSessions(activeSessionId);
+      }
     } catch (err) {
       console.error('[General Chat] Save user msg error:', err);
     }
@@ -534,7 +617,7 @@ export default function ChatScreen() {
       ]);
 
       try {
-        await saveGeneralChatMessage(user.id, 'ai', rejectText, activeModel, null);
+        await saveGeneralChatMessage(user.id, 'ai', rejectText, activeModel, null, activeSessionId!);
       } catch (err) {
         console.error('[General Chat] Save guardrail response error:', err);
       }
@@ -660,7 +743,8 @@ export default function ChatScreen() {
             'ai',
             finalMsgText,
             activeModel,
-            activeAttached ? activeAttached.id : null
+            activeAttached ? activeAttached.id : null,
+            activeSessionId!
           );
           // Set isNew to false to avoid typewriting again on state refresh
           setMessages((prev) =>
@@ -732,7 +816,29 @@ export default function ChatScreen() {
         </View>
 
         {/* Action Toggles */}
-        <View className="flex-row items-center space-x-2">
+        <View className="flex-row items-center space-x-3">
+          {/* AI MODEL DROPDOWN TOGGLE (Option A style in header) */}
+          <TouchableOpacity
+            onPress={() => setModelDropdownVisible(!modelDropdownVisible)}
+            activeOpacity={0.85}
+            className="flex-row items-center px-2 py-1 mr-1"
+          >
+            {activeModel === 'flash' ? (
+              <Zap size={15} color="#10b981" style={{ marginRight: 3 }} />
+            ) : (
+              <Brain size={15} color="#10b981" style={{ marginRight: 3 }} />
+            )}
+            <Text
+              style={{ fontFamily: 'Fredoka_700Bold' }}
+              className={`text-[11px] font-bold ${isDark ? 'text-stone-300' : 'text-stone-700'}`}
+            >
+              {activeModel === 'flash' ? 'Flash' : 'Deep'}
+            </Text>
+            <Animated.View style={[animatedChevronStyle, { marginLeft: 3 }]}>
+              <Ionicons name="chevron-down" size={12} color={isDark ? '#a8a29e' : '#78716c'} />
+            </Animated.View>
+          </TouchableOpacity>
+
           {/* TRASH ICON */}
           <TouchableOpacity
             onPress={() => setDeleteModalVisible(true)}
@@ -744,111 +850,98 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      {/* Model Switcher Area (Top-Left corner, matches follow-up chat exactly) */}
+      {/* Burger Menu Row below header */}
       <View
-        className={`px-6 py-2.5 flex-row justify-start items-center relative z-40 ${isDark ? 'bg-stone-950' : 'bg-stone-50/50'
-          }`}
+        className="px-6 py-2 flex-row justify-start items-center"
       >
         <TouchableOpacity
-          onPress={() => setModelDropdownVisible(!modelDropdownVisible)}
+          onPress={() => toggleSidebar(true)}
           activeOpacity={0.85}
-          className="flex-row items-center px-3 py-1"
+          className="w-8 h-8 items-center justify-center"
         >
-          {activeModel === 'flash' ? (
-            <Zap size={16} color="#10b981" style={{ marginRight: 4 }} />
-          ) : (
-            <Brain size={16} color="#10b981" style={{ marginRight: 4 }} />
-          )}
-          <Text
-            style={{ fontFamily: 'Fredoka_700Bold' }}
-            className={`text-[12px] font-bold ${isDark ? 'text-stone-300' : 'text-stone-700'}`}
-          >
-            {activeModel === 'flash' ? 'Flash' : 'Deep Think'}
-          </Text>
-          <Animated.View style={[animatedChevronStyle, { marginLeft: 4 }]}>
-            <Ionicons name="chevron-down" size={14} color={isDark ? '#a8a29e' : '#78716c'} />
-          </Animated.View>
+          {/* 2-line burger menu */}
+          <Ionicons name="reorder-two-outline" size={30} color="#10b981" />
         </TouchableOpacity>
+      </View>
 
-        {/* Collapsible Model Dropdown Overlay relative to this button */}
-        {shouldRenderDropdown && (
-          <Animated.View
-            style={animatedDropdownStyle}
-            className={`absolute left-6 w-[280px] border shadow-2xl p-4 rounded-3xl z-[100] top-[48px] ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-150'
+      {/* AI MODEL SELECTOR DROPDOWN (Positioned relative to header toggle) */}
+      {shouldRenderDropdown && (
+        <Animated.View
+          style={[animatedDropdownStyle]}
+          className={`absolute right-14 w-[280px] border shadow-2xl p-4 rounded-3xl z-[150] top-[88px] ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-150'
+            }`}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              setActiveModel('flash');
+              setModelDropdownVisible(false);
+            }}
+            activeOpacity={0.7}
+            className={`flex-row items-center justify-between p-3 rounded-2xl ${activeModel === 'flash'
+              ? (isDark ? 'bg-stone-800/80' : 'bg-emerald-50')
+              : 'bg-transparent'
               }`}
           >
-            <TouchableOpacity
-              onPress={() => {
-                setActiveModel('flash');
-                setModelDropdownVisible(false);
-              }}
-              activeOpacity={0.7}
-              className={`flex-row items-center justify-between p-3 rounded-2xl ${activeModel === 'flash'
-                ? (isDark ? 'bg-stone-800/80' : 'bg-emerald-50')
-                : 'bg-transparent'
-                }`}
-            >
-              <View className="flex-row items-center flex-1 mr-4">
-                <View className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 items-center justify-center mr-3">
-                  <Zap size={15} color="#10b981" />
-                </View>
-                <View className="flex-1">
-                  <Text
-                    style={{ fontFamily: 'Fredoka_700Bold' }}
-                    className={`text-xs font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
-                  >
-                    Flash Mode
-                  </Text>
-                  <Text
-                    style={{ fontFamily: 'Fredoka_400Regular' }}
-                    className="text-stone-500 dark:text-stone-400 text-[10px] mt-0.5"
-                  >
-                    Fastest answers, short & mascot-friendly.
-                  </Text>
-                </View>
+            <View className="flex-row items-center flex-1 mr-4">
+              <View className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 items-center justify-center mr-3">
+                <Zap size={15} color="#10b981" />
               </View>
-              {activeModel === 'flash' && (
-                <Ionicons name="checkmark-circle" size={18} color="#10b981" />
-              )}
-            </TouchableOpacity>
+              <View className="flex-1">
+                <Text
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className={`text-xs font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+                >
+                  Flash Mode
+                </Text>
+                <Text
+                  style={{ fontFamily: 'Fredoka_400Regular' }}
+                  className="text-stone-500 dark:text-stone-400 text-[10px] mt-0.5"
+                >
+                  Fastest answers, short & mascot-friendly.
+                </Text>
+              </View>
+            </View>
+            {activeModel === 'flash' && (
+              <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+            )}
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => {
-                setActiveModel('deep');
-                setModelDropdownVisible(false);
-              }}
-              activeOpacity={0.7}
-              className={`flex-row items-center justify-between p-3 rounded-2xl mt-1.5 ${activeModel === 'deep'
-                ? (isDark ? 'bg-stone-800/80' : 'bg-emerald-50')
-                : 'bg-transparent'
-                }`}
-            >
-              <View className="flex-row items-center flex-1 mr-4">
-                <View className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 items-center justify-center mr-3">
-                  <Brain size={15} color="#10b981" />
-                </View>
-                <View className="flex-1">
-                  <Text
-                    style={{ fontFamily: 'Fredoka_700Bold' }}
-                    className={`text-xs font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
-                  >
-                    Deep Think Mode
-                  </Text>
-                  <Text
-                    style={{ fontFamily: 'Fredoka_400Regular' }}
-                    className="text-stone-500 dark:text-stone-400 text-[10px] mt-0.5"
-                  >
-                    Detailed reasoning & analytical consultation.
-                  </Text>
-                </View>
+          <TouchableOpacity
+            onPress={() => {
+              setActiveModel('deep');
+              setModelDropdownVisible(false);
+            }}
+            activeOpacity={0.7}
+            className={`flex-row items-center justify-between p-3 rounded-2xl mt-1.5 ${activeModel === 'deep'
+              ? (isDark ? 'bg-stone-800/80' : 'bg-emerald-50')
+              : 'bg-transparent'
+              }`}
+          >
+            <View className="flex-row items-center flex-1 mr-4">
+              <View className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 items-center justify-center mr-3">
+                <Brain size={15} color="#10b981" />
               </View>
-              {activeModel === 'deep' && (
-                <Ionicons name="checkmark-circle" size={18} color="#10b981" />
-              )}
-            </TouchableOpacity>
-          </Animated.View>
-        )}
-      </View>
+              <View className="flex-1">
+                <Text
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className={`text-xs font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+                >
+                  Deep Think Mode
+                </Text>
+                <Text
+                  style={{ fontFamily: 'Fredoka_400Regular' }}
+                  className="text-stone-500 dark:text-stone-400 text-[10px] mt-0.5"
+                >
+                  Detailed reasoning & analytical consultation.
+                </Text>
+              </View>
+            </View>
+            {activeModel === 'deep' && (
+              <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+            )}
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       {/* CHAT MESSAGES SCROLL AREA */}
       <ScrollView
@@ -1241,6 +1334,184 @@ export default function ChatScreen() {
             </View>
           </Animated.View>
         </Animated.View>
+      )}
+
+      {/* SIDEBAR PANEL & OVERLAY */}
+      {sidebarVisible && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200 }}>
+          {/* Backdrop */}
+          <Animated.View
+            style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }, animatedSidebarBackdropStyle]}
+          >
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              activeOpacity={1}
+              onPress={() => {
+                setActiveMenuSessionId(null);
+                toggleSidebar(false);
+              }}
+            />
+          </Animated.View>
+
+          {/* Sidebar Drawer */}
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: 280,
+                shadowColor: '#000',
+                shadowOffset: { width: 4, height: 0 },
+                shadowOpacity: 0.15,
+                shadowRadius: 10,
+                elevation: 16,
+              },
+              animatedSidebarStyle,
+              isDark ? { backgroundColor: '#1c1917' } : { backgroundColor: '#ffffff' }
+            ]}
+          >
+            {/* Sidebar content */}
+            <View className="flex-1 pt-16 px-4">
+              <View className="flex-row justify-between items-center pb-4 mb-4 border-b border-stone-200/40 dark:border-stone-800/40">
+                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className={`text-base font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}>
+                  💬 Chat History
+                </Text>
+                <TouchableOpacity
+                  onPress={() => toggleSidebar(false)}
+                  className="w-7 h-7 bg-stone-150 dark:bg-stone-800 rounded-full items-center justify-center"
+                >
+                  <Ionicons name="close" size={14} color={isDark ? '#a8a29e' : '#57534e'} />
+                </TouchableOpacity>
+              </View>
+
+              {/* New Chat Button */}
+              <TouchableOpacity
+                onPress={async () => {
+                  toggleSidebar(false);
+                  if (isGenerating) return;
+                  try {
+                    const newId = await createGeneralChatSession(user!.id, 'New Chat');
+                    await loadSessions(newId);
+                  } catch (e) {
+                    console.error('[Sidebar] New chat error:', e);
+                  }
+                }}
+                activeOpacity={0.8}
+                className="flex-row items-center justify-center py-3 bg-emerald-600 rounded-2xl mb-4 shadow-sm shadow-emerald-600/10"
+              >
+                <Ionicons name="add" size={16} color="white" style={{ marginRight: 6 }} />
+                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white text-xs font-bold">
+                  New Chat
+                </Text>
+              </TouchableOpacity>
+
+              {/* History List */}
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                {sessions.map((session) => {
+                  const isActive = session.id === activeSessionId;
+                  const isPinned = session.is_pinned === 1;
+
+                  return (
+                    <View
+                      key={session.id}
+                      className="relative mb-2"
+                    >
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPress={() => {
+                          setActiveSessionId(session.id);
+                          toggleSidebar(false);
+                        }}
+                        className={`flex-row items-center justify-between p-3.5 rounded-2xl border ${isActive
+                          ? 'bg-emerald-50/80 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900'
+                          : 'bg-transparent border-stone-100 dark:border-stone-850'
+                          }`}
+                      >
+                        <View className="flex-row items-center flex-1 mr-2">
+                          {isPinned ? (
+                            <Ionicons name="pin" size={12} color="#10b981" style={{ marginRight: 6 }} />
+                          ) : (
+                            <Ionicons name="chatbubble-outline" size={12} color={isDark ? '#a8a29e' : '#78716c'} style={{ marginRight: 6 }} />
+                          )}
+                          <Text
+                            style={{ fontFamily: 'Fredoka_400Regular' }}
+                            numberOfLines={1}
+                            className={`text-xs flex-1 ${isActive
+                              ? 'text-emerald-700 dark:text-emerald-400 font-medium'
+                              : isDark
+                                ? 'text-stone-300'
+                                : 'text-stone-700'
+                              }`}
+                          >
+                            {session.title}
+                          </Text>
+                        </View>
+
+                        {/* Options button */}
+                        <TouchableOpacity
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            setActiveMenuSessionId(activeMenuSessionId === session.id ? null : session.id);
+                          }}
+                          className="w-6 h-6 items-center justify-center rounded-full bg-stone-100 dark:bg-stone-850"
+                        >
+                          <Ionicons name="ellipsis-horizontal" size={12} color={isDark ? '#a8a29e' : '#78716c'} />
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+
+                      {/* Small dropdown options menu */}
+                      {activeMenuSessionId === session.id && (
+                        <View
+                          className={`absolute right-2 top-11 w-32 border rounded-2xl p-1 z-[250] shadow-lg ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'
+                            }`}
+                        >
+                          <TouchableOpacity
+                            onPress={async () => {
+                              setActiveMenuSessionId(null);
+                              await pinGeneralChatSession(session.id, !isPinned);
+                              await loadSessions(activeSessionId);
+                            }}
+                            className="flex-row items-center p-2 rounded-xl active:bg-stone-100 dark:active:bg-stone-800"
+                          >
+                            <Ionicons name="pin-outline" size={12} color={isDark ? '#e7e5e4' : '#292524'} style={{ marginRight: 8 }} />
+                            <Text style={{ fontFamily: 'Fredoka_400Regular' }} className={`text-[10px] ${isDark ? 'text-stone-200' : 'text-stone-700'}`}>
+                              {isPinned ? 'Unpin' : 'Pin'}
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={async () => {
+                              setActiveMenuSessionId(null);
+                              await deleteGeneralChatSession(session.id);
+                              // If deleting active session, reset active session
+                              if (isActive) {
+                                const remaining = sessions.filter((s) => s.id !== session.id);
+                                if (remaining.length > 0) {
+                                  await loadSessions(remaining[0].id);
+                                } else {
+                                  await loadSessions(null);
+                                }
+                              } else {
+                                await loadSessions(activeSessionId);
+                              }
+                            }}
+                            className="flex-row items-center p-2 rounded-xl active:bg-stone-100 dark:active:bg-stone-800"
+                          >
+                            <Ionicons name="trash-outline" size={12} color="#ef4444" style={{ marginRight: 8 }} />
+                            <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-[10px] text-red-500">
+                              Delete
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          </Animated.View>
+        </View>
       )}
     </KeyboardAvoidingView>
   );
