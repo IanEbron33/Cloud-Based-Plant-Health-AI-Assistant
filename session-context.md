@@ -55,11 +55,12 @@ This document captures the current state, architecture, and files of the project
 The application implements **Option C: Bidirectional Sync (SQLite-First)**. The local SQLite database serves as the primary data store, ensuring instant rendering and offline usability, with background synchronization to Supabase.
 
 ### Local SQLite Database Schema
-The local database (`bugsok_ai.db`) contains four primary tables:
+The local database (`bugsok_ai.db`) contains five primary tables:
 1. **`scans`**: Stores crop diagnoses locally. Unsynced scans store a `local_image_path`. Synced scans contain the Supabase bucket `cloud_image_url`. Includes a `synced` flag (0 = Unsynced, 1 = Synced).
 2. **`chat_sessions`**: Stores follow-up chat sessions associated with scans.
 3. **`chat_messages`**: Stores individual messages for each session.
-4. **`general_chat_messages`**: Stores general conversation messages and references attached scan keys (`attached_scan_id` referencing `scans(id)` with `ON DELETE SET NULL`).
+4. **`general_chat_sessions`**: Stores individual general chat sessions.
+5. **`general_chat_messages`**: Stores general conversation messages linked to a session (`session_id` referencing `general_chat_sessions(id)` on delete cascade) and references attached scan keys (`attached_scan_id` referencing `scans(id)` with `ON DELETE SET NULL`).
 
 * **Tagalog Database Keys**: Crops are saved in the database using their Tagalog keys (e.g. `Talong`, `Kamatis`, `Sili`, `Ampalaya`) to match the localized content rules.
 * **Auto-Resume Chat Sessions**: When entering the chat screen from a scan results page, the app automatically fetches and resumes the latest active chat session for that scan instead of starting a new one.
@@ -135,11 +136,16 @@ The follow-up chat is fully localized and styled to support interactive, structu
 
 ---
 
-## 💬 General Chat Tab & Option A Attachment System
+## 💬 General Chat Tab, Sidebar & Attachment System
 
-Implemented a fully-featured dedicated general chat screen in the main navigation tab layout:
+Implemented a fully-featured dedicated general chat screen with history sessions in the main navigation tab layout:
 
-* **Interactive Header**: Features a decluttered AI model selector dropdown (`w-56` width prevents text-wrapping issues) to switch between Flash (⚡) and Deep Think (🧠) modes, plus a green trash button that opens a mascot-styled delete confirmation dialog.
+* **Interactive Header Layout**: Features the AI model switcher (`Flash` / `Deep`) next to the green trash button in the top-right header actions row. Tapping the switcher opens the descriptive options dropdown.
+* **Burger Menu & Left-Sliding Sidebar**:
+  - The row below the header features a completely clean, transparent, and borderless 2-line burger menu button.
+  - Tapping the burger menu opens a smooth left-sliding sidebar containing a `+ New Chat` button and a list of previous chat sessions.
+  - Tapping `+ New Chat` automatically switches to an existing empty session if one exists to prevent duplicate blank sessions.
+  - Includes a 3-dot (`⋯`) context menu for each session in the sidebar to **Pin/Unpin** or **Delete** the session.
 * **Option A Attachment System**:
   * Added clip `📎` button in the dock which slides up a bottom sheet modal displaying the user's past scans history (rendered in the same high-fidelity layout as the History screen, showing image, crop name, condition, severity bar, and date).
   * Selecting a scan locks it as a persistent context chip above the input box (detachable via `✕` action).

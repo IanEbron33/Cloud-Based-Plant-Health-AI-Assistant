@@ -832,7 +832,7 @@ export default function ChatScreen() {
               style={{ fontFamily: 'Fredoka_700Bold' }}
               className={`text-[11px] font-bold ${isDark ? 'text-stone-300' : 'text-stone-700'}`}
             >
-              {activeModel === 'flash' ? 'Flash' : 'Deep'}
+              {activeModel === 'flash' ? 'Flash' : 'Deep Think'}
             </Text>
             <Animated.View style={[animatedChevronStyle, { marginLeft: 3 }]}>
               <Ionicons name="chevron-down" size={12} color={isDark ? '#a8a29e' : '#78716c'} />
@@ -1392,8 +1392,24 @@ export default function ChatScreen() {
                   toggleSidebar(false);
                   if (isGenerating) return;
                   try {
-                    const newId = await createGeneralChatSession(user!.id, 'New Chat');
-                    await loadSessions(newId);
+                    // Check if there is already an empty session (0 messages)
+                    let emptySessionId = null;
+                    for (const s of sessions) {
+                      const msgs = fetchGeneralChatMessagesBySession(s.id);
+                      if (msgs.length === 0) {
+                        emptySessionId = s.id;
+                        break;
+                      }
+                    }
+
+                    if (emptySessionId) {
+                      // Switch to the existing empty session instead of creating a duplicate
+                      setActiveSessionId(emptySessionId);
+                    } else {
+                      // Create a new session
+                      const newId = await createGeneralChatSession(user!.id, 'New Chat');
+                      await loadSessions(newId);
+                    }
                   } catch (e) {
                     console.error('[Sidebar] New chat error:', e);
                   }
