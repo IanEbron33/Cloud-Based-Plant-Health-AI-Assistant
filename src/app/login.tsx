@@ -1,9 +1,9 @@
-import { useRouter } from 'expo-router';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
-import React, { useState, useEffect } from 'react';
-import { Image, ScrollView, TextInput, TouchableOpacity, useColorScheme, View, ActivityIndicator } from 'react-native';
 import { FredokaText as Text } from '@/components/themed-text';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -172,7 +172,7 @@ export default function LoginScreen() {
                 placeholderTextColor="#a8a29e"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                className={`flex-1 py-4 px-2 text-base ${isDark ? 'text-white' : 'text-stone-900'}`}
+                className={`flex-1 py-4 px-2 text-base font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}
                 style={{ fontSize: 13 }}
               />
             </View>
@@ -192,7 +192,7 @@ export default function LoginScreen() {
                 placeholderTextColor="#a8a29e"
                 secureTextEntry={!isPasswordVisible}
                 autoCapitalize="none"
-                className={`flex-1 py-4 px-2 text-base ${isDark ? 'text-white' : 'text-stone-900'}`}
+                className={`flex-1 py-4 px-2 text-base font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}
                 style={{ fontSize: 13 }}
               />
               <TouchableOpacity
@@ -229,13 +229,12 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={isLoading || isToastVisible || cooldownTime > 0}
             activeOpacity={0.85}
-            className={`py-4 rounded-2xl items-center shadow-lg mb-5 ${
-              cooldownTime > 0
-                ? 'bg-stone-300 dark:bg-stone-800 shadow-none'
-                : (isLoading || isToastVisible)
+            className={`py-4 rounded-2xl items-center shadow-lg mb-5 ${cooldownTime > 0
+              ? 'bg-stone-300 dark:bg-stone-800 shadow-none'
+              : (isLoading || isToastVisible)
                 ? 'bg-emerald-600/60 shadow-none'
                 : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/10'
-            }`}
+              }`}
           >
             {isLoading ? (
               <ActivityIndicator color="white" size="small" />

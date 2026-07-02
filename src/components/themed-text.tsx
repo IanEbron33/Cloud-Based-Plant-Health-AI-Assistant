@@ -32,6 +32,7 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 
 export function FredokaText({ style, ...rest }: TextProps) {
   const flatStyle = StyleSheet.flatten(style) || {};
+  const className = (rest as any).className || '';
 
   let fontFamily = flatStyle.fontFamily;
   if (!fontFamily) {
@@ -39,7 +40,12 @@ export function FredokaText({ style, ...rest }: TextProps) {
       flatStyle.fontWeight === 'bold' ||
       flatStyle.fontWeight === '700' ||
       flatStyle.fontWeight === '800' ||
-      flatStyle.fontWeight === '900';
+      flatStyle.fontWeight === '900' ||
+      flatStyle.fontWeight === '600' || // Semibold
+      className.includes('font-bold') ||
+      className.includes('font-semibold') ||
+      className.includes('font-extrabold') ||
+      className.includes('font-black');
 
     fontFamily = isBoldWeight ? 'Fredoka_700Bold' : 'Fredoka_400Regular';
   }

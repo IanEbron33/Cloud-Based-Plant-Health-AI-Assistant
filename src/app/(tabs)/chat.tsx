@@ -65,10 +65,10 @@ const MascotAvatar = ({ size = 32 }: { size?: number }) => {
       }}
     >
       <ExpoImage
-        source={require('../../../assets/images/mascot-logo.png')}
+        source={require('../../../assets/images/mascot-transparent.png')}
         style={{
-          width: size * 1.05,
-          height: size * 1.05,
+          width: size * 1.55,
+          height: size * 1.55,
         }}
         contentFit="contain"
       />
@@ -698,6 +698,12 @@ export default function ChatScreen() {
     };
   });
 
+  const animatedDeleteModalBackdropStyle = useAnimatedStyle(() => {
+    return {
+      opacity: deleteModalOpacity.value,
+    };
+  });
+
   const animatedDeleteModalStyle = useAnimatedStyle(() => {
     return {
       opacity: deleteModalOpacity.value,
@@ -727,28 +733,6 @@ export default function ChatScreen() {
 
         {/* Action Toggles */}
         <View className="flex-row items-center space-x-2">
-          {/* AI MODEL DROPDOWN TOGGLE */}
-          <TouchableOpacity
-            onPress={() => setModelDropdownVisible(!modelDropdownVisible)}
-            activeOpacity={0.8}
-            className="flex-row items-center bg-stone-100 px-3.5 py-2 rounded-2xl mr-2"
-          >
-            {activeModel === 'flash' ? (
-              <Zap size={13} color="#10b981" fill="#10b981" />
-            ) : (
-              <Brain size={13} color="#10b981" fill="#10b981" />
-            )}
-            <Text
-              style={{ fontFamily: 'Fredoka_700Bold' }}
-              className="text-[10px] font-bold text-stone-700 ml-1.5 uppercase tracking-wide"
-            >
-              {activeModel}
-            </Text>
-            <Animated.View style={animatedChevronStyle}>
-              <Ionicons name="chevron-down" size={12} color="#57534e" style={{ marginLeft: 6 }} />
-            </Animated.View>
-          </TouchableOpacity>
-
           {/* TRASH ICON */}
           <TouchableOpacity
             onPress={() => setDeleteModalVisible(true)}
@@ -760,49 +744,111 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      {/* AI MODEL SELECTOR DROPDOWN */}
-      {shouldRenderDropdown && (
-        <Animated.View
-          style={[animatedDropdownStyle]}
-          className="absolute top-[84px] right-16 w-56 bg-white rounded-3xl border border-stone-100 p-2 shadow-lg shadow-stone-200/50 z-20"
+      {/* Model Switcher Area (Top-Left corner, matches follow-up chat exactly) */}
+      <View
+        className={`px-6 py-2.5 flex-row justify-start items-center relative z-40 ${isDark ? 'bg-stone-950' : 'bg-stone-50/50'
+          }`}
+      >
+        <TouchableOpacity
+          onPress={() => setModelDropdownVisible(!modelDropdownVisible)}
+          activeOpacity={0.85}
+          className="flex-row items-center px-3 py-1"
         >
-          <TouchableOpacity
-            onPress={() => {
-              setActiveModel('flash');
-              setModelDropdownVisible(false);
-            }}
-            className={`flex-row items-center p-3 rounded-2xl ${activeModel === 'flash' ? 'bg-emerald-50' : 'bg-transparent'}`}
+          {activeModel === 'flash' ? (
+            <Zap size={16} color="#10b981" style={{ marginRight: 4 }} />
+          ) : (
+            <Brain size={16} color="#10b981" style={{ marginRight: 4 }} />
+          )}
+          <Text
+            style={{ fontFamily: 'Fredoka_700Bold' }}
+            className={`text-[12px] font-bold ${isDark ? 'text-stone-300' : 'text-stone-700'}`}
           >
-            <Zap size={14} color="#10b981" fill={activeModel === 'flash' ? '#10b981' : 'transparent'} />
-            <View className="ml-3">
-              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-stone-900 text-xs font-bold">
-                Flash Mode
-              </Text>
-              <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-400 text-[9px] mt-0.5">
-                Concise & Fast response
-              </Text>
-            </View>
-          </TouchableOpacity>
+            {activeModel === 'flash' ? 'Flash' : 'Deep Think'}
+          </Text>
+          <Animated.View style={[animatedChevronStyle, { marginLeft: 4 }]}>
+            <Ionicons name="chevron-down" size={14} color={isDark ? '#a8a29e' : '#78716c'} />
+          </Animated.View>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => {
-              setActiveModel('deep');
-              setModelDropdownVisible(false);
-            }}
-            className={`flex-row items-center p-3 rounded-2xl ${activeModel === 'deep' ? 'bg-emerald-50' : 'bg-transparent'}`}
+        {/* Collapsible Model Dropdown Overlay relative to this button */}
+        {shouldRenderDropdown && (
+          <Animated.View
+            style={animatedDropdownStyle}
+            className={`absolute left-6 w-[280px] border shadow-2xl p-4 rounded-3xl z-[100] top-[48px] ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-150'
+              }`}
           >
-            <Brain size={14} color="#10b981" fill={activeModel === 'deep' ? '#10b981' : 'transparent'} />
-            <View className="ml-3">
-              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-stone-900 text-xs font-bold">
-                Deep Think Mode
-              </Text>
-              <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-400 text-[9px] mt-0.5">
-                Structured & Reasoning
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+            <TouchableOpacity
+              onPress={() => {
+                setActiveModel('flash');
+                setModelDropdownVisible(false);
+              }}
+              activeOpacity={0.7}
+              className={`flex-row items-center justify-between p-3 rounded-2xl ${activeModel === 'flash'
+                ? (isDark ? 'bg-stone-800/80' : 'bg-emerald-50')
+                : 'bg-transparent'
+                }`}
+            >
+              <View className="flex-row items-center flex-1 mr-4">
+                <View className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 items-center justify-center mr-3">
+                  <Zap size={15} color="#10b981" />
+                </View>
+                <View className="flex-1">
+                  <Text
+                    style={{ fontFamily: 'Fredoka_700Bold' }}
+                    className={`text-xs font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+                  >
+                    Flash Mode
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'Fredoka_400Regular' }}
+                    className="text-stone-500 dark:text-stone-400 text-[10px] mt-0.5"
+                  >
+                    Fastest answers, short & mascot-friendly.
+                  </Text>
+                </View>
+              </View>
+              {activeModel === 'flash' && (
+                <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                setActiveModel('deep');
+                setModelDropdownVisible(false);
+              }}
+              activeOpacity={0.7}
+              className={`flex-row items-center justify-between p-3 rounded-2xl mt-1.5 ${activeModel === 'deep'
+                ? (isDark ? 'bg-stone-800/80' : 'bg-emerald-50')
+                : 'bg-transparent'
+                }`}
+            >
+              <View className="flex-row items-center flex-1 mr-4">
+                <View className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 items-center justify-center mr-3">
+                  <Brain size={15} color="#10b981" />
+                </View>
+                <View className="flex-1">
+                  <Text
+                    style={{ fontFamily: 'Fredoka_700Bold' }}
+                    className={`text-xs font-bold ${isDark ? 'text-white' : 'text-stone-900'}`}
+                  >
+                    Deep Think Mode
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'Fredoka_400Regular' }}
+                    className="text-stone-500 dark:text-stone-400 text-[10px] mt-0.5"
+                  >
+                    Detailed reasoning & analytical consultation.
+                  </Text>
+                </View>
+              </View>
+              {activeModel === 'deep' && (
+                <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+              )}
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+      </View>
 
       {/* CHAT MESSAGES SCROLL AREA */}
       <ScrollView
@@ -949,11 +995,12 @@ export default function ChatScreen() {
           <View
             style={{
               flex: 1,
+              flexDirection: 'row',
+              alignItems: 'flex-end',
               backgroundColor: '#f5f5f4',
               borderRadius: 22,
               paddingHorizontal: 16,
-              paddingVertical: 10,
-              maxHeight: 120,
+              paddingVertical: 6,
               borderWidth: 1,
               borderColor: '#e7e5e4',
             }}
@@ -963,14 +1010,17 @@ export default function ChatScreen() {
               onChangeText={setInputText}
               placeholder="Ask about crops..."
               placeholderTextColor="#a8a29e"
-              multiline
+              multiline={true}
               style={{
                 fontFamily: 'Fredoka_400Regular',
                 fontSize: 13,
                 color: '#292524',
                 padding: 0,
                 margin: 0,
-                minHeight: 22,
+                minHeight: 38,
+                maxHeight: 120,
+                flex: 1,
+                paddingVertical: 6,
               }}
             />
           </View>
@@ -984,7 +1034,7 @@ export default function ChatScreen() {
               width: 44,
               height: 44,
               borderRadius: 22,
-              backgroundColor: !inputText.trim() || isGenerating ? '#f5f5f4' : '#059669',
+              backgroundColor: '#059669',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
@@ -993,7 +1043,7 @@ export default function ChatScreen() {
             <Ionicons
               name="send"
               size={16}
-              color={!inputText.trim() || isGenerating ? '#a8a29e' : '#FFFFFF'}
+              color="#FFFFFF"
             />
           </TouchableOpacity>
         </View>
@@ -1131,52 +1181,66 @@ export default function ChatScreen() {
         </View>
       </Modal>
 
-      {/* CONFIRM DELETE CONVERSATION MODAL */}
+      {/* CONFIRM DELETE CONVERSATION MODAL OVERLAY */}
       {shouldRenderDeleteModal && (
-        <Modal transparent visible={deleteModalVisible} animationType="none" onRequestClose={() => setDeleteModalVisible(false)}>
-          <View className="flex-1 bg-black/60 justify-center items-center px-8">
-            <Animated.View
-              style={[animatedDeleteModalStyle]}
-              className="bg-white rounded-[32px] p-6 w-full max-w-[320px] items-center border border-stone-100"
-            >
-              {/* Sad Mascot Image */}
-              <View className="w-28 h-28 items-center justify-center mb-4">
-                <ExpoImage
-                  source={require('../../../assets/images/mascot-transparent-sad.png')}
-                  style={{ width: '100%', height: '100%' }}
-                  contentFit="contain"
-                />
-              </View>
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 100,
+              justifyContent: 'center',
+              alignItems: 'center',
+            },
+            animatedDeleteModalBackdropStyle,
+          ]}
+          className="bg-black/60 px-6"
+        >
+          <Animated.View
+            style={[animatedDeleteModalStyle]}
+            className={`w-full max-w-[280px] rounded-[32px] p-6 items-center border shadow-2xl ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-150'
+              }`}
+          >
+            {/* Sad Mascot Image */}
+            <View className="w-28 h-28 items-center justify-center mb-4">
+              <ExpoImage
+                source={require('../../../assets/images/mascot-transparent-sad.png')}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="contain"
+              />
+            </View>
 
-              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-stone-900 text-[15px] font-bold text-center">
-                Clear General Chat?
-              </Text>
-              <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-400 text-xs text-center mt-2 px-1 leading-5">
-                This will delete your entire general conversation history. This action cannot be undone.
-              </Text>
+            <Text style={{ fontFamily: 'Fredoka_700Bold' }} className={`text-[15px] font-bold text-center ${isDark ? 'text-white' : 'text-stone-900'}`}>
+              Clear General Chat?
+            </Text>
+            <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-500 dark:text-stone-400 text-xs text-center mt-2 px-1 leading-5">
+              This will delete your entire general conversation history. This action cannot be undone.
+            </Text>
 
-              {/* Action Buttons */}
-              <View className="flex-row w-full space-x-3 mt-6">
-                <TouchableOpacity
-                  onPress={() => setDeleteModalVisible(false)}
-                  className="flex-1 py-3 bg-stone-100 rounded-2xl items-center"
-                >
-                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-stone-600 text-xs font-bold">
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleClearConversation}
-                  className="flex-1 py-3 bg-emerald-600 rounded-2xl items-center"
-                >
-                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white text-xs font-bold">
-                    Clear Chat
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
-          </View>
-        </Modal>
+            {/* Action Buttons */}
+            <View className="flex-row w-full space-x-3 mt-6">
+              <TouchableOpacity
+                onPress={() => setDeleteModalVisible(false)}
+                className={`flex-1 py-3 rounded-2xl items-center border ${isDark ? 'bg-stone-850 border-stone-800' : 'bg-stone-100 border-stone-200'}`}
+              >
+                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className={`text-xs font-bold ${isDark ? 'text-stone-300' : 'text-stone-600'}`}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleClearConversation}
+                className="flex-1 py-3 bg-emerald-600 rounded-2xl items-center"
+              >
+                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white text-xs font-bold">
+                  Clear Chat
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Animated.View>
       )}
     </KeyboardAvoidingView>
   );

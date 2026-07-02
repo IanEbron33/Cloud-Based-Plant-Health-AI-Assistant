@@ -1,10 +1,10 @@
+import { FredokaText as Text } from '@/components/themed-text';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Brain, Zap } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
-import { FredokaText as Text } from '@/components/themed-text';
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Animated as RNAnimated, ScrollView, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import vegetablesDb from '../../assets/data/vegetables_db.json';
 import { useAuth } from '../context/AuthContext';
@@ -243,6 +243,8 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const keyboardHeight = useRef(new RNAnimated.Value(0)).current;
   const [isLoadingSession, setIsLoadingSession] = useState(false);
 
   const [chatCropName, setChatCropName] = useState<string>('Plant');
@@ -300,6 +302,40 @@ export default function ChatScreen() {
       deleteModalScale.value = withTiming(0.9, { duration: 200 });
     }
   }, [deleteModalVisible]);
+
+  // Monitor keyboard visibility to dynamically space input bar on Android
+  useEffect(() => {
+    const showEvent = Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
+    const hideEvent = Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setIsKeyboardVisible(true);
+      if (Platform.OS === 'android') {
+        RNAnimated.timing(keyboardHeight, {
+          toValue: e.endCoordinates.height,
+          duration: 150,
+          useNativeDriver: false,
+        }).start();
+      }
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+    });
+
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setIsKeyboardVisible(false);
+      if (Platform.OS === 'android') {
+        RNAnimated.timing(keyboardHeight, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: false,
+        }).start();
+      }
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // Animated styles
   const chevronStyle = useAnimatedStyle(() => ({
@@ -545,10 +581,10 @@ export default function ChatScreen() {
               prev.map((m) =>
                 m.id === aiMsgId
                   ? {
-                      ...m,
-                      id: savedMsgId,
-                      isNew: false,
-                    }
+                    ...m,
+                    id: savedMsgId,
+                    isNew: false,
+                  }
                   : m
               )
             );
@@ -559,9 +595,9 @@ export default function ChatScreen() {
               prev.map((m) =>
                 m.id === aiMsgId
                   ? {
-                      ...m,
-                      isNew: false,
-                    }
+                    ...m,
+                    isNew: false,
+                  }
                   : m
               )
             );
@@ -571,9 +607,9 @@ export default function ChatScreen() {
             prev.map((m) =>
               m.id === aiMsgId
                 ? {
-                    ...m,
-                    isNew: false,
-                  }
+                  ...m,
+                  isNew: false,
+                }
                 : m
             )
           );
@@ -724,8 +760,8 @@ export default function ChatScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
     >
       {/* Header Bar */}
@@ -980,9 +1016,12 @@ export default function ChatScreen() {
 
 
       {/* Chat input block */}
-      <View
-        className={`px-5 py-3 border-t flex-row items-end ${isDark ? 'bg-stone-950 border-stone-850' : 'bg-white border-stone-150'
+      <RNAnimated.View
+        className={`px-5 py-6 border-t flex-row items-end ${isDark ? 'bg-stone-950 border-stone-850' : 'bg-white border-stone-150'
           }`}
+        style={{
+          marginBottom: Platform.OS === 'android' ? keyboardHeight : 0,
+        }}
       >
         <View
           className={`flex-1 flex-row items-end px-4 py-1.5 rounded-[22px] border ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-stone-50 border-stone-250'
@@ -1005,7 +1044,7 @@ export default function ChatScreen() {
         >
           <Ionicons name="send" size={16} color="white" />
         </TouchableOpacity>
-      </View>
+      </RNAnimated.View>
 
       {/* Delete Chat Confirmation Modal Overlay */}
       {shouldRenderDeleteModal && (
