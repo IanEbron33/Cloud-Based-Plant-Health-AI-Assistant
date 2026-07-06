@@ -4,7 +4,7 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of June 23, 2026)
+## 📅 Project Context (As of July 6, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
@@ -20,6 +20,8 @@ This document captures the current state, architecture, and files of the project
   * **Elevated Scan Button**: Circular button floating above the center of the bar. It spring-scales to `1.12` and displays a looping, breathing scanner glow ring (`pulseRing`, `scale: 1.0` -> `1.45`, fading `0.5` -> `0.0` over `1800ms`) when selected.
   * **Smooth Icon & Label Transitions**: Active tabs animate the icon to scale up (`1.0` -> `1.15`) and shift upwards (`translateY: 0` -> `-5`) using spring physics, while the label is always-mounted and slides and fades in (`translateY` `8` -> `0`, opacity `0` -> `1`).
   * **Driver Conflict Isolation**: Structured as nested views (`slidingPillContainer` + `slidingPillInner`) to isolate native GPU-driven animations from JS-driven animations, preventing React Native driver conflicts.
+  * **Z-Index Overlay Resolution**: Automatically unmounts (`returns null`) when screen options specify `tabBarStyle.display = 'none'` (triggered dynamically when delete modals or the sidebar drawer are active).
+  * **Mount Entrance Animation**: Applies a parallel fade-in (opacity `0` ➔ `1`) and slide-up (translateY `25` ➔ `0`) transition over `250ms` when mounting back onto the viewport.
 * **Profile Header Background**: Premium linear gradient background (`['#047857', '#064e3b']`) applied using `expo-linear-gradient` to the header of the Profile screen.
 * **Scan Results Health Gauge**: Circular progress indicator with a thicker bold `strokeWidth={10}` on the Scan Results screen to highlight the crop's health score.
 * **Concentric Layout & Border-Radius Smoothing**:
@@ -66,15 +68,6 @@ The local database (`bugsok_ai.db`) contains five primary tables:
 * **Auto-Resume Chat Sessions**: When entering the chat screen from a scan results page, the app automatically fetches and resumes the latest active chat session for that scan instead of starting a new one.
 * **Pure JavaScript UUIDs**: Replaced `expo-crypto` dynamic loading with a pure JavaScript RFC4122-compliant UUID generator to prevent Metro bundler resolution failures on Android devices.
 * **DevTools Network Hook**: Added a check in `src/app/_layout.tsx` to hook `global.XMLHttpRequest` to `originalXMLHttpRequest` in `__DEV__` mode to allow Chrome DevTools (`chrome://inspect`) to capture network requests when debugging.
-
-### Bidirectional Synchronization Logic (`syncData`)
-Whenever the app starts up, or when a user taps **"Sync Now"** in the History or Profile tab:
-1. **Upload Queue**: 
-   - Scans with `synced = 0` upload their local images to the `plant-images` Supabase Storage bucket, write to the Supabase database, and update SQLite to `synced = 1`.
-   - Unsynced chat sessions and messages are pushed to Supabase tables.
-2. **Download Delta**: 
-   - Queries Supabase for new/updated scans, chat sessions, and messages matching the logged-in user.
-   - Merges missing records into local SQLite tables using `ON CONFLICT(id) DO UPDATE`.
 
 ---
 
@@ -140,14 +133,27 @@ The follow-up chat is fully localized and styled to support interactive, structu
 
 Implemented a fully-featured dedicated general chat screen with history sessions in the main navigation tab layout:
 
-* **Interactive Header Layout**: Features the AI model switcher (`Flash` / `Deep`) next to the green trash button in the top-right header actions row. Tapping the switcher opens the descriptive options dropdown.
+* **Interactive Header Layout**: Features the AI model switcher (`Flash` / `Deep`) next to the trash button in the top-right header actions row. Tapping the switcher opens the descriptive options dropdown.
+* **Delete Current Session Refinement**:
+  * Tapping the trash button in the header opens a confirmation modal entitled **"Delete Chat Session?"**.
+  * Confirming deletes *only* the current active chat session (and all messages in that session) via `deleteGeneralChatSession` instead of clearing the entire chat history.
+  * The deletion automatically creates and auto-navigates to a brand new `"New Chat"` session.
 * **Burger Menu & Left-Sliding Sidebar**:
   - The row below the header features a completely clean, transparent, and borderless 2-line burger menu button.
   - Tapping the burger menu opens a smooth left-sliding sidebar containing a `+ New Chat` button and a list of previous chat sessions.
   - Tapping `+ New Chat` automatically switches to an existing empty session if one exists to prevent duplicate blank sessions.
-  - Includes a 3-dot (`⋯`) context menu for each session in the sidebar to **Pin/Unpin** or **Delete** the session.
+  - Includes a 3-dot (`⋯`) context menu for each session in the sidebar to **Pin/Unpin** or **Delete** the session. If the active session is deleted from this menu, the app automatically creates and navigates to a brand new session.
+* **Gemini-Style Minimalist Sidebar Redesign**:
+  * All borders and card pills are removed from history list items. Active sessions are highlighted with a soft, borderless, translucent emerald background highlight (`bg-emerald-50/40`).
+  * Each chat list item contains a left-aligned grey `chatbubble-outline` icon.
+  * Pinned sessions display a custom, offline-safe inline SVG FontAwesome `thumb-tack` icon (viewBox `0 0 640 640`, size `16`) on the right side next to the options button.
+  * **User Profile Footer**: Anchored at the bottom of the sidebar drawer, separated by a top border divider. Contains:
+    * A large circular user avatar (`w-14 h-14` / `56x56px`).
+    * User's full name (`profile?.full_name || 'Grower'`) rendered in `text-md`.
+    * A settings cog icon (size `20`) that navigates the user to the Profile tab.
+    * The dynamic `"PRO"` badge has been fully removed.
 * **Option A Attachment System**:
-  * Added clip `📎` button in the dock which slides up a bottom sheet modal displaying the user's past scans history (rendered in the same high-fidelity layout as the History screen, showing image, crop name, condition, severity bar, and date).
+  * Added clip `📎` button in the input dock which slides up a bottom sheet modal displaying the user's past scans history (rendered in the same high-fidelity layout as the History screen, showing image, crop name, condition, severity bar, and date).
   * Selecting a scan locks it as a persistent context chip above the input box (detachable via `✕` action).
   * Automatically injects the attached crop's metadata profile and diagnosis text into the AI context during SSE streaming, and tags the corresponding AI bubble with a green `Linked: [Crop] — [Condition]` flag.
   * **Auto-crop detection fallback**: If no scan is attached, the app parses prompt text for mentioned crop keywords (like "Talong" or "Tomato") and injects the corresponding vegetable profile automatically.
@@ -180,6 +186,7 @@ Implemented a fully-featured dedicated general chat screen with history sessions
 
 ```
 Cloud-Based Plant Health AI Assistant - Mobile Application/
+├── assets/
 ├── assets/
 │   ├── data/
 │   │   └── vegetables_db.json       # Crop database context (~143KB)

@@ -298,6 +298,26 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
   const isEdgeIndex = initialIndex === 0 || initialIndex === 4;
   const borderRadiusAnim = useRef(new Animated.Value(isEdgeIndex ? 32 : 18)).current;
 
+  // Entrance animation for when tab bar appears (Option C)
+  const barOpacity = useRef(new Animated.Value(0)).current;
+  const barTranslateY = useRef(new Animated.Value(25)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(barOpacity, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.spring(barTranslateY, {
+        toValue: 0,
+        friction: 8,
+        tension: 45,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   useEffect(() => {
     const isScanTab = state.index === 2;
 
@@ -328,8 +348,27 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
     }
   }, [state.index]);
 
+  const activeRoute = state.routes[state.index];
+  const activeDescriptor = descriptors[activeRoute.key];
+  const activeOptions = activeDescriptor?.options || {};
+  const tabBarStyle = activeOptions.tabBarStyle;
+  const flattenedStyle = (StyleSheet.flatten(tabBarStyle) || {}) as any;
+  const isTabBarHidden = flattenedStyle.display === 'none';
+
+  if (isTabBarHidden) {
+    return null;
+  }
+
   return (
-    <View style={styles.tabBarContainer}>
+    <Animated.View
+      style={[
+        styles.tabBarContainer,
+        {
+          opacity: barOpacity,
+          transform: [{ translateY: barTranslateY }],
+        },
+      ]}
+    >
       {/* Sliding Background Capsule */}
       <Animated.View
         style={[
@@ -390,7 +429,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
           />
         );
       })}
-    </View>
+    </Animated.View>
   );
 }
 
