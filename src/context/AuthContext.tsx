@@ -15,7 +15,8 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import type { User, Session } from '@supabase/supabase-js';
 import type { AuthContextValue, UserProfile } from '../types';
 import * as authService from '../services/auth.service';
-import { fetchUserProfile } from '../services/profile.service';
+import { fetchUserProfile, updateUserProfile } from '../services/profile.service';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -56,6 +57,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Subscribe to Supabase auth state changes on mount
   useEffect(() => {
+    // Initialize Google Sign-in configuration
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    });
+
     // 1. Check for an existing session on app startup
     const initSession = async () => {
       const existingSession = await authService.getSession();
@@ -92,6 +98,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   /**
+   * Sign in using Native Google Sign-In and exchange for Supabase session.
+   * On first login, automatically populates the user's profile metadata.
+   */
+  const signInWithGoogle = useCallback(async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
+      if (!idToken) {
+        throw new Error('No ID token returned from Google Sign-In.');
+      }
+
+      const result = await authService.signInWithGoogleIdToken(idToken);
+      if (result.error) {
+        return { error: result.error };
+      }
+
+      // Populate user profile if it's the first time
+      if (result.user) {
+        const googleMeta = result.user.user_metadata;
+        const fullName = googleMeta?.full_name || userInfo.data?.user?.name || '';
+        const avatarUrl = googleMeta?.avatar_url || userInfo.data?.user?.photo || null;
+
+        const existingProfile = await fetchUserProfile(result.user.id);
+        if (!existingProfile || !existingProfile.full_name) {
+          await updateUserProfile(result.user.id, {
+            full_name: fullName,
+            avatar_url: avatarUrl,
+          });
+        }
+      }
+
+      return { error: null };
+    } catch (err: any) {
+      console.warn('Google Sign-In failed:', err);
+      // Clean display of cancellation without raising error toasts
+      if (err.code === 'SIGN_IN_CANCELLED') {
+        return { error: 'Sign-in cancelled' };
+      }
+      return { error: err.message || 'Google Sign-In failed' };
+    }
+  }, []);
+
+  /**
    * Sign up a new user with email, password, and full name.
    * The session/user state will be updated automatically via the auth listener.
    * @returns An object with `user` and `error`.
@@ -109,6 +159,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * The auth listener will clear the user/session/profile state automatically.
    */
   const signOut = useCallback(async () => {
+    try {
+      await GoogleSignin.signOut();
+    } catch (googleError) {
+      console.warn('Error signing out from Google:', googleError);
+    }
     await authService.signOut();
   }, []);
 
@@ -134,6 +189,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     isRegistering,
     signIn,
+    signInWithGoogle,
     signUp,
     signOut,
     refreshProfile,

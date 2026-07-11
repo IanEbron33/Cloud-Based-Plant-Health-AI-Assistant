@@ -27,6 +27,24 @@ export const signInWithEmail = async (email: string, password: string) => {
 };
 
 /**
+ * Sign in a user using a Google Identity Token.
+ * Useful for Native Google Sign-In flow.
+ * @returns The session data, or an error message.
+ */
+export const signInWithGoogleIdToken = async (idToken: string) => {
+  const { data, error } = await supabase.auth.signInWithIdToken({
+    provider: 'google',
+    token: idToken,
+  });
+
+  return {
+    session: data.session,
+    user: data.user,
+    error: error?.message ?? null,
+  };
+};
+
+/**
  * Register a new user with email, password, and full name metadata.
  * Supabase will auto-create a `profiles` row via the database trigger.
  * @returns The created user, or an error message.

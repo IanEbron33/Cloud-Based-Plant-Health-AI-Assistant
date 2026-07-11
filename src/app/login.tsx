@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -11,7 +12,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const { showToast, isVisible: isToastVisible } = useToast();
 
   const [email, setEmail] = useState('');
@@ -62,6 +63,36 @@ export default function LoginScreen() {
 
     return () => clearInterval(timer);
   }, [cooldownTime]);
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        if (error === 'Sign-in cancelled') {
+          setIsLoading(false);
+          return;
+        }
+        showToast({
+          type: 'error',
+          title: 'Google Login Failed',
+          message: error,
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      await AsyncStorage.removeItem('login_cooldown_end');
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Google Login Error',
+        message: err.message || 'An unexpected error occurred.',
+      });
+      setIsLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (cooldownTime > 0) {
@@ -250,6 +281,49 @@ export default function LoginScreen() {
                 Log In
               </Text>
             )}
+          </TouchableOpacity>
+
+          {/* OR Divider */}
+          <View className="flex-row items-center mb-5">
+            <View className={`flex-1 h-[1px] ${isDark ? 'bg-stone-850' : 'bg-stone-200'}`} />
+            <Text className={`mx-4 text-xs font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+              OR
+            </Text>
+            <View className={`flex-1 h-[1px] ${isDark ? 'bg-stone-850' : 'bg-stone-200'}`} />
+          </View>
+
+          {/* Google Login Button */}
+          <TouchableOpacity
+            onPress={handleGoogleLogin}
+            disabled={isLoading || isToastVisible}
+            activeOpacity={0.85}
+            className={`flex-row items-center justify-center py-4 rounded-2xl border mb-5 ${
+              isDark
+                ? 'bg-stone-900 border-stone-800 active:bg-stone-850'
+                : 'bg-white border-stone-200 active:bg-stone-50 shadow-sm'
+            }`}
+          >
+            <Svg width="18" height="18" viewBox="0 0 24 24" style={{ marginRight: 10 }}>
+              <Path
+                fill="#4285F4"
+                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.53-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-8.87z"
+              />
+              <Path
+                fill="#34A853"
+                d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.08 1.16-3.11 0-5.74-2.11-6.68-4.96H1.21v3.15C3.18 21.88 7.39 24 12 24z"
+              />
+              <Path
+                fill="#FBBC05"
+                d="M5.32 14.24A7.16 7.16 0 0 1 5 12c0-.79.13-1.57.32-2.34V6.51H1.21A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.21 5.39l4.11-3.15z"
+              />
+              <Path
+                fill="#EA4335"
+                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.96 1.19 15.24 0 12 0 7.39 0 3.18 2.12 1.21 5.79l4.11 3.15c.94-2.85 3.57-4.96 6.68-4.96z"
+              />
+            </Svg>
+            <Text className={`text-base font-bold font-fredoka tracking-wide ${isDark ? 'text-stone-200' : 'text-stone-700'}`}>
+              Continue with Google
+            </Text>
           </TouchableOpacity>
 
           {/* Link to Register */}

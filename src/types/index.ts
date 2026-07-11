@@ -47,6 +47,7 @@ export interface AuthState {
 /** Methods exposed by the `useAuth()` hook. */
 export interface AuthActions {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: () => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ user: User | null; error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
