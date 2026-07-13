@@ -342,7 +342,7 @@ export default function HomeScreen() {
           style={{ fontFamily: 'Fredoka_700Bold' }}
           className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-emerald-800'}`}
         >
-          Bugsok AI
+          Bugsok
         </Text>
         <TouchableOpacity
           onPress={() => router.push('/profile')}

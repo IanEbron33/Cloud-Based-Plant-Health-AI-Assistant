@@ -18,7 +18,6 @@ import { useToast } from '../context/ToastContext';
 import { uploadAvatar, updateUserProfile } from '../services/profile.service';
 import {
   User,
-  AtSign,
   Mail,
   Lock,
   Eye,
@@ -107,7 +106,6 @@ export default function RegisterScreen() {
 
   // Step 1 — Personal Details
   const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
   const [gender, setGender] = useState<GenderOption>('Male');
   const [birthdate, setBirthdate] = useState({ year: new Date().getFullYear(), month: 1, day: 1 });
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -143,7 +141,6 @@ export default function RegisterScreen() {
 
     if (step === 1) {
       if (!fullName.trim()) newErrors.fullName = 'Full name is required';
-      if (!username.trim()) newErrors.username = 'Username is required';
     } else if (step === 2) {
       if (!email.trim()) newErrors.email = 'Email is required';
       if (!password.trim()) newErrors.password = 'Password is required';
@@ -197,14 +194,14 @@ export default function RegisterScreen() {
       });
       return;
     }
-    if (!fullName.trim() || !username.trim()) {
-      showToast({
-        type: 'error',
-        title: 'Required Fields',
-        message: 'Please fill in your name and username.',
-      });
-      return;
-    }
+      if (!fullName.trim()) {
+        showToast({
+          type: 'error',
+          title: 'Required Fields',
+          message: 'Please fill in your name.',
+        });
+        return;
+      }
 
     setIsLoading(true);
     // Enable the registration flag to pause navigation redirects
@@ -248,7 +245,6 @@ export default function RegisterScreen() {
 
       // 3. Update profiles table (via profile service)
       const profileError = await updateUserProfile(user.id, {
-        username: username.trim().toLowerCase(),
         gender: gender === 'Prefer not to say' ? 'Other' : gender,
         birthdate: `${birthdate.year}-${String(birthdate.month).padStart(2, '0')}-${String(birthdate.day).padStart(2, '0')}`,
         avatar_url: avatarUrl,
@@ -357,15 +353,6 @@ export default function RegisterScreen() {
         'Enter your full name',
         'fullName',
         { autoCapitalize: 'words' }
-      )}
-
-      {renderInput(
-        <AtSign size={19} color="#78716c" />,
-        username,
-        (text) => setUsername(text.toLowerCase().replace(/\s/g, '')),
-        'Choose a username',
-        'username',
-        { autoCapitalize: 'none' }
       )}
 
       {/* Gender — 2×2 Grid */}

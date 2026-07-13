@@ -14,7 +14,6 @@ import type { Session, User } from '@supabase/supabase-js';
 /** Row shape from the `profiles` table. */
 export interface UserProfile {
   id: string;
-  username: string | null;
   full_name: string | null;
   avatar_url: string | null;
   gender: 'Male' | 'Female' | 'Other' | null;
@@ -24,7 +23,6 @@ export interface UserProfile {
 
 /** Data payload for updating a user profile. */
 export interface UpdateProfileData {
-  username?: string;
   full_name?: string;
   avatar_url?: string | null;
   gender?: 'Male' | 'Female' | 'Other';

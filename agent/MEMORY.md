@@ -49,6 +49,12 @@ This document captures the current state, architecture, and files of the project
   * **3-Step Recovery Wizard**: `/forgot-password` route with clean layout exceptions in `_layout.tsx`.
   * **Responsive 6-Digit OTP Box Grid**: Renders 6 numeric input boxes that automatically calculate their width dynamically based on screen size. Focus moves forward automatically on keypress and backward on backspace.
   * **Animated Password Strength Meter**: Dynamic color-morphing progress bar (Red ➔ Orange ➔ Green) representing Weak, Good, or Strong values based on character rules.
+* **Native Google Sign-In (Supabase Google Auth)**:
+  * **OAuth Configuration**: Integrated `@react-native-google-signin/google-signin` library to handle native credential prompts on Android/iOS. Added the config plugin to `app.json`.
+  * **Auth Flow Integration**: Added `signInWithGoogleIdToken` in `auth.service.ts`, initialized `GoogleSignin` on mount in `AuthContext.tsx`, and passed `signInWithGoogle` down to components.
+  * **Auto-Profile Creation**: On first-time Google logins, the app automatically copies the user's Google `full_name` and `avatar_url` to initialize/update their row in the `profiles` table.
+  * **Clean Sign-Out**: Modified the context `signOut` method to clean up the cached Google login session via `GoogleSignin.signOut()`, preventing automatic auto-login loops and forcing account picker display on next login.
+  * **Login Page UI Update**: Added a custom Google button with an inline SVG Google logo and an "OR" text divider aligned with the layout guidelines of `DESIGN.md`.
 
 ---
 

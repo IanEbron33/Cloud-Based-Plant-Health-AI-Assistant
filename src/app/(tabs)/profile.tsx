@@ -20,7 +20,6 @@ export default function ProfileScreen() {
 
   // Derive display values from auth context
   const displayName = profile?.full_name || 'Anonymous User';
-  const displayUsername = profile?.username || 'user';
   const avatarUrl = profile?.avatar_url || null;
   const memberSince = user?.created_at
     ? `Member since ${new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}`
@@ -157,12 +156,7 @@ export default function ProfileScreen() {
         >
           {isLoading ? 'Loading...' : displayName}
         </Text>
-        <Text
-          style={{ fontFamily: 'Fredoka_400Regular' }}
-          className="text-emerald-300 text-sm mt-0.5"
-        >
-          {isLoading ? '' : `@${displayUsername}`}
-        </Text>
+
 
         <View className="bg-emerald-900/60 border border-emerald-700/20 px-4 py-1.5 rounded-full mt-4">
           <Text

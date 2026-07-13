@@ -81,7 +81,7 @@ export default function LoginScreen() {
         setIsLoading(false);
         return;
       }
-      
+
       await AsyncStorage.removeItem('login_cooldown_end');
       router.replace('/(tabs)');
     } catch (err: any) {
@@ -176,7 +176,7 @@ export default function LoginScreen() {
             />
           </View>
           <Text className={`text-3xl font-bold font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}>
-            Bugsok AI
+            Bugsok
           </Text>
           <Text className={`text-sm mt-1 font-medium font-fredoka tracking-wide ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
             AI Powered Crop Health Tracker
@@ -297,11 +297,10 @@ export default function LoginScreen() {
             onPress={handleGoogleLogin}
             disabled={isLoading || isToastVisible}
             activeOpacity={0.85}
-            className={`flex-row items-center justify-center py-4 rounded-2xl border mb-5 ${
-              isDark
+            className={`flex-row items-center justify-center py-4 rounded-2xl border mb-5 ${isDark
                 ? 'bg-stone-900 border-stone-800 active:bg-stone-850'
                 : 'bg-white border-stone-200 active:bg-stone-50 shadow-sm'
-            }`}
+              }`}
           >
             <Svg width="18" height="18" viewBox="0 0 24 24" style={{ marginRight: 10 }}>
               <Path
