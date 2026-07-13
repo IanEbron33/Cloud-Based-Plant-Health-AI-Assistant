@@ -86,22 +86,23 @@ export const initLocalDatabase = (): void => {
       const tables = db.getAllSync("SELECT name FROM sqlite_master WHERE type='table'") as { name: string }[];
       const tableNames = tables.map((t) => t.name);
 
-      const hasSessionsTable = tableNames.includes('general_chat_sessions');
-      const hasMessagesTable = tableNames.includes('general_chat_messages');
-
-      let needRecreate = false;
-      if (hasMessagesTable) {
-        const info = db.getAllSync("PRAGMA table_info(general_chat_messages)") as { name: string }[];
-        const hasSessionId = info.some((col) => col.name === 'session_id');
-        if (!hasSessionId) {
-          needRecreate = true;
+      const hasGeneralSessions = tableNames.includes('general_chat_sessions');
+      
+      let needsMigration = false;
+      if (tableNames.includes('chat_sessions')) {
+        const info = db.getAllSync("PRAGMA table_info(chat_sessions)") as { name: string }[];
+        const hasIsPinned = info.some((col) => col.name === 'is_pinned');
+        if (!hasIsPinned) {
+          needsMigration = true;
         }
       }
 
-      if (!hasSessionsTable || needRecreate) {
-        console.log('[Scan Service] Schema mismatch or missing tables. Re-creating general chat tables...');
+      if (hasGeneralSessions || needsMigration) {
+        console.log('[Scan Service] Performing chat tables normalization migration...');
         db.execSync('DROP TABLE IF EXISTS general_chat_messages;');
         db.execSync('DROP TABLE IF EXISTS general_chat_sessions;');
+        db.execSync('DROP TABLE IF EXISTS chat_messages;');
+        db.execSync('DROP TABLE IF EXISTS chat_sessions;');
       }
     } catch (e) {
       console.warn('[Scan Service] Schema migration check failed, skipping...', e);
@@ -127,9 +128,10 @@ export const initLocalDatabase = (): void => {
 
       CREATE TABLE IF NOT EXISTS chat_sessions (
           id TEXT PRIMARY KEY,
-          scan_id TEXT NOT NULL,
+          scan_id TEXT, -- NULLABLE for general chats
           user_id TEXT NOT NULL,
           title TEXT,
+          is_pinned INTEGER DEFAULT 0,
           synced INTEGER DEFAULT 0,
           created_at TEXT DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (scan_id) REFERENCES scans (id) ON DELETE CASCADE
@@ -141,78 +143,19 @@ export const initLocalDatabase = (): void => {
           sender TEXT CHECK(sender IN ('user', 'ai')),
           model_used TEXT,
           message TEXT NOT NULL,
+          attached_scan_id TEXT, -- NULLABLE for attachments
           synced INTEGER DEFAULT 0,
           created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (session_id) REFERENCES chat_sessions (id) ON DELETE CASCADE
-      );
-
-      CREATE TABLE IF NOT EXISTS general_chat_sessions (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          title TEXT DEFAULT 'New Chat',
-          is_pinned INTEGER DEFAULT 0,
-          synced INTEGER DEFAULT 0,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      );
-
-      CREATE TABLE IF NOT EXISTS general_chat_messages (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          sender TEXT CHECK(sender IN ('user', 'ai')),
-          model_used TEXT,
-          message TEXT NOT NULL,
-          attached_scan_id TEXT,
-          session_id TEXT,
-          synced INTEGER DEFAULT 0,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (attached_scan_id) REFERENCES scans (id) ON DELETE SET NULL,
-          FOREIGN KEY (session_id) REFERENCES general_chat_sessions (id) ON DELETE CASCADE
+          FOREIGN KEY (session_id) REFERENCES chat_sessions (id) ON DELETE CASCADE,
+          FOREIGN KEY (attached_scan_id) REFERENCES scans (id) ON DELETE SET NULL
       );
 
       -- Optimized indexes to speed up local queries
       CREATE INDEX IF NOT EXISTS idx_scans_user_created ON scans (user_id, created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions (user_id);
       CREATE INDEX IF NOT EXISTS idx_chat_messages_session_created ON chat_messages (session_id, created_at ASC);
-      CREATE INDEX IF NOT EXISTS idx_general_chat_sessions_user_id ON general_chat_sessions (user_id);
-      CREATE INDEX IF NOT EXISTS idx_general_chat_messages_session_created ON general_chat_messages (session_id, created_at ASC);
     `);
 
-    // Self-healing migrations for existing SQLite databases (safely check first to avoid JNI warnings)
-    try {
-      const info = db.getAllSync("PRAGMA table_info(general_chat_messages)") as { name: string }[];
-      const hasSessionId = info.some((col) => col.name === 'session_id');
-      const hasSynced = info.some((col) => col.name === 'synced');
-
-      if (!hasSessionId) {
-        db.execSync('ALTER TABLE general_chat_messages ADD COLUMN session_id TEXT;');
-      }
-      if (!hasSynced) {
-        db.execSync('ALTER TABLE general_chat_messages ADD COLUMN synced INTEGER DEFAULT 0;');
-      }
-    } catch (e) {
-      console.warn('[Scan Service] Column addition failed:', e);
-    }
-
-    // Migrate unsessioned legacy messages
-    try {
-      const unsessioned = db.getAllSync('SELECT DISTINCT user_id FROM general_chat_messages WHERE session_id IS NULL') as { user_id: string }[];
-      for (const row of unsessioned) {
-        const uId = row.user_id;
-        const legacySessionId = generateUUID();
-        const createdAt = new Date().toISOString();
-        db.runSync(
-          'INSERT INTO general_chat_sessions (id, user_id, title, is_pinned, synced, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-          [legacySessionId, uId, 'Legacy Session', 0, 0, createdAt]
-        );
-        db.runSync(
-          'UPDATE general_chat_messages SET session_id = ? WHERE user_id = ? AND session_id IS NULL',
-          [legacySessionId, uId]
-        );
-        console.log(`[Scan Service] Migrated general chat messages for user ${uId} to session ${legacySessionId}`);
-      }
-    } catch (migrationError) {
-      console.error('[Scan Service] Session migration error:', migrationError);
-    }
     console.log('[Scan Service] SQLite Database initialized successfully.');
   } catch (error) {
     console.error('[Scan Service] SQLite DDL error:', error);
@@ -580,17 +523,18 @@ export const syncData = async (userId: string): Promise<boolean> => {
       await syncSingleScan(scan.id, userId);
     }
 
-    // 2. Upload unsynced chat sessions
+    // 2. Upload unsynced chat sessions (both standard & general)
     const unsyncedSessions = db.getAllSync(
       'SELECT * FROM chat_sessions WHERE user_id = ? AND synced = 0',
       [userId]
-    ) as LocalChatSessionRow[];
+    ) as (LocalChatSessionRow & { is_pinned: number })[];
     for (const session of unsyncedSessions) {
       const { error } = await supabase.from('chat_sessions').upsert({
         id: session.id,
         scan_id: session.scan_id,
         user_id: session.user_id,
         title: session.title,
+        is_pinned: session.is_pinned === 1,
         synced: true,
         created_at: session.created_at
       });
@@ -599,13 +543,13 @@ export const syncData = async (userId: string): Promise<boolean> => {
       }
     }
 
-    // 3. Upload unsynced chat messages
+    // 3. Upload unsynced chat messages (both standard & general)
     const unsyncedMessages = db.getAllSync(
       `SELECT m.* FROM chat_messages m 
        JOIN chat_sessions s ON m.session_id = s.id 
        WHERE s.user_id = ? AND m.synced = 0`,
       [userId]
-    ) as LocalChatMessageRow[];
+    ) as (LocalChatMessageRow & { attached_scan_id: string | null })[];
     for (const msg of unsyncedMessages) {
       const { error } = await supabase.from('chat_messages').upsert({
         id: msg.id,
@@ -613,53 +557,12 @@ export const syncData = async (userId: string): Promise<boolean> => {
         sender: msg.sender,
         model_used: msg.model_used,
         message: msg.message,
+        attached_scan_id: msg.attached_scan_id,
         synced: true,
         created_at: msg.created_at
       });
       if (!error) {
         db.runSync('UPDATE chat_messages SET synced = 1 WHERE id = ?', [msg.id]);
-      }
-    }
-
-    // 3.5 Upload unsynced general chat sessions & messages
-    const unsyncedGenSessions = db.getAllSync(
-      'SELECT * FROM general_chat_sessions WHERE user_id = ? AND synced = 0',
-      [userId]
-    ) as LocalGeneralChatSessionRow[];
-    for (const session of unsyncedGenSessions) {
-      const { error } = await supabase.from('general_chat_sessions').upsert({
-        id: session.id,
-        user_id: session.user_id,
-        title: session.title,
-        is_pinned: session.is_pinned === 1,
-        synced: true,
-        created_at: session.created_at
-      });
-      if (!error) {
-        db.runSync('UPDATE general_chat_sessions SET synced = 1 WHERE id = ?', [session.id]);
-      }
-    }
-
-    const unsyncedGenMessages = db.getAllSync(
-      `SELECT m.* FROM general_chat_messages m
-       JOIN general_chat_sessions s ON m.session_id = s.id
-       WHERE s.user_id = ? AND m.synced = 0`,
-      [userId]
-    ) as (LocalGeneralChatMessage & { synced: number })[];
-    for (const msg of unsyncedGenMessages) {
-      const { error } = await supabase.from('general_chat_messages').upsert({
-        id: msg.id,
-        user_id: msg.user_id,
-        sender: msg.sender,
-        model_used: msg.model_used,
-        message: msg.message,
-        attached_scan_id: msg.attached_scan_id,
-        session_id: msg.session_id,
-        synced: true,
-        created_at: msg.created_at
-      });
-      if (!error) {
-        db.runSync('UPDATE general_chat_messages SET synced = 1 WHERE id = ?', [msg.id]);
       }
     }
 
@@ -681,7 +584,7 @@ export const syncData = async (userId: string): Promise<boolean> => {
       }
     }
 
-    // Pull chat sessions
+    // Pull chat sessions (standard + general)
     const { data: cloudSessions, error: sessionsError } = await supabase
       .from('chat_sessions')
       .select('*')
@@ -690,15 +593,15 @@ export const syncData = async (userId: string): Promise<boolean> => {
     if (!sessionsError && cloudSessions) {
       for (const cs of cloudSessions) {
         db.runSync(
-          `INSERT INTO chat_sessions (id, scan_id, user_id, title, synced, created_at)
-           VALUES (?, ?, ?, ?, 1, ?)
-           ON CONFLICT(id) DO UPDATE SET synced=1`,
-          [cs.id, cs.scan_id, cs.user_id, cs.title, cs.created_at]
+          `INSERT INTO chat_sessions (id, scan_id, user_id, title, is_pinned, synced, created_at)
+           VALUES (?, ?, ?, ?, ?, 1, ?)
+           ON CONFLICT(id) DO UPDATE SET title=excluded.title, is_pinned=excluded.is_pinned, synced=1`,
+          [cs.id, cs.scan_id, cs.user_id, cs.title, cs.is_pinned ? 1 : 0, cs.created_at]
         );
       }
     }
 
-    // Pull chat messages
+    // Pull chat messages (standard + general)
     if (cloudSessions && cloudSessions.length > 0) {
       const sessionIds = cloudSessions.map((s) => s.id);
       const { data: cloudMessages, error: msgsError } = await supabase
@@ -709,47 +612,10 @@ export const syncData = async (userId: string): Promise<boolean> => {
       if (!msgsError && cloudMessages) {
         for (const cm of cloudMessages) {
           db.runSync(
-            `INSERT INTO chat_messages (id, session_id, sender, model_used, message, synced, created_at)
-             VALUES (?, ?, ?, ?, ?, 1, ?)
+            `INSERT INTO chat_messages (id, session_id, sender, model_used, message, attached_scan_id, synced, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, 1, ?)
              ON CONFLICT(id) DO UPDATE SET synced=1`,
-            [cm.id, cm.session_id, cm.sender, cm.model_used, cm.message, cm.created_at]
-          );
-        }
-      }
-    }
-
-    // Pull general chat sessions
-    const { data: cloudGenSessions, error: genSessionsError } = await supabase
-      .from('general_chat_sessions')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (!genSessionsError && cloudGenSessions) {
-      for (const gs of cloudGenSessions) {
-        db.runSync(
-          `INSERT INTO general_chat_sessions (id, user_id, title, is_pinned, synced, created_at)
-           VALUES (?, ?, ?, ?, 1, ?)
-           ON CONFLICT(id) DO UPDATE SET title=excluded.title, is_pinned=excluded.is_pinned, synced=1`,
-          [gs.id, gs.user_id, gs.title, gs.is_pinned ? 1 : 0, gs.created_at]
-        );
-      }
-    }
-
-    // Pull general chat messages
-    if (cloudGenSessions && cloudGenSessions.length > 0) {
-      const genSessionIds = cloudGenSessions.map((s) => s.id);
-      const { data: cloudGenMessages, error: genMsgsError } = await supabase
-        .from('general_chat_messages')
-        .select('*')
-        .in('session_id', genSessionIds);
-
-      if (!genMsgsError && cloudGenMessages) {
-        for (const gm of cloudGenMessages) {
-          db.runSync(
-            `INSERT INTO general_chat_messages (id, user_id, sender, model_used, message, attached_scan_id, session_id, synced, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
-             ON CONFLICT(id) DO UPDATE SET synced=1`,
-            [gm.id, gm.user_id, gm.sender, gm.model_used, gm.message, gm.attached_scan_id, gm.session_id, gm.created_at]
+            [cm.id, cm.session_id, cm.sender, cm.model_used, cm.message, cm.attached_scan_id, cm.created_at]
           );
         }
       }
@@ -809,7 +675,9 @@ export const fetchGeneralChatMessages = (userId: string): LocalGeneralChatMessag
   try {
     const db = getDB();
     return db.getAllSync(
-      'SELECT * FROM general_chat_messages WHERE user_id = ? ORDER BY created_at ASC',
+      `SELECT m.* FROM chat_messages m
+       JOIN chat_sessions s ON m.session_id = s.id
+       WHERE s.user_id = ? AND s.scan_id IS NULL ORDER BY m.created_at ASC`,
       [userId]
     ) as LocalGeneralChatMessage[];
   } catch (err) {
@@ -825,7 +693,7 @@ export const fetchGeneralChatMessagesBySession = (sessionId: string): LocalGener
   try {
     const db = getDB();
     return db.getAllSync(
-      'SELECT * FROM general_chat_messages WHERE session_id = ? ORDER BY created_at ASC',
+      'SELECT * FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC',
       [sessionId]
     ) as LocalGeneralChatMessage[];
   } catch (err) {
@@ -841,7 +709,7 @@ export const fetchGeneralChatSessions = (userId: string): LocalGeneralChatSessio
   try {
     const db = getDB();
     return db.getAllSync(
-      'SELECT * FROM general_chat_sessions WHERE user_id = ? ORDER BY is_pinned DESC, created_at DESC',
+      'SELECT * FROM chat_sessions WHERE user_id = ? AND scan_id IS NULL ORDER BY is_pinned DESC, created_at DESC',
       [userId]
     ) as LocalGeneralChatSessionRow[];
   } catch (err) {
@@ -863,13 +731,14 @@ export const createGeneralChatSession = async (
     const createdAt = new Date().toISOString();
 
     db.runSync(
-      'INSERT INTO general_chat_sessions (id, user_id, title, is_pinned, synced, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-      [sessionId, userId, title, 0, 0, createdAt]
+      'INSERT INTO chat_sessions (id, scan_id, user_id, title, is_pinned, synced, created_at) VALUES (?, NULL, ?, ?, 0, 0, ?)',
+      [sessionId, userId, title, createdAt]
     );
 
     // Background cloud sync
-    supabase.from('general_chat_sessions').insert({
+    supabase.from('chat_sessions').insert({
       id: sessionId,
+      scan_id: null,
       user_id: userId,
       title,
       is_pinned: false,
@@ -877,7 +746,7 @@ export const createGeneralChatSession = async (
       created_at: createdAt
     }).then(({ error }) => {
       if (!error) {
-        db.runSync('UPDATE general_chat_sessions SET synced = 1 WHERE id = ?', [sessionId]);
+        db.runSync('UPDATE chat_sessions SET synced = 1 WHERE id = ?', [sessionId]);
       }
     });
 
@@ -895,14 +764,14 @@ export const pinGeneralChatSession = async (sessionId: string, isPinned: boolean
   try {
     const db = getDB();
     const pinVal = isPinned ? 1 : 0;
-    db.runSync('UPDATE general_chat_sessions SET is_pinned = ?, synced = 0 WHERE id = ?', [pinVal, sessionId]);
+    db.runSync('UPDATE chat_sessions SET is_pinned = ?, synced = 0 WHERE id = ?', [pinVal, sessionId]);
 
-    supabase.from('general_chat_sessions').update({
+    supabase.from('chat_sessions').update({
       is_pinned: isPinned,
       synced: true
     }).eq('id', sessionId).then(({ error }) => {
       if (!error) {
-        db.runSync('UPDATE general_chat_sessions SET synced = 1 WHERE id = ?', [sessionId]);
+        db.runSync('UPDATE chat_sessions SET synced = 1 WHERE id = ?', [sessionId]);
       }
     });
   } catch (err) {
@@ -916,10 +785,10 @@ export const pinGeneralChatSession = async (sessionId: string, isPinned: boolean
 export const deleteGeneralChatSession = async (sessionId: string): Promise<void> => {
   try {
     const db = getDB();
-    db.runSync('DELETE FROM general_chat_sessions WHERE id = ?', [sessionId]);
-    db.runSync('DELETE FROM general_chat_messages WHERE session_id = ?', [sessionId]);
+    db.runSync('DELETE FROM chat_sessions WHERE id = ?', [sessionId]);
+    db.runSync('DELETE FROM chat_messages WHERE session_id = ?', [sessionId]);
 
-    supabase.from('general_chat_sessions').delete().eq('id', sessionId).then(({ error }) => {
+    supabase.from('chat_sessions').delete().eq('id', sessionId).then(({ error }) => {
       if (error) {
         console.warn('[Scan Service] Supabase delete general session error:', error.message);
       }
@@ -935,14 +804,14 @@ export const deleteGeneralChatSession = async (sessionId: string): Promise<void>
 export const updateGeneralChatSessionTitle = async (sessionId: string, title: string): Promise<void> => {
   try {
     const db = getDB();
-    db.runSync('UPDATE general_chat_sessions SET title = ?, synced = 0 WHERE id = ?', [title, sessionId]);
+    db.runSync('UPDATE chat_sessions SET title = ?, synced = 0 WHERE id = ?', [title, sessionId]);
 
-    supabase.from('general_chat_sessions').update({
+    supabase.from('chat_sessions').update({
       title,
       synced: true
     }).eq('id', sessionId).then(({ error }) => {
       if (!error) {
-        db.runSync('UPDATE general_chat_sessions SET synced = 1 WHERE id = ?', [sessionId]);
+        db.runSync('UPDATE chat_sessions SET synced = 1 WHERE id = ?', [sessionId]);
       }
     });
   } catch (err) {
@@ -967,25 +836,24 @@ export const saveGeneralChatMessage = async (
     const createdAt = new Date().toISOString();
 
     db.runSync(
-      `INSERT INTO general_chat_messages (id, user_id, sender, model_used, message, attached_scan_id, session_id, synced, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`,
-      [messageId, userId, sender, modelUsed, message, attachedScanId, sessionId, createdAt]
+      `INSERT INTO chat_messages (id, session_id, sender, model_used, message, attached_scan_id, synced, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+      [messageId, sessionId, sender, modelUsed, message, attachedScanId, createdAt]
     );
 
     // Sync to Supabase in background
-    supabase.from('general_chat_messages').insert({
+    supabase.from('chat_messages').insert({
       id: messageId,
-      user_id: userId,
+      session_id: sessionId,
       sender,
       model_used: modelUsed,
       message,
       attached_scan_id: attachedScanId,
-      session_id: sessionId,
       synced: true,
       created_at: createdAt
     }).then(({ error }) => {
       if (!error) {
-        db.runSync('UPDATE general_chat_messages SET synced = 1 WHERE id = ?', [messageId]);
+        db.runSync('UPDATE chat_messages SET synced = 1 WHERE id = ?', [messageId]);
       }
     });
 
@@ -1002,10 +870,15 @@ export const saveGeneralChatMessage = async (
 export const clearGeneralChat = async (userId: string): Promise<void> => {
   try {
     const db = getDB();
-    db.runSync('DELETE FROM general_chat_messages WHERE user_id = ?', [userId]);
-    db.runSync('DELETE FROM general_chat_sessions WHERE user_id = ?', [userId]);
+    db.runSync(
+      `DELETE FROM chat_messages WHERE session_id IN (
+        SELECT id FROM chat_sessions WHERE user_id = ? AND scan_id IS NULL
+      )`,
+      [userId]
+    );
+    db.runSync('DELETE FROM chat_sessions WHERE user_id = ? AND scan_id IS NULL', [userId]);
 
-    supabase.from('general_chat_sessions').delete().eq('user_id', userId).then(({ error }) => {
+    supabase.from('chat_sessions').delete().eq('user_id', userId).is('scan_id', null).then(({ error }) => {
       if (error) console.warn('[Scan Service] clearGeneralChat sessions cloud error:', error.message);
     });
   } catch (err) {
