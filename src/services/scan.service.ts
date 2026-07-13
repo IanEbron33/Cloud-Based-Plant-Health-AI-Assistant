@@ -168,6 +168,13 @@ export const initLocalDatabase = (): void => {
           FOREIGN KEY (attached_scan_id) REFERENCES scans (id) ON DELETE SET NULL,
           FOREIGN KEY (session_id) REFERENCES general_chat_sessions (id) ON DELETE CASCADE
       );
+
+      -- Optimized indexes to speed up local queries
+      CREATE INDEX IF NOT EXISTS idx_scans_user_created ON scans (user_id, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions (user_id);
+      CREATE INDEX IF NOT EXISTS idx_chat_messages_session_created ON chat_messages (session_id, created_at ASC);
+      CREATE INDEX IF NOT EXISTS idx_general_chat_sessions_user_id ON general_chat_sessions (user_id);
+      CREATE INDEX IF NOT EXISTS idx_general_chat_messages_session_created ON general_chat_messages (session_id, created_at ASC);
     `);
 
     // Self-healing migrations for existing SQLite databases (safely check first to avoid JNI warnings)

@@ -93,17 +93,55 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
 COMMENT ON TABLE public.chat_messages IS 'Individual chat message bubbles from the user or AI model.';
 COMMENT ON COLUMN public.chat_messages.model_used IS 'e.g. "gemini-3.1-flash-lite" or "gemma-4-31b-it"';
 
+-- ------------------------------------------------------------
+-- TABLE: general_chat_sessions
+-- Groups general chat messages (not linked to a specific scan).
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.general_chat_sessions (
+    id         UUID        NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id    UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    title      TEXT        NOT NULL DEFAULT 'New Chat',
+    is_pinned  BOOLEAN     NOT NULL DEFAULT FALSE,
+    synced     BOOLEAN     NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE public.general_chat_sessions IS 'A general AI chat conversation session.';
+
+-- ------------------------------------------------------------
+-- TABLE: general_chat_messages
+-- Stores message bubbles for general chat conversations.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.general_chat_messages (
+    id               UUID        NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id          UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    session_id       UUID        NOT NULL REFERENCES public.general_chat_sessions(id) ON DELETE CASCADE,
+    sender           TEXT        NOT NULL CHECK (sender IN ('user', 'ai')),
+    model_used       TEXT,
+    message          TEXT        NOT NULL,
+    attached_scan_id UUID                 REFERENCES public.scans(id) ON DELETE SET NULL,
+    synced           BOOLEAN     NOT NULL DEFAULT FALSE,
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE public.general_chat_messages IS 'Message bubbles from general AI chats.';
+
 
 -- ============================================================
 -- SECTION 3: INDEXES
 -- Speeds up common query patterns (lookup by user_id, scan_id).
 -- ============================================================
 
-CREATE INDEX IF NOT EXISTS idx_scans_user_id          ON public.scans(user_id);
-CREATE INDEX IF NOT EXISTS idx_scans_created_at       ON public.scans(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_chat_sessions_scan_id  ON public.chat_sessions(scan_id);
-CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id  ON public.chat_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_chat_messages_session  ON public.chat_messages(session_id);
+-- Optimized Composite Indexes (PostgreSQL)
+CREATE INDEX IF NOT EXISTS idx_scans_user_created             ON public.scans(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_session_created   ON public.chat_messages(session_id, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_general_chat_messages_session_created ON public.general_chat_messages(session_id, created_at ASC);
+
+-- Standard Indexes
+CREATE INDEX IF NOT EXISTS idx_scans_user_id                  ON public.scans(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_scan_id          ON public.chat_sessions(scan_id);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id          ON public.chat_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_general_chat_sessions_user_id  ON public.general_chat_sessions(user_id);
 
 
 -- ============================================================
@@ -219,6 +257,24 @@ CREATE POLICY "Users can delete messages from their own sessions"
             AND s.user_id = auth.uid()
         )
     );
+
+-- --- general_chat_sessions ---
+ALTER TABLE public.general_chat_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage their own general chat sessions"
+    ON public.general_chat_sessions FOR ALL
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+-- --- general_chat_messages ---
+ALTER TABLE public.general_chat_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage their own general chat messages"
+    ON public.general_chat_messages FOR ALL
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 
 -- ============================================================
