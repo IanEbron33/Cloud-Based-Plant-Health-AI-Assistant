@@ -55,6 +55,8 @@ This document captures the current state, architecture, and files of the project
   * **Auto-Profile Creation**: On first-time Google logins, the app automatically copies the user's Google `full_name` and `avatar_url` to initialize/update their row in the `profiles` table.
   * **Clean Sign-Out**: Modified the context `signOut` method to clean up the cached Google login session via `GoogleSignin.signOut()`, preventing automatic auto-login loops and forcing account picker display on next login.
   * **Login Page UI Update**: Added a custom Google button with an inline SVG Google logo and an "OR" text divider aligned with the layout guidelines of `DESIGN.md`.
+* **Username Field Removal**:
+  * Removed `username` from TypeScript definitions, the registration wizard (Step 1 collects only name, gender, birthdate), and profile display, keeping profiles fully clean.
 
 ---
 
@@ -63,17 +65,17 @@ This document captures the current state, architecture, and files of the project
 The application implements **Option C: Bidirectional Sync (SQLite-First)**. The local SQLite database serves as the primary data store, ensuring instant rendering and offline usability, with background synchronization to Supabase.
 
 ### Local SQLite Database Schema
-The local database (`bugsok_ai.db`) contains five primary tables:
+The local database (`bugsok_ai.db`) has been normalized down to **three primary tables** (merging standard and general chat tables):
 1. **`scans`**: Stores crop diagnoses locally. Unsynced scans store a `local_image_path`. Synced scans contain the Supabase bucket `cloud_image_url`. Includes a `synced` flag (0 = Unsynced, 1 = Synced).
-2. **`chat_sessions`**: Stores follow-up chat sessions associated with scans.
-3. **`chat_messages`**: Stores individual messages for each session.
-4. **`general_chat_sessions`**: Stores individual general chat sessions.
-5. **`general_chat_messages`**: Stores general conversation messages linked to a session (`session_id` referencing `general_chat_sessions(id)` on delete cascade) and references attached scan keys (`attached_scan_id` referencing `scans(id)` with `ON DELETE SET NULL`).
+2. **`chat_sessions`**: Groups message logs for both scan follow-up chats and general chats (where `scan_id` is `null`). Contains an `is_pinned` column for pinned sessions.
+3. **`chat_messages`**: Stores individual message bubbles for all chat sessions. Supports crop profile attachments via a nullable `attached_scan_id` column.
 
 * **Tagalog Database Keys**: Crops are saved in the database using their Tagalog keys (e.g. `Talong`, `Kamatis`, `Sili`, `Ampalaya`) to match the localized content rules.
 * **Auto-Resume Chat Sessions**: When entering the chat screen from a scan results page, the app automatically fetches and resumes the latest active chat session for that scan instead of starting a new one.
 * **Pure JavaScript UUIDs**: Replaced `expo-crypto` dynamic loading with a pure JavaScript RFC4122-compliant UUID generator to prevent Metro bundler resolution failures on Android devices.
 * **DevTools Network Hook**: Added a check in `src/app/_layout.tsx` to hook `global.XMLHttpRequest` to `originalXMLHttpRequest` in `__DEV__` mode to allow Chrome DevTools (`chrome://inspect`) to capture network requests when debugging.
+* **Optimized Local/Cloud Indexing**: Composite indexes are deployed on both local SQLite (`scans(user_id, created_at DESC)`, `chat_messages(session_id, created_at ASC)`) and Supabase tables to speed up scan history and chat loading times.
+* **Self-Healing SQLite Schema**: SQLite initialization automatically detects schema changes (e.g. general chat table presence or missing `is_pinned` columns) and performs clean migrations dynamically.
 
 ---
 

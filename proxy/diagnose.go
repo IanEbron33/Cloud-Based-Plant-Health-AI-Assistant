@@ -38,8 +38,8 @@ func handleDiagnose(w http.ResponseWriter, r *http.Request) {
 		modelType = "flash"
 	}
 
-	if crop == "" || contextJSON == "" {
-		http.Error(w, "Missing required text fields: 'crop' and 'context'", http.StatusBadRequest)
+	if crop == "" {
+		http.Error(w, "Missing required text field: 'crop'", http.StatusBadRequest)
 		return
 	}
 
@@ -66,6 +66,17 @@ func handleDiagnose(w http.ResponseWriter, r *http.Request) {
 	modelName := resolveModel(modelType)
 	apiURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:streamGenerateContent?key=%s&alt=sse", modelName, apiKey)
 
+	cropContext, err := getCropContext(crop)
+	if err != nil {
+		log.Printf("[Diagnose] Server-side crop context lookup failed for '%s': %v. Trying client context fallback...\n", crop, err)
+		if contextJSON != "" {
+			cropContext = contextJSON
+		} else {
+			http.Error(w, "Failed to retrieve crop context: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	systemInstruction := fmt.Sprintf(`You are an agricultural plant health assistant. The user has uploaded a photo of a %s leaf.
 Analyze the image and diagnose its health condition.
 
@@ -84,7 +95,7 @@ Respond in this exact format:
 - **Care Tip:** [A friendly, localized tip]
 
 Keep your language warm, supportive, and accessible to farmers.
-Provide your response strictly and entirely in English. Do not mix with Tagalog, Taglish, or any other languages. All terms, details, and descriptions must be in English only.`, crop, crop, contextJSON)
+Provide your response strictly and entirely in English. Do not mix with Tagalog, Taglish, or any other languages. All terms, details, and descriptions must be in English only.`, crop, crop, cropContext)
 
 	genConfig := &GenerationConfig{
 		Temperature: 0.4,

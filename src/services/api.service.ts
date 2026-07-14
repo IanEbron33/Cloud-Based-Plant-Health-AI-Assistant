@@ -278,11 +278,10 @@ export const diagnoseCrop = async (
 
 /**
  * Merged Step 1 & 2 — Classify and diagnose the crop in a single SSE stream.
- * Sends the image + full database context to /scan and streams the crop identification + diagnosis response.
+ * Sends the image to /scan and streams the crop identification + diagnosis response.
  *
  * @param imageUri - Local URI of the captured/selected image.
  * @param crops - Comma-separated list of supported crop names.
- * @param context - JSON string of the entire database context.
  * @param model - AI model preference: "flash" or "deep".
  * @param onCropIdentified - Callback fired when the crop is identified.
  * @param onChunk - Callback fired for each received text chunk.
@@ -293,7 +292,6 @@ export const diagnoseCrop = async (
 export const scanCrop = async (
   imageUri: string,
   crops: string,
-  context: string,
   model: 'flash' | 'deep',
   onCropIdentified: (crop: string) => void,
   onChunk: (chunk: StreamChunk) => void,
@@ -365,7 +363,6 @@ export const scanCrop = async (
       type: 'image/jpeg',
     } as any);
     formData.append('crops', crops);
-    formData.append('context', context);
     formData.append('model', model);
 
     let lastProcessedIndex = 0;

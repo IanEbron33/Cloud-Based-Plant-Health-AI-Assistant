@@ -5,6 +5,7 @@ import { useNavigation, useRouter } from 'expo-router';
 import { Brain, Zap } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Image, Keyboard,
   KeyboardAvoidingView,
   Modal,
@@ -173,6 +174,41 @@ function TypewriterBubble({
 
   const visibleText = text.slice(0, index);
   return <View>{renderMessageText(visibleText, isUser)}</View>;
+}
+
+function ActiveTextLoading({ activeModel }: { activeModel: 'flash' | 'deep' }) {
+  const phrases = activeModel === 'deep'
+    ? [
+      "Bugsok is analyzing the crop symptoms...",
+      "Bugsok is in deep thinking...",
+      "Bugsok is formulating treatment options...",
+      "Bugsok is preparing your customized advice..."
+    ]
+    : [
+      "Bugsok is typing..."
+    ];
+
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    if (activeModel !== 'deep') return;
+    const interval = setInterval(() => {
+      setPhraseIndex((prev) => (prev + 1) % phrases.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [activeModel]);
+
+  return (
+    <View className="flex-row items-center py-1">
+      <ActivityIndicator size="small" color="#10b981" style={{ marginRight: 8 }} />
+      <Text
+        style={{ fontFamily: 'Fredoka_400Regular' }}
+        className="text-stone-400 text-xs italic"
+      >
+        {phrases[phraseIndex]}
+      </Text>
+    </View>
+  );
 }
 
 function TypingIndicator({ activeModel, isDark }: { activeModel: 'flash' | 'deep'; isDark: boolean }) {
@@ -1025,13 +1061,17 @@ export default function ChatScreen() {
 
                     {/* Speech content */}
                     {m.isNew && !isUser ? (
-                      <TypewriterBubble
-                        text={m.text}
-                        isUser={isUser}
-                        isDark={isDark}
-                        onHeightChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-                        renderMessageText={renderMessageText}
-                      />
+                      m.text.trim() ? (
+                        <TypewriterBubble
+                          text={m.text}
+                          isUser={isUser}
+                          isDark={isDark}
+                          onHeightChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+                          renderMessageText={renderMessageText}
+                        />
+                      ) : isGenerating ? (
+                        <ActiveTextLoading activeModel={activeModel} />
+                      ) : null
                     ) : (
                       renderMessageText(m.text, isUser)
                     )}

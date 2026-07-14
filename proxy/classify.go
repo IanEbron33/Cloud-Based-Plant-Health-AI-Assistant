@@ -63,9 +63,21 @@ func handleClassify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// For classification endpoint, gemini-3.1-flash-lite is hardcoded as requested
-	modelName := "gemini-3.1-flash-lite"
-	apiURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", modelName, apiKey)
+	modelType := r.FormValue("model")
+	if modelType == "" {
+		modelType = "flash"
+	}
+	classifyModelName := resolveModel(modelType)
+	classifyGenConfig := &GenerationConfig{
+		Temperature: 0.1,
+	}
+	if modelType == "deep" {
+		classifyGenConfig.ThinkingConfig = &ThinkingConfig{
+			ThinkingLevel:   "MINIMAL",
+			IncludeThoughts: false,
+		}
+	}
+	apiURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", classifyModelName, apiKey)
 
 	prompt := fmt.Sprintf(`You are a high-speed agricultural routing classifier. The user has uploaded an image of a crop leaf.
 Identify which crop is in the image. You must choose ONLY from the following list of supported crops:
@@ -89,9 +101,7 @@ Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do
 				},
 			},
 		},
-		GenerationConfig: &GenerationConfig{
-			Temperature: 0.1,
-		},
+		GenerationConfig: classifyGenConfig,
 	}
 
 	reqBytes, err := json.Marshal(geminiReq)
@@ -121,12 +131,16 @@ Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do
 	}
 
 	cleanedCrop := ""
-	if len(geminiResp.Candidates) > 0 && len(geminiResp.Candidates[0].Content.Parts) > 0 {
-		cleanedCrop = strings.TrimSpace(geminiResp.Candidates[0].Content.Parts[0].Text)
+	if len(geminiResp.Candidates) > 0 {
+		for _, part := range geminiResp.Candidates[0].Content.Parts {
+			if !part.Thought && part.Text != "" {
+				cleanedCrop += part.Text
+			}
+		}
 		cleanedCrop = strings.ReplaceAll(cleanedCrop, "\"", "")
 		cleanedCrop = strings.ReplaceAll(cleanedCrop, "'", "")
+		cleanedCrop = strings.TrimSpace(cleanedCrop)
 	}
-	cleanedCrop = strings.TrimSpace(cleanedCrop)
 
 	// Intercept NOT_A_PLANT responses early
 	if strings.EqualFold(cleanedCrop, "NOT_A_PLANT") || strings.Contains(strings.ToLower(cleanedCrop), "not_a_plant") {

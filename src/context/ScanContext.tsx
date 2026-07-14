@@ -107,16 +107,12 @@ export function ScanProvider({ children }: ScanProviderProps) {
       // 2. Gather all support crops from local database to guide classifier
       const supportedCrops = Object.keys(vegetablesDb).join(',');
 
-      // 3. Stringify the entire local database context
-      const fullContextString = JSON.stringify(vegetablesDb);
-
       let identifiedCropLocal: string | null = null;
 
-      // 4. Merged Scan (Classify + Diagnose) via Single SSE Stream
+      // 3. Merged Scan (Classify + Diagnose) via Single SSE Stream
       await scanCrop(
         compressedImageUri,
         supportedCrops,
-        fullContextString,
         model,
         // onCropIdentified callback
         (cropName) => {

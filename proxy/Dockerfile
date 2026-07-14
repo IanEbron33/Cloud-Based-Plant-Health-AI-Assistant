@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy go.mod definition
 COPY go.mod ./
 
-# Copy all source files
-COPY *.go ./
+# Copy all source and data files
+COPY *.go *.json ./
 
 # Build statically linked binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/server .

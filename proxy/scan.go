@@ -35,14 +35,17 @@ func handleScan(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	cropsList := r.FormValue("crops")
+	if cropsList == "" {
+		cropsList = getSupportedCrops()
+	}
 	contextJSON := r.FormValue("context")
 	modelType := r.FormValue("model")
 	if modelType == "" {
 		modelType = "flash"
 	}
 
-	if cropsList == "" || contextJSON == "" {
-		http.Error(w, "Missing required text fields: 'crops' and 'context'", http.StatusBadRequest)
+	if cropsList == "" {
+		http.Error(w, "Missing required text field: 'crops'", http.StatusBadRequest)
 		return
 	}
 
@@ -88,6 +91,17 @@ If the image does not contain a plant or crop leaf, or if the crop is not in the
 
 Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do not add any punctuation, explanation, introduction, or extra text.`, cropsList)
 
+	classifyModelName := resolveModel(modelType)
+	classifyGenConfig := &GenerationConfig{
+		Temperature: 0.1,
+	}
+	if modelType == "deep" {
+		classifyGenConfig.ThinkingConfig = &ThinkingConfig{
+			ThinkingLevel:   "MINIMAL",
+			IncludeThoughts: false,
+		}
+	}
+
 	classifyReq := GeminiGenerateRequest{
 		Contents: []GeminiRequestContent{
 			{
@@ -102,9 +116,7 @@ Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do
 				},
 			},
 		},
-		GenerationConfig: &GenerationConfig{
-			Temperature: 0.1,
-		},
+		GenerationConfig: classifyGenConfig,
 	}
 
 	classifyBytes, err := json.Marshal(classifyReq)
@@ -113,7 +125,7 @@ Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do
 		return
 	}
 
-	classifyURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=%s", apiKey)
+	classifyURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", classifyModelName, apiKey)
 	classifyResp, err := http.Post(classifyURL, "application/json", bytes.NewBuffer(classifyBytes))
 	if err != nil {
 		sendSSEError(w, flusher, "Failed to query classification API: "+err.Error())
@@ -134,12 +146,16 @@ Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do
 	}
 
 	cleanedCrop := ""
-	if len(geminiClassifyResp.Candidates) > 0 && len(geminiClassifyResp.Candidates[0].Content.Parts) > 0 {
-		cleanedCrop = strings.TrimSpace(geminiClassifyResp.Candidates[0].Content.Parts[0].Text)
+	if len(geminiClassifyResp.Candidates) > 0 {
+		for _, part := range geminiClassifyResp.Candidates[0].Content.Parts {
+			if !part.Thought && part.Text != "" {
+				cleanedCrop += part.Text
+			}
+		}
 		cleanedCrop = strings.ReplaceAll(cleanedCrop, "\"", "")
 		cleanedCrop = strings.ReplaceAll(cleanedCrop, "'", "")
+		cleanedCrop = strings.TrimSpace(cleanedCrop)
 	}
-	cleanedCrop = strings.TrimSpace(cleanedCrop)
 
 	// Check if NOT_A_PLANT early
 	if strings.EqualFold(cleanedCrop, "NOT_A_PLANT") || strings.Contains(strings.ToLower(cleanedCrop), "not_a_plant") || cleanedCrop == "" {
@@ -193,6 +209,18 @@ Respond with ONLY the exact name of the crop from the list, or "NOT_A_PLANT". Do
 	// ==========================================
 	// STEP 3: Streaming Diagnosis Call
 	// ==========================================
+	// Look up the specific crop context server-side
+	cropContext, err := getCropContext(matchedCrop)
+	if err != nil {
+		log.Printf("[Scan] Server-side crop context lookup failed for '%s': %v. Trying client context fallback...\n", matchedCrop, err)
+		if contextJSON != "" {
+			cropContext = contextJSON
+		} else {
+			sendSSEError(w, flusher, "Failed to retrieve crop context: "+err.Error())
+			return
+		}
+	}
+
 	systemInstruction := fmt.Sprintf(`You are an agricultural plant health assistant. The user has uploaded a photo of a %s leaf.
 
 You must analyze the image and diagnose its health condition, grounding your response ONLY in the following verified database metadata for the identified crop:
@@ -210,7 +238,7 @@ Respond in this exact format:
 - **Care Tip:** [A friendly, localized tip]
 
 Keep your language warm, supportive, and accessible to farmers.
-Provide your response strictly and entirely in English. Do not mix with Tagalog, Taglish, or any other languages. All terms, details, and descriptions must be in English only.`, matchedCrop, contextJSON)
+Provide your response strictly and entirely in English. Do not mix with Tagalog, Taglish, or any other languages. All terms, details, and descriptions must be in English only.`, matchedCrop, cropContext)
 
 	modelName := resolveModel(modelType)
 	apiURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:streamGenerateContent?key=%s&alt=sse", modelName, apiKey)
