@@ -706,7 +706,7 @@ export default function ChatScreen() {
       `;
     } else {
       // 2. Auto-detect crop mention from message text
-      let cropKey = 'Talong'; // default fallback database profile
+      let cropKey: string | null = null;
       for (const key of Object.keys(vegetablesDb)) {
         const dbEntry = vegetablesDb[key as keyof typeof vegetablesDb];
         const lowerMsg = userMsgText.toLowerCase();
@@ -719,8 +719,12 @@ export default function ChatScreen() {
           break;
         }
       }
-      const cropDb = vegetablesDb[cropKey as keyof typeof vegetablesDb];
-      contextString = cropDb ? JSON.stringify(cropDb) : '';
+      if (cropKey) {
+        const cropDb = vegetablesDb[cropKey as keyof typeof vegetablesDb];
+        contextString = cropDb ? JSON.stringify(cropDb) : 'GENERAL_CHAT';
+      } else {
+        contextString = 'GENERAL_CHAT';
+      }
     }
 
     // Assemble conversation history for backend prompt
