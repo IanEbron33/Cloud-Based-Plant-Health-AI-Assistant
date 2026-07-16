@@ -448,10 +448,18 @@ export default function HistoryScreen() {
   });
 
   // sliding pill dimensions
-  const pillWidth = containerWidth ? (containerWidth - 8) / 3 : 0;
+  const pillPadding = 4;
+  const borderOffset = 1;
+  const innerWidth = containerWidth ? containerWidth - (pillPadding * 2) - (borderOffset * 2) : 0;
+  const pillWidth = innerWidth / 3;
+
   const translateX = slidingAnim.interpolate({
     inputRange: [0, 1, 2],
-    outputRange: [4, 4 + pillWidth, 4 + 2 * pillWidth],
+    outputRange: [
+      pillPadding,
+      pillPadding + pillWidth,
+      pillPadding + 2 * pillWidth
+    ],
   });
 
   // Modal Animations styles
@@ -521,43 +529,68 @@ export default function HistoryScreen() {
         )}
       </Animated.View>
 
+      {/* Status Section Label */}
+      <Animated.View
+        style={{ opacity: statusFilterAnim, transform: [{ translateY: getTranslateY(statusFilterAnim) }] }}
+        className="mb-2"
+      >
+        <Text
+          style={{ fontFamily: 'Fredoka_700Bold' }}
+          className={`text-[10px] uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
+        >
+          Status
+        </Text>
+      </Animated.View>
+
       {/* Segmented Sliding Pill Filter Bar */}
       <Animated.View
+        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
         style={{
           opacity: statusFilterAnim,
           transform: [{ translateY: getTranslateY(statusFilterAnim) }]
         }}
-        className={`bg-stone-150 dark:bg-stone-900 rounded-[20px] h-10 p-1 relative items-center mb-4 flex-row`}
+        className="bg-white border border-stone-200 shadow-sm rounded-[22px] h-11 p-1 relative items-center mb-4 flex-row"
       >
         {containerWidth > 0 && (
           <Animated.View
             style={{
               position: 'absolute',
               width: pillWidth,
-              height: 32,
+              height: 34,
               backgroundColor: '#478b59', // crop-500
-              borderRadius: 16,
+              borderRadius: 17,
               transform: [{ translateX }],
             }}
           />
         )}
         <View
           className="flex-row w-full h-full items-center z-10"
-          onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
         >
           {(['active', 'resolved', 'all'] as const).map((status) => {
             const isSelected = statusFilter === status;
             const label = status === 'active' ? 'Active' : status === 'resolved' ? 'Resolved' : 'All';
+            const iconName = 
+              status === 'active' 
+                ? 'pulse-outline' 
+                : status === 'resolved' 
+                  ? 'checkmark-circle-outline' 
+                  : 'albums-outline';
             return (
               <TouchableOpacity
                 key={status}
                 onPress={() => setStatusFilter(status)}
                 activeOpacity={0.9}
-                className="flex-1 items-center justify-center h-full"
+                className="flex-1 flex-row items-center justify-center h-full"
+                style={{ gap: 5 }}
               >
+                <Ionicons 
+                  name={iconName} 
+                  size={14} 
+                  color={isSelected ? 'white' : '#78716c'} 
+                />
                 <Text
                   style={{ fontFamily: isSelected ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
-                  className={`text-xs ${isSelected ? 'text-white' : isDark ? 'text-stone-400' : 'text-stone-600'}`}
+                  className={`text-xs ${isSelected ? 'text-white' : 'text-stone-600'}`}
                 >
                   {label}
                 </Text>
@@ -565,6 +598,19 @@ export default function HistoryScreen() {
             );
           })}
         </View>
+      </Animated.View>
+
+      {/* Type Section Label */}
+      <Animated.View
+        style={{ opacity: chipsAnim, transform: [{ translateY: getTranslateY(chipsAnim) }] }}
+        className="mb-2"
+      >
+        <Text
+          style={{ fontFamily: 'Fredoka_700Bold' }}
+          className={`text-[10px] uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
+        >
+          Type
+        </Text>
       </Animated.View>
 
       {/* Scrollable Filter Chips */}
