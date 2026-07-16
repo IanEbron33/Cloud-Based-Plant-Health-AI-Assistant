@@ -1,28 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  ScrollView, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  useColorScheme, 
-  Animated, 
-  ActivityIndicator, 
-  PanResponder, 
-  Modal, 
-  Easing 
-} from 'react-native';
 import { FredokaText as Text } from '@/components/themed-text';
-import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  Image,
+  Modal,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  useColorScheme,
+  View
+} from 'react-native';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  fetchUserScans, 
-  syncData, 
-  LocalScanRow, 
-  resolveScan, 
-  unresolveScan, 
-  deleteScan 
+import {
+  deleteScan,
+  fetchUserScans,
+  LocalScanRow,
+  resolveScan,
+  syncData,
+  unresolveScan
 } from '../../services/scan.service';
 
 const FILTERS = [
@@ -35,9 +33,6 @@ const FILTERS = [
 interface HistoryScanCardProps {
   scan: LocalScanRow;
   onPress: () => void;
-  onResolve: () => void;
-  onUnresolve: () => void;
-  onDelete: () => void;
   onMenuOpen: (scan: LocalScanRow, layout: { x: number; y: number }) => void;
   isDark: boolean;
 }
@@ -45,54 +40,11 @@ interface HistoryScanCardProps {
 function HistoryScanCard({
   scan,
   onPress,
-  onResolve,
-  onUnresolve,
-  onDelete,
   onMenuOpen,
   isDark,
 }: HistoryScanCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const pan = useRef(new Animated.Value(0)).current;
   const menuButtonRef = useRef<any>(null);
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 5;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const newX = Math.max(-130, Math.min(0, gestureState.dx));
-        pan.setValue(newX);
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -45) {
-          Animated.spring(pan, {
-            toValue: -130,
-            useNativeDriver: true,
-            tension: 80,
-            friction: 7,
-          }).start();
-        } else {
-          Animated.spring(pan, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 80,
-            friction: 7,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-  // Reset swipe state when scan is resolved / unresolved
-  useEffect(() => {
-    Animated.spring(pan, {
-      toValue: 0,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 8,
-    }).start();
-  }, [scan.is_resolved]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -128,165 +80,118 @@ function HistoryScanCard({
     }
   };
 
+  const triggerMenuOpen = () => {
+    menuButtonRef.current?.measureInWindow((x: number, y: number, width: number, height: number) => {
+      onMenuOpen(scan, { x: x - 120 + width, y: y + height });
+    });
+  };
+
   const { barColor, text: textStyle } = getSeverityColors(scan.severity);
   const displayImage = scan.cloud_image_url || scan.local_image_path || 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=400';
 
   return (
-    <View style={{ position: 'relative', marginBottom: 12 }}>
-      {/* Swipe actions background */}
-      <View 
-        style={{
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: 130,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          paddingRight: 4,
-        }}
-      >
-        {/* Resolve or Undo Button */}
-        <TouchableOpacity
-          onPress={() => {
-            Animated.spring(pan, { toValue: 0, useNativeDriver: true }).start();
-            if (scan.is_resolved === 1) {
-              onUnresolve();
-            } else {
-              onResolve();
-            }
-          }}
-          className={`w-[60px] h-[90%] items-center justify-center rounded-l-2xl ${scan.is_resolved === 1 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-        >
-          <Ionicons name={scan.is_resolved === 1 ? "arrow-undo-outline" : "checkmark-outline"} size={20} color="white" />
-          <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[10px] text-white mt-1 font-bold">
-            {scan.is_resolved === 1 ? 'Undo' : 'Resolve'}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Delete Button */}
-        <TouchableOpacity
-          onPress={() => {
-            Animated.spring(pan, { toValue: 0, useNativeDriver: true }).start();
-            onDelete();
-          }}
-          className="w-[60px] h-[90%] items-center justify-center bg-red-500 rounded-r-3xl"
-        >
-          <Ionicons name="trash-outline" size={20} color="white" />
-          <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[10px] text-white mt-1 font-bold">
-            Delete
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Main Card Animates Horizontally */}
-      <Animated.View 
-        {...panResponder.panHandlers}
-        style={{ 
-          transform: [{ translateX: pan }, { scale: scaleAnim }],
-          zIndex: 10,
-        }}
-      >
-        <TouchableOpacity
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          onPress={onPress}
-          activeOpacity={0.9}
-          className={`flex-row p-4 rounded-3xl items-center border ${
-            isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100 shadow-sm'
+    <Animated.View
+      style={{
+        width: '100%',
+        transform: [{ scale: scaleAnim }],
+        marginBottom: 12,
+      }}
+    >
+      <TouchableOpacity
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        onLongPress={triggerMenuOpen}
+        delayLongPress={250}
+        activeOpacity={0.9}
+        className={`flex-row p-4 rounded-3xl items-center border ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100 shadow-sm'
           }`}
-          style={{ opacity: scan.is_resolved === 1 ? 0.55 : 1 }}
-        >
-          {/* Image */}
-          <View className="w-16 h-16 bg-stone-250 rounded-2xl overflow-hidden mr-4">
-            <Image
-              source={{ uri: displayImage }}
-              className="w-full h-full object-cover"
+        style={{ opacity: scan.is_resolved === 1 ? 0.55 : 1 }}
+      >
+        {/* Image */}
+        <View className="w-16 h-16 bg-stone-250 rounded-2xl overflow-hidden mr-4">
+          <Image
+            source={{ uri: displayImage }}
+            className="w-full h-full object-cover"
+          />
+        </View>
+
+        {/* Text metadata */}
+        <View className="flex-1">
+          <View className="flex-row justify-between items-start">
+            <Text
+              style={{
+                fontFamily: 'Fredoka_700Bold',
+                textDecorationLine: scan.is_resolved === 1 ? 'line-through' : 'none'
+              }}
+              className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'} flex-1 mr-2`}
+              numberOfLines={1}
+            >
+              {scan.crop_name}
+            </Text>
+
+            {/* Icons & Menu Button */}
+            <View className="flex-row items-center" style={{ gap: 8 }}>
+              {scan.is_resolved === 1 && (
+                <View className="w-5 h-5 rounded-full bg-emerald-500 items-center justify-center">
+                  <Ionicons name="checkmark" size={12} color="white" />
+                </View>
+              )}
+              {scan.synced === 1 ? (
+                <Ionicons name="cloud-done-outline" size={16} color="#60a5fa" />
+              ) : (
+                <Ionicons name="cloud-offline-outline" size={16} color="#f59e0b" />
+              )}
+              <TouchableOpacity
+                ref={menuButtonRef}
+                onPress={triggerMenuOpen}
+                className="p-1"
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="ellipsis-vertical" size={16} color={isDark ? '#a8a29e' : '#78716c'} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View className="flex-row items-center justify-between mt-1">
+            <Text
+              style={{
+                fontFamily: 'Fredoka_400Regular',
+                textDecorationLine: scan.is_resolved === 1 ? 'line-through' : 'none'
+              }}
+              className={`text-xs ${isDark ? 'text-stone-400' : 'text-stone-600'} flex-1 mr-2`}
+              numberOfLines={1}
+            >
+              {scan.condition_name}
+            </Text>
+
+            {/* Health percent */}
+            <Text
+              style={{ fontFamily: 'Fredoka_700Bold' }}
+              className={`text-xs font-bold ${textStyle}`}
+            >
+              {scan.health_score}% Health
+            </Text>
+          </View>
+
+          {/* Health mini progress bar */}
+          <View className="mt-2.5 w-full bg-stone-100 dark:bg-stone-850 h-1 rounded-full overflow-hidden">
+            <View
+              style={{ width: `${scan.health_score}%` }}
+              className={`h-full rounded-full ${barColor}`}
             />
           </View>
 
-          {/* Text metadata */}
-          <View className="flex-1">
-            <View className="flex-row justify-between items-start">
-              <Text
-                style={{ 
-                  fontFamily: 'Fredoka_700Bold',
-                  textDecorationLine: scan.is_resolved === 1 ? 'line-through' : 'none'
-                }}
-                className={`text-sm font-bold ${isDark ? 'text-white' : 'text-stone-900'} flex-1 mr-2`}
-                numberOfLines={1}
-              >
-                {scan.crop_name}
-              </Text>
-
-              {/* Icons & Menu Button */}
-              <View className="flex-row items-center" style={{ gap: 8 }}>
-                {scan.is_resolved === 1 && (
-                  <View className="w-5 h-5 rounded-full bg-emerald-500 items-center justify-center">
-                    <Ionicons name="checkmark" size={12} color="white" />
-                  </View>
-                )}
-                {scan.synced === 1 ? (
-                  <Ionicons name="cloud-done-outline" size={16} color="#60a5fa" />
-                ) : (
-                  <Ionicons name="cloud-offline-outline" size={16} color="#f59e0b" />
-                )}
-                <TouchableOpacity
-                  ref={menuButtonRef}
-                  onPress={() => {
-                    menuButtonRef.current?.measureInWindow((x: number, y: number, width: number, height: number) => {
-                      onMenuOpen(scan, { x: x - 120 + width, y: y + height });
-                    });
-                  }}
-                  className="p-1"
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Ionicons name="ellipsis-vertical" size={16} color={isDark ? '#a8a29e' : '#78716c'} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View className="flex-row items-center justify-between mt-1">
-              <Text
-                style={{ 
-                  fontFamily: 'Fredoka_400Regular',
-                  textDecorationLine: scan.is_resolved === 1 ? 'line-through' : 'none'
-                }}
-                className={`text-xs ${isDark ? 'text-stone-400' : 'text-stone-600'} flex-1 mr-2`}
-                numberOfLines={1}
-              >
-                {scan.condition_name}
-              </Text>
-
-              {/* Health percent */}
-              <Text
-                style={{ fontFamily: 'Fredoka_700Bold' }}
-                className={`text-xs font-bold ${textStyle}`}
-              >
-                {scan.health_score}% Health
-              </Text>
-            </View>
-
-            {/* Health mini progress bar */}
-            <View className="mt-2.5 w-full bg-stone-100 dark:bg-stone-850 h-1 rounded-full overflow-hidden">
-              <View
-                style={{ width: `${scan.health_score}%` }}
-                className={`h-full rounded-full ${barColor}`}
-              />
-            </View>
-
-            {/* Date */}
-            <Text
-              style={{ fontFamily: 'Fredoka_400Regular' }}
-              className={`text-[9px] mt-2 ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
-            >
-              {formatDate(scan.created_at)}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+          {/* Date */}
+          <Text
+            style={{ fontFamily: 'Fredoka_400Regular' }}
+            className={`text-[9px] mt-2 ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
+          >
+            {formatDate(scan.created_at)}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -320,10 +225,12 @@ export default function HistoryScreen() {
   // Modals & Menu Actions
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [resolveModalVisible, setResolveModalVisible] = useState(false);
+  const [unresolveModalVisible, setUnresolveModalVisible] = useState(false);
   const [selectedScanForAction, setSelectedScanForAction] = useState<LocalScanRow | null>(null);
 
   const deleteModalAnim = useRef(new Animated.Value(0)).current;
   const resolveModalAnim = useRef(new Animated.Value(0)).current;
+  const unresolveModalAnim = useRef(new Animated.Value(0)).current;
 
   const [activeMenuScanId, setActiveMenuScanId] = useState<string | null>(null);
   const [menuLayout, setMenuLayout] = useState<{ x: number; y: number } | null>(null);
@@ -408,7 +315,7 @@ export default function HistoryScreen() {
   useEffect(() => {
     navigation.setOptions({
       tabBarStyle: {
-        display: deleteModalVisible || resolveModalVisible ? 'none' : 'flex',
+        display: deleteModalVisible || resolveModalVisible || unresolveModalVisible ? 'none' : 'flex',
       },
     });
     return () => {
@@ -416,7 +323,7 @@ export default function HistoryScreen() {
         tabBarStyle: undefined,
       });
     };
-  }, [deleteModalVisible, resolveModalVisible, navigation]);
+  }, [deleteModalVisible, resolveModalVisible, unresolveModalVisible, navigation]);
 
   const handleSyncNow = async () => {
     if (!user || isSyncing) return;
@@ -434,12 +341,14 @@ export default function HistoryScreen() {
   };
 
   // Modals trigger
+  // Modals trigger
   const showDeleteModal = (scan: LocalScanRow) => {
     setSelectedScanForAction(scan);
     setDeleteModalVisible(true);
-    Animated.timing(deleteModalAnim, {
+    Animated.spring(deleteModalAnim, {
       toValue: 1,
-      duration: 200,
+      tension: 100,
+      friction: 8,
       useNativeDriver: true,
     }).start();
   };
@@ -458,9 +367,10 @@ export default function HistoryScreen() {
   const showResolveModal = (scan: LocalScanRow) => {
     setSelectedScanForAction(scan);
     setResolveModalVisible(true);
-    Animated.timing(resolveModalAnim, {
+    Animated.spring(resolveModalAnim, {
       toValue: 1,
-      duration: 200,
+      tension: 100,
+      friction: 8,
       useNativeDriver: true,
     }).start();
   };
@@ -472,6 +382,28 @@ export default function HistoryScreen() {
       useNativeDriver: true,
     }).start(() => {
       setResolveModalVisible(false);
+      setSelectedScanForAction(null);
+    });
+  };
+
+  const showUnresolveModal = (scan: LocalScanRow) => {
+    setSelectedScanForAction(scan);
+    setUnresolveModalVisible(true);
+    Animated.spring(unresolveModalAnim, {
+      toValue: 1,
+      tension: 100,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const hideUnresolveModal = () => {
+    Animated.timing(unresolveModalAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setUnresolveModalVisible(false);
       setSelectedScanForAction(null);
     });
   };
@@ -535,6 +467,12 @@ export default function HistoryScreen() {
   });
   const resolveModalOpacity = resolveModalAnim;
 
+  const unresolveModalScale = unresolveModalAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.9, 1.0],
+  });
+  const unresolveModalOpacity = unresolveModalAnim;
+
   const handleMenuOpen = (scan: LocalScanRow, layout: { x: number; y: number }) => {
     setActiveMenuScanId(scan.id);
     setMenuLayout(layout);
@@ -564,9 +502,8 @@ export default function HistoryScreen() {
       {/* Search Input Bar */}
       <Animated.View
         style={{ opacity: searchAnim, transform: [{ translateY: getTranslateY(searchAnim) }] }}
-        className={`flex-row items-center px-4 py-2 rounded-2xl mb-4 border ${
-          isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200 shadow-sm'
-        }`}
+        className={`flex-row items-center px-4 py-2 rounded-2xl mb-4 border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200 shadow-sm'
+          }`}
       >
         <Ionicons name="search-outline" size={20} color="#78716c" />
         <TextInput
@@ -586,8 +523,8 @@ export default function HistoryScreen() {
 
       {/* Segmented Sliding Pill Filter Bar */}
       <Animated.View
-        style={{ 
-          opacity: statusFilterAnim, 
+        style={{
+          opacity: statusFilterAnim,
           transform: [{ translateY: getTranslateY(statusFilterAnim) }]
         }}
         className={`bg-stone-150 dark:bg-stone-900 rounded-[20px] h-10 p-1 relative items-center mb-4 flex-row`}
@@ -604,7 +541,7 @@ export default function HistoryScreen() {
             }}
           />
         )}
-        <View 
+        <View
           className="flex-row w-full h-full items-center z-10"
           onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
         >
@@ -645,11 +582,10 @@ export default function HistoryScreen() {
                 key={f.key}
                 onPress={() => setSelectedFilter(f.key as any)}
                 activeOpacity={0.8}
-                className={`px-4 py-2 rounded-full border ${
-                  isSelected
+                className={`px-4 py-2 rounded-full border ${isSelected
                     ? 'bg-emerald-600 border-emerald-600'
                     : isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'
-                }`}
+                  }`}
                 style={{ marginRight: 6 }}
               >
                 <Text
@@ -671,11 +607,10 @@ export default function HistoryScreen() {
             opacity: syncAnim,
             transform: [{ translateY: getTranslateY(syncAnim) }]
           }}
-          className={`border px-4 py-3 rounded-2xl flex-row items-center justify-between mb-5 ${
-            isDark
+          className={`border px-4 py-3 rounded-2xl flex-row items-center justify-between mb-5 ${isDark
               ? 'bg-amber-950/20 border-amber-900/30'
               : 'bg-amber-50 border-amber-200'
-          }`}
+            }`}
         >
           <View className="flex-row items-center flex-1">
             <Ionicons name="cloud-upload" size={18} color="#d97706" />
@@ -718,9 +653,6 @@ export default function HistoryScreen() {
               scan={scan}
               isDark={isDark}
               onPress={() => router.push({ pathname: '/scan-results', params: { id: scan.id } })}
-              onResolve={() => handleResolve(scan)}
-              onUnresolve={() => handleUnresolve(scan)}
-              onDelete={() => showDeleteModal(scan)}
               onMenuOpen={handleMenuOpen}
             />
           ))
@@ -793,15 +725,15 @@ export default function HistoryScreen() {
       {/* Floating 3-Dot Options Dropdown Menu Modal */}
       {activeMenuScanId && menuLayout && (
         <Modal transparent animationType="fade" visible={true}>
-          <TouchableOpacity 
-            activeOpacity={1} 
-            className="flex-1 bg-black/5" 
+          <TouchableOpacity
+            activeOpacity={1}
+            className="flex-1 bg-black/5"
             onPress={() => {
               setActiveMenuScanId(null);
               setMenuLayout(null);
             }}
           >
-            <View 
+            <View
               style={{
                 position: 'absolute',
                 top: menuLayout.y + 4,
@@ -820,13 +752,13 @@ export default function HistoryScreen() {
               }}
             >
               {/* Resolve / Undo Action */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 className="flex-row items-center px-3 py-2.5 rounded-xl active:bg-stone-100 dark:active:bg-stone-850"
                 onPress={() => {
                   const targetScan = scans.find(s => s.id === activeMenuScanId);
                   if (targetScan) {
                     if (targetScan.is_resolved === 1) {
-                      handleUnresolve(targetScan);
+                      showUnresolveModal(targetScan);
                     } else {
                       showResolveModal(targetScan);
                     }
@@ -835,10 +767,10 @@ export default function HistoryScreen() {
                   setMenuLayout(null);
                 }}
               >
-                <Ionicons 
-                  name={scans.find(s => s.id === activeMenuScanId)?.is_resolved === 1 ? "arrow-undo-outline" : "checkmark-circle-outline"} 
-                  size={16} 
-                  color="#10b981" 
+                <Ionicons
+                  name={scans.find(s => s.id === activeMenuScanId)?.is_resolved === 1 ? "arrow-undo-outline" : "checkmark-circle-outline"}
+                  size={16}
+                  color="#10b981"
                 />
                 <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-xs ml-2 text-stone-700 dark:text-stone-300">
                   {scans.find(s => s.id === activeMenuScanId)?.is_resolved === 1 ? 'Undo Resolve' : 'Resolve'}
@@ -846,7 +778,7 @@ export default function HistoryScreen() {
               </TouchableOpacity>
 
               {/* Delete Action */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 className="flex-row items-center px-3 py-2.5 rounded-xl active:bg-red-50 dark:active:bg-red-950/20"
                 onPress={() => {
                   const targetScan = scans.find(s => s.id === activeMenuScanId);
@@ -871,9 +803,9 @@ export default function HistoryScreen() {
       {resolveModalVisible && (
         <Modal transparent visible={true} animationType="none">
           <View style={{ flex: 1 }} className="justify-center items-center relative z-50">
-            <TouchableOpacity 
+            <TouchableOpacity
               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-              activeOpacity={1} 
+              activeOpacity={1}
               onPress={hideResolveModal}
               className="bg-black/60"
             />
@@ -892,10 +824,10 @@ export default function HistoryScreen() {
               </View>
 
               <Text style={{ fontFamily: 'Fredoka_700Bold' }} className={`text-[15px] font-bold text-center ${isDark ? 'text-white' : 'text-stone-900'}`}>
-                Mark as Resolved?
+                Diagnosis Cured!
               </Text>
               <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-500 dark:text-stone-400 text-xs text-center mt-2 px-1 leading-5">
-                This diagnosis will be marked as treated. You can still view it in Resolved history.
+                Marking this scan as resolved archives the record and updates your dashboard stats. Keep up the great plant care!
               </Text>
 
               <View className="flex-row w-full space-x-3 mt-6">
@@ -918,7 +850,67 @@ export default function HistoryScreen() {
                   className="flex-1 py-3 bg-emerald-600 rounded-2xl items-center"
                 >
                   <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white text-xs font-bold">
-                    Resolve
+                    Mark as Cured
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Reactivate (Undo Resolve) Confirmation Modal */}
+      {unresolveModalVisible && (
+        <Modal transparent visible={true} animationType="none">
+          <View style={{ flex: 1 }} className="justify-center items-center relative z-50">
+            <TouchableOpacity
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              activeOpacity={1}
+              onPress={hideUnresolveModal}
+              className="bg-black/60"
+            />
+            <Animated.View
+              style={{
+                opacity: unresolveModalOpacity,
+                transform: [{ scale: unresolveModalScale }],
+              }}
+              className={`w-full max-w-[280px] rounded-[32px] p-6 items-center border shadow-2xl ${isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-150'}`}
+            >
+              <View className="w-28 h-28 items-center justify-center mb-4">
+                <Image
+                  source={require('../../../assets/images/mascot-concerned.png')}
+                  style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
+                />
+              </View>
+
+              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className={`text-[15px] font-bold text-center ${isDark ? 'text-white' : 'text-stone-900'}`}>
+                Reactivate Diagnosis?
+              </Text>
+              <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-500 dark:text-stone-400 text-xs text-center mt-2 px-1 leading-5">
+                This will move the diagnosis back to your active list. Your Home dashboard and crop severity indicators will update accordingly.
+              </Text>
+
+              <View className="flex-row w-full space-x-3 mt-6">
+                <TouchableOpacity
+                  onPress={hideUnresolveModal}
+                  className={`flex-1 py-3 rounded-2xl items-center border ${isDark ? 'bg-stone-850 border-stone-800' : 'bg-stone-100 border-stone-200'}`}
+                  style={{ marginRight: 8 }}
+                >
+                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className={`text-xs font-bold ${isDark ? 'text-stone-300' : 'text-stone-600'}`}>
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (selectedScanForAction) {
+                      handleUnresolve(selectedScanForAction);
+                    }
+                    hideUnresolveModal();
+                  }}
+                  className="flex-1 py-3 bg-amber-600 rounded-2xl items-center"
+                >
+                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white text-xs font-bold">
+                    Reactivate
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -931,9 +923,9 @@ export default function HistoryScreen() {
       {deleteModalVisible && (
         <Modal transparent visible={true} animationType="none">
           <View style={{ flex: 1 }} className="justify-center items-center relative z-50">
-            <TouchableOpacity 
+            <TouchableOpacity
               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-              activeOpacity={1} 
+              activeOpacity={1}
               onPress={hideDeleteModal}
               className="bg-black/60"
             />
