@@ -4,7 +4,7 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of July 6, 2026)
+## 📅 Project Context (As of July 16, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
@@ -12,7 +12,7 @@ This document captures the current state, architecture, and files of the project
 * **SDK Version:** **Expo SDK 54** (configured for compatibility with physical Expo Go/Dev Client testing)
 * **Platform Support:** iOS, Android, and Web
 * **Primary Language:** Taglish/English UI
-* **Design Guidelines:** Solid green shades (Mint, Emerald, Forest) with crisp elevations, smooth concentric curves, and borders. **No glassmorphism.**
+* **Design Guidelines:** Solid green shades (Mint, Emerald, Forest) with crisp elevations, smooth concentric curves, and borders. **No glassmorphism.** Only Light Theme is active.
 * **Custom Floating Bottom Navigation Bar**:
   * **Floating capsule bar**: absolutely positioned white bar with rounded corners and shadow.
   * **Shared Sliding Capsule**: A single active background capsule (`width: 66, height: 56`) that smoothly slides horizontally to the active tab using spring physics (`Animated.spring` on `translateX`).
@@ -20,7 +20,7 @@ This document captures the current state, architecture, and files of the project
   * **Elevated Scan Button**: Circular button floating above the center of the bar. It spring-scales to `1.12` and displays a looping, breathing scanner glow ring (`pulseRing`, `scale: 1.0` -> `1.45`, fading `0.5` -> `0.0` over `1800ms`) when selected.
   * **Smooth Icon & Label Transitions**: Active tabs animate the icon to scale up (`1.0` -> `1.15`) and shift upwards (`translateY: 0` -> `-5`) using spring physics, while the label is always-mounted and slides and fades in (`translateY` `8` -> `0`, opacity `0` -> `1`).
   * **Driver Conflict Isolation**: Structured as nested views (`slidingPillContainer` + `slidingPillInner`) to isolate native GPU-driven animations from JS-driven animations, preventing React Native driver conflicts.
-  * **Z-Index Overlay Resolution**: Automatically unmounts (`returns null`) when screen options specify `tabBarStyle.display = 'none'` (triggered dynamically when delete modals or the sidebar drawer are active).
+  * **Z-Index Overlay Resolution**: Automatically unmounts (`returns null`) when screen options specify `tabBarStyle.display = 'none'` (triggered dynamically when delete modals, resolve modals, or the sidebar drawer are active).
   * **Mount Entrance Animation**: Applies a parallel fade-in (opacity `0` ➔ `1`) and slide-up (translateY `25` ➔ `0`) transition over `250ms` when mounting back onto the viewport.
 * **Profile Header Background**: Premium linear gradient background (`['#047857', '#064e3b']`) applied using `expo-linear-gradient` to the header of the Profile screen.
 * **Scan Results Health Gauge**: Circular progress indicator with a thicker bold `strokeWidth={10}` on the Scan Results screen to highlight the crop's health score.
@@ -65,17 +65,18 @@ This document captures the current state, architecture, and files of the project
 The application implements **Option C: Bidirectional Sync (SQLite-First)**. The local SQLite database serves as the primary data store, ensuring instant rendering and offline usability, with background synchronization to Supabase.
 
 ### Local SQLite Database Schema
-The local database (`bugsok_ai.db`) has been normalized down to **three primary tables** (merging standard and general chat tables):
-1. **`scans`**: Stores crop diagnoses locally. Unsynced scans store a `local_image_path`. Synced scans contain the Supabase bucket `cloud_image_url`. Includes a `synced` flag (0 = Unsynced, 1 = Synced).
-2. **`chat_sessions`**: Groups message logs for both scan follow-up chats and general chats (where `scan_id` is `null`). Contains an `is_pinned` column for pinned sessions.
+The local database (`bugsok_ai.db`) has been normalized down to **three primary tables**:
+1. **`scans`**: Stores crop diagnoses locally. Unsynced scans store a `local_image_path`. Synced scans contain the Supabase bucket `cloud_image_url`. Includes a `synced` flag (0 = Unsynced, 1 = Synced), and an `is_resolved` flag (0 = Active, 1 = Resolved).
+2. **`chat_sessions`**: Groups message logs for both scan follow-up chats and general chats (where `scan_id` is `null`). Contains an `is_pinned` column for pinned sessions. Has a foreign key references `scans(id) ON DELETE CASCADE`.
 3. **`chat_messages`**: Stores individual message bubbles for all chat sessions. Supports crop profile attachments via a nullable `attached_scan_id` column.
 
+* **Self-Healing SQLite Schema**: SQLite database initialization in `scan.service.ts` queries table info and dynamically executes columns update DDL (`ALTER TABLE scans ADD COLUMN is_resolved INTEGER DEFAULT 0`) if missing.
+* **Foreign Key Cascades**: SQLite database schema handles cascade deletions. Deleting a crop scan automatically clears out all associated `chat_sessions` and `chat_messages` locally.
 * **Tagalog Database Keys**: Crops are saved in the database using their Tagalog keys (e.g. `Talong`, `Kamatis`, `Sili`, `Ampalaya`) to match the localized content rules.
 * **Auto-Resume Chat Sessions**: When entering the chat screen from a scan results page, the app automatically fetches and resumes the latest active chat session for that scan instead of starting a new one.
 * **Pure JavaScript UUIDs**: Replaced `expo-crypto` dynamic loading with a pure JavaScript RFC4122-compliant UUID generator to prevent Metro bundler resolution failures on Android devices.
 * **DevTools Network Hook**: Added a check in `src/app/_layout.tsx` to hook `global.XMLHttpRequest` to `originalXMLHttpRequest` in `__DEV__` mode to allow Chrome DevTools (`chrome://inspect`) to capture network requests when debugging.
 * **Optimized Local/Cloud Indexing**: Composite indexes are deployed on both local SQLite (`scans(user_id, created_at DESC)`, `chat_messages(session_id, created_at ASC)`) and Supabase tables to speed up scan history and chat loading times.
-* **Self-Healing SQLite Schema**: SQLite initialization automatically detects schema changes (e.g. general chat table presence or missing `is_pinned` columns) and performs clean migrations dynamically.
 
 ---
 
@@ -108,6 +109,31 @@ The AI proxy backend runs on **Hugging Face Spaces** (`https://ianpatatas-bugsok
 
 ---
 
+## 💬 History Screen, Cascade Deletes & Resolved Actions
+
+We implemented resolved states, cascade deletions, and clean custom action modals:
+
+* **Symmetrical Status Segmented Control**:
+  * Shows a dual-layered filter row.
+  * **STATUS** Section: Styled as a premium white segmented bar (`Active | Resolved | All`) with a grey border and a subtle shadow. 
+  * Each status segment contains a leading icon next to its label: **Active** (`pulse-outline`), **Resolved** (`checkmark-circle-outline`), and **All** (`albums-outline`) rendered in loaded `Fredoka_700Bold` typography.
+  * **TYPE** Section: Scrollable chips filtering by condition state (`All`, `Healthy`, `Infected`, `Unsynced`).
+  * Calculates dimensions using parent-aligned measurements to ensure the sliding green background pill sits symmetrically centered under all selected states.
+* **Long-Press Card Actions**:
+  - Replaced the swipe-to-reveal gesture on cards with a cleaner long-press gesture (`250ms`).
+  - Long-pressing a card or tapping the 3-dot context icon measures the item coordinates to display a clean dropdown context menu modal anchored at the card's top-right.
+* **Cascade Delete Operation**:
+  - Tapping **"Delete Scan"** triggers a cascade delete: removes local database rows in `scans` (which cascades to wipe `chat_sessions` and `chat_messages` locally), invokes Supabase DB record deletions, and deletes the image asset directly in the Supabase `plant-images` Storage bucket.
+* **Cross-Screen Sync Rules**:
+  - Mark-as-resolved scans update metrics and recent lists on the Home screen Dashboard instantly.
+  - Resolved scans are filtered out of the attachments picker sheet in General Chat.
+* **Tactile Spring-Physics Modals**:
+  - Modal entrances translate and bounce using spring dynamics (`Animated.spring` scale `0.9` ➔ `1.04` ➔ `1.0` with overshoot settling).
+  - Modal exits unmount snappily using timing transitions (`Animated.timing` over `150ms`) to avoid lag or delays.
+  - Modals use emotional mascot assets: `mascot-happy.png` for Resolve ("Diagnosis Cured!"), `mascot-concerned.png` for Reactivate ("Reactivate Diagnosis?"), and `mascot-transparent-sad.png` for Delete ("Delete Scan?").
+
+---
+
 ## 💬 Follow-up Chat System & Assistant UX
 
 The follow-up chat is fully localized and styled to support interactive, structured diagnostic consultations:
@@ -115,11 +141,6 @@ The follow-up chat is fully localized and styled to support interactive, structu
 * **Header Redesign (Option A Layout)**: Left-aligned layout consisting of `[Back Button] [Mascot Avatar] [Bugsok AI Title, Condition Status Badge, and Follow Up Subtitle] [Green Trash Button]`. The subtitle "Follow Up" is aligned directly below the status badge, and the trash button uses emerald green (`#10b981`).
 * **Auto-Growing Message Input Box**: Standard input converted to a multiline text area (`minHeight: 38`, `maxHeight: 120`) styled as a rounded rectangle (`rounded-[22px]`). Layout aligns wrapper items to `items-end` to keep the Send button aligned at the bottom-right as the input area expands vertically.
 * **Custom Delete Confirmation Modal**: Custom overlay replacing standard OS alert notifications. Features a semi-transparent black backdrop (`bg-black/60`) and a centered card carrying the transparent `mascot-transparent-sad.png` scaled up to `130x130`, with a warning details body and Cancellation/Clear button actions.
-* **Smooth Overlay Transitions**: 
-  - Timing-based 180-degree rotation transition on the chevron icon in the AI Mode Switcher.
-  - Dropdown options menu slides down and fades in over 200ms when opened, and transitions back up and fades out over 150ms when closed before unmounting.
-  - Delete modal backdrop fades in, and the card container smoothly scales up from `0.9` to `1.0` using timing-based quadratic ease-out transitions (`Easing.out(Easing.quad)`) over 200ms to prevent spring bounces.
-* **High-Quality 512x512 PNG Mascot Logo**: Resized the original square mascot icon to a high-quality `512x512` PNG at `assets/images/mascot-logo.png` and updated all config references in `app.json` (`icon`, `ios.icon`, `android.adaptiveIcon.foregroundImage`, `web.favicon`, splash screen image) to prevent launcher scaling and compression artifacts.
 * **SQLite Context Lookup**: Ensures chat sessions loaded from history pull correct metadata (e.g. crop name `Sili`, condition `Downy Mildew`) directly from SQLite records (`fetchScanById`), resolving default fallback errors.
 * **Strict English-Only Prompting**: Backend Go proxy chatbot instructions force the model to output purely English responses, eliminating Taglish mixtures or random dialect switches.
 * **Advanced Text Styling Parser**: Client-side parser in `chat.tsx` processes raw markdown markers and transforms them:
@@ -139,7 +160,7 @@ The follow-up chat is fully localized and styled to support interactive, structu
 
 ## 💬 General Chat Tab, Sidebar & Attachment System
 
-Implemented a fully-featured dedicated general chat screen with history sessions in the main navigation tab layout:
+Implemented a fully-featured dedicated general chat screen in the main navigation tab layout:
 
 * **Interactive Header Layout**: Features the AI model switcher (`Flash` / `Deep`) next to the trash button in the top-right header actions row. Tapping the switcher opens the descriptive options dropdown.
 * **Delete Current Session Refinement**:
@@ -151,7 +172,7 @@ Implemented a fully-featured dedicated general chat screen with history sessions
   - Tapping the burger menu opens a smooth left-sliding sidebar containing a `+ New Chat` button and a list of previous chat sessions.
   - Tapping `+ New Chat` automatically switches to an existing empty session if one exists to prevent duplicate blank sessions.
   - Includes a 3-dot (`⋯`) context menu for each session in the sidebar to **Pin/Unpin** or **Delete** the session. If the active session is deleted from this menu, the app automatically creates and navigates to a brand new session.
-* **Gemini-Style Minimalist Sidebar Redesign**:
+* **Gemini-Style Sidebar Redesign**:
   * All borders and card pills are removed from history list items. Active sessions are highlighted with a soft, borderless, translucent emerald background highlight (`bg-emerald-50/40`).
   * Each chat list item contains a left-aligned grey `chatbubble-outline` icon.
   * Pinned sessions display a custom, offline-safe inline SVG FontAwesome `thumb-tack` icon (viewBox `0 0 640 640`, size `16`) on the right side next to the options button.
@@ -159,7 +180,6 @@ Implemented a fully-featured dedicated general chat screen with history sessions
     * A large circular user avatar (`w-14 h-14` / `56x56px`).
     * User's full name (`profile?.full_name || 'Grower'`) rendered in `text-md`.
     * A settings cog icon (size `20`) that navigates the user to the Profile tab.
-    * The dynamic `"PRO"` badge has been fully removed.
 * **Option A Attachment System**:
   * Added clip `📎` button in the input dock which slides up a bottom sheet modal displaying the user's past scans history (rendered in the same high-fidelity layout as the History screen, showing image, crop name, condition, severity bar, and date).
   * Selecting a scan locks it as a persistent context chip above the input box (detachable via `✕` action).
@@ -194,7 +214,6 @@ Implemented a fully-featured dedicated general chat screen with history sessions
 
 ```
 Cloud-Based Plant Health AI Assistant - Mobile Application/
-├── assets/
 ├── assets/
 │   ├── data/
 │   │   └── vegetables_db.json       # Crop database context (~143KB)
@@ -246,6 +265,7 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   └── theme.ts                 # Theme layout values, colors, spacing definitions
 │   └── hooks/
 │       └── use-theme.ts             # Theme color mapping hook
+│   └── scripts/                     # Helper script utilities
 ├── babel.config.js                  # Babel presets for Expo and NativeWind v4
 ├── metro.config.js                  # Metro bundler compilation wrapper for NativeWind
 ├── nativewind-env.d.ts              # TypeScript environment typings for NativeWind className props
@@ -257,13 +277,11 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 
 ## 🚀 Current Project Status & Commands
 
-1. **AI Proxy Re-deployment**: Deployed and fully operational on Hugging Face Spaces.
-2. **EAS Development Build**: Configured in `eas.json` (development and preview profiles corrected to use the Hugging Face Proxy URL).
-3. **Compilation Status**: Verified with `npx tsc --noEmit` which completes with **0 errors**.
-4. **Dev Server Command**:
+1. **Compilation Status**: Verified with `npx tsc --noEmit` which completes with **0 errors**.
+2. **Dev Server Command**:
    ```bash
    npx expo start
    ```
-5. **Platform Previews**:
+3. **Platform Previews**:
    * **Mobile Device (Expo Dev Client)**: Build the development client using EAS, install the APK on the device, and connect to the Metro server.
    * **Hermes/Network Debugger**: Chrome DevTools (`chrome://inspect`) target `localhost:8081` connects to the running app. The `XMLHttpRequest` override allows inspection of network traffic in the Chrome DevTools network panel.
