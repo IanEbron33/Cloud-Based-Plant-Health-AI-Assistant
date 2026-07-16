@@ -97,6 +97,15 @@ export const initLocalDatabase = (): void => {
         }
       }
 
+      if (tableNames.includes('scans')) {
+        const info = db.getAllSync("PRAGMA table_info(scans)") as { name: string }[];
+        const hasIsResolved = info.some((col) => col.name === 'is_resolved');
+        if (!hasIsResolved) {
+          console.log('[Scan Service] Adding is_resolved column to scans table...');
+          db.execSync('ALTER TABLE scans ADD COLUMN is_resolved INTEGER DEFAULT 0;');
+        }
+      }
+
       if (hasGeneralSessions || needsMigration) {
         console.log('[Scan Service] Performing chat tables normalization migration...');
         db.execSync('DROP TABLE IF EXISTS general_chat_messages;');
@@ -123,6 +132,7 @@ export const initLocalDatabase = (): void => {
           cloud_image_url TEXT,
           diagnosis_text TEXT,
           synced INTEGER DEFAULT 0,
+          is_resolved INTEGER DEFAULT 0,
           created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -225,6 +235,7 @@ export interface LocalScanRow {
   cloud_image_url: string | null;
   diagnosis_text: string;
   synced: number;
+  is_resolved: number;
   created_at: string;
 }
 
@@ -272,8 +283,8 @@ export const saveScan = async (
 
   // 1. Write scan locally as unsynced
   db.runSync(
-    `INSERT INTO scans (id, user_id, crop_name, condition_name, severity, health_score, confidence_score, local_image_path, cloud_image_url, diagnosis_text, synced, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO scans (id, user_id, crop_name, condition_name, severity, health_score, confidence_score, local_image_path, cloud_image_url, diagnosis_text, synced, is_resolved, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
     [scanId, userId, cropName, conditionName, severity, healthScore, confidenceScore, localImagePath, null, diagnosisText, 0, createdAt]
   );
 
@@ -289,6 +300,7 @@ export const saveScan = async (
     cloud_image_url: null,
     diagnosis_text: diagnosisText,
     synced: 0,
+    is_resolved: 0,
     created_at: createdAt
   };
 
@@ -330,6 +342,7 @@ const syncSingleScan = async (scanId: string, userId: string): Promise<boolean> 
     confidence_score: row.confidence_score,
     cloud_image_url: cloudUrl,
     diagnosis_text: row.diagnosis_text,
+    is_resolved: row.is_resolved === 1,
     synced: true,
     created_at: row.created_at,
   });
@@ -391,7 +404,7 @@ export const fetchScanStats = (userId: string) => {
         COUNT(*) as total,
         SUM(CASE WHEN condition_name NOT LIKE '%Healthy%' AND condition_name IS NOT NULL THEN 1 ELSE 0 END) as infected,
         SUM(CASE WHEN synced = 1 THEN 1 ELSE 0 END) as synced
-       FROM scans WHERE user_id = ?`,
+       FROM scans WHERE user_id = ? AND is_resolved = 0`,
       [userId]
     ) as { total: number; infected: number; synced: number } | null;
     return {
@@ -576,10 +589,10 @@ export const syncData = async (userId: string): Promise<boolean> => {
     if (!scansError && cloudScans) {
       for (const cs of cloudScans) {
         db.runSync(
-          `INSERT INTO scans (id, user_id, crop_name, condition_name, severity, health_score, confidence_score, local_image_path, cloud_image_url, diagnosis_text, synced, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
-           ON CONFLICT(id) DO UPDATE SET cloud_image_url=excluded.cloud_image_url, synced=1`,
-          [cs.id, cs.user_id, cs.crop_name, cs.condition_name, cs.severity, cs.health_score, cs.confidence_score, null, cs.cloud_image_url, cs.diagnosis_text, cs.created_at]
+          `INSERT INTO scans (id, user_id, crop_name, condition_name, severity, health_score, confidence_score, local_image_path, cloud_image_url, diagnosis_text, synced, is_resolved, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET cloud_image_url=excluded.cloud_image_url, synced=1, is_resolved=excluded.is_resolved`,
+          [cs.id, cs.user_id, cs.crop_name, cs.condition_name, cs.severity, cs.health_score, cs.confidence_score, null, cs.cloud_image_url, cs.diagnosis_text, cs.is_resolved ? 1 : 0, cs.created_at]
         );
       }
     }
@@ -884,5 +897,106 @@ export const clearGeneralChat = async (userId: string): Promise<void> => {
   } catch (err) {
     console.error('[Scan Service] clearGeneralChat error:', err);
     throw err;
+  }
+};
+
+/**
+ * Mark a scan as resolved (soft-archived)
+ */
+export const resolveScan = async (scanId: string): Promise<boolean> => {
+  try {
+    const db = getDB();
+    db.runSync('UPDATE scans SET is_resolved = 1, synced = 0 WHERE id = ?', [scanId]);
+    
+    // Background cloud sync
+    const row = db.getFirstSync('SELECT * FROM scans WHERE id = ?', [scanId]) as LocalScanRow | null;
+    if (row && row.synced === 1) {
+      supabase.from('scans').update({
+        is_resolved: true,
+        synced: true
+      }).eq('id', scanId).then(({ error }) => {
+        if (!error) {
+          db.runSync('UPDATE scans SET synced = 1 WHERE id = ?', [scanId]);
+        }
+      });
+    } else if (row) {
+      syncSingleScan(scanId, row.user_id).catch(() => {});
+    }
+    return true;
+  } catch (err) {
+    console.error('[Scan Service] resolveScan error:', err);
+    return false;
+  }
+};
+
+/**
+ * Mark a scan as unresolved (active)
+ */
+export const unresolveScan = async (scanId: string): Promise<boolean> => {
+  try {
+    const db = getDB();
+    db.runSync('UPDATE scans SET is_resolved = 0, synced = 0 WHERE id = ?', [scanId]);
+    
+    // Background cloud sync
+    const row = db.getFirstSync('SELECT * FROM scans WHERE id = ?', [scanId]) as LocalScanRow | null;
+    if (row && row.synced === 1) {
+      supabase.from('scans').update({
+        is_resolved: false,
+        synced: true
+      }).eq('id', scanId).then(({ error }) => {
+        if (!error) {
+          db.runSync('UPDATE scans SET synced = 1 WHERE id = ?', [scanId]);
+        }
+      });
+    } else if (row) {
+      syncSingleScan(scanId, row.user_id).catch(() => {});
+    }
+    return true;
+  } catch (err) {
+    console.error('[Scan Service] unresolveScan error:', err);
+    return false;
+  }
+};
+
+/**
+ * Permanently delete a scan and cascade-delete all related chats from SQLite and Supabase
+ */
+export const deleteScan = async (scanId: string, userId: string): Promise<boolean> => {
+  try {
+    const db = getDB();
+    
+    // Get row to find cloud image URL for deleting from storage
+    const row = db.getFirstSync('SELECT * FROM scans WHERE id = ? AND user_id = ?', [scanId, userId]) as LocalScanRow | null;
+    if (!row) return false;
+
+    // 1. Delete locally from SQLite (foreign keys cascade to chat_sessions & chat_messages)
+    db.runSync('DELETE FROM scans WHERE id = ? AND user_id = ?', [scanId, userId]);
+
+    // 2. Delete from Supabase Database
+    supabase.from('scans').delete().eq('id', scanId).eq('user_id', userId).then(({ error }) => {
+      if (error) {
+        console.warn('[Scan Service] Supabase delete scan database error:', error.message);
+      }
+    });
+
+    // 3. Delete from Supabase Storage bucket if there's a cloud image URL
+    if (row.cloud_image_url) {
+      const parts = row.cloud_image_url.split('/plant-images/');
+      if (parts.length > 1) {
+        const filePath = parts[1];
+        supabase.storage.from('plant-images').remove([filePath]).then(({ error }) => {
+          if (error) {
+            console.warn('[Scan Service] Supabase storage delete error:', error.message);
+          } else {
+            console.log('[Scan Service] Supabase storage deleted image:', filePath);
+          }
+        });
+      }
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[Scan Service] deleteScan error:', err);
+    return false;
   }
 };

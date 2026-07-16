@@ -408,7 +408,8 @@ export default function ChatScreen() {
   const loadScanHistoryData = () => {
     if (!user) return;
     const scans = fetchUserScans(user.id);
-    setScanHistory(scans);
+    const activeScans = scans.filter((s) => s.is_resolved !== 1);
+    setScanHistory(activeScans);
   };
 
   useEffect(() => {

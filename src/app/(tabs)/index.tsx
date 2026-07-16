@@ -163,7 +163,8 @@ export default function HomeScreen() {
   // Load data from local SQLite DB
   const loadDatabaseData = () => {
     if (!user) return;
-    const scans = fetchUserScans(user.id);
+    const allScans = fetchUserScans(user.id);
+    const scans = allScans.filter(s => s.is_resolved !== 1);
     setRecentScans(scans.slice(0, 3));
     const counts = fetchScanStats(user.id);
     setStats(counts);
