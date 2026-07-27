@@ -253,6 +253,13 @@ export default function HomeScreen() {
   const timeOfDayGreeting = getTimeOfDayGreeting();
 
   // State-based categorized greeting pools (4 items each)
+  const welcomeGreetings = [
+    "Welcome to Bugsok AI! Take your first crop scan to start monitoring plant health.",
+    "Ready to check your plants? Tap the Scan button below to analyze a crop leaf.",
+    "Hello grower! I'm Bugsok, your AI plant helper. Scan a leaf anytime to get started!",
+    "Welcome aboard! Upload or take a photo to perform your first plant diagnostic."
+  ];
+
   const healthyGreetings = [
     "All your plants are looking healthy! Keep up the good work.",
     "Good news! 0 infected plants found. Let's keep our garden thriving!",
@@ -274,9 +281,11 @@ export default function HomeScreen() {
     "Bugsok is worried! Some plants have severe symptoms. Let's treat them before they spread."
   ];
 
-  // Select active pool based on highestSeverity
+  // Select active pool based on scan stats and highestSeverity
   let greetingPool = healthyGreetings;
-  if (highestSeverity === 'High') {
+  if (stats.total === 0) {
+    greetingPool = welcomeGreetings;
+  } else if (highestSeverity === 'High') {
     greetingPool = criticalGreetings;
   } else if (highestSeverity === 'Moderate' || highestSeverity === 'Low') {
     greetingPool = warningGreetings;
@@ -284,9 +293,11 @@ export default function HomeScreen() {
 
   const mascotSpeechBubbleText = greetingPool[sessionGreetingIndex] || greetingPool[0];
 
-  // Select mascot image based on highestSeverity (Option C placeholder mapping)
+  // Select mascot image based on stats and highestSeverity
   let mascotSource;
-  if (highestSeverity === 'High') {
+  if (stats.total === 0) {
+    mascotSource = require('../../../assets/images/mascot-happy.png');
+  } else if (highestSeverity === 'High') {
     mascotSource = require('../../../assets/images/mascot-worried.png');
   } else if (highestSeverity === 'Moderate' || highestSeverity === 'Low') {
     mascotSource = require('../../../assets/images/mascot-concerned.png');

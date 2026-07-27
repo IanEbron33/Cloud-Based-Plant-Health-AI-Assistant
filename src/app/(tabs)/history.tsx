@@ -209,18 +209,45 @@ export default function HistoryScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'active' | 'resolved' | 'all'>('active');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'healthy' | 'sick' | 'unsynced'>('all');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'lowest_health' | 'highest_health'>('newest');
+
+  // Funnel Filter Modal state
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [tempStatusFilter, setTempStatusFilter] = useState<'active' | 'resolved' | 'all'>('active');
+  const [tempSelectedFilter, setTempSelectedFilter] = useState<'all' | 'healthy' | 'sick' | 'unsynced'>('all');
+  const [tempSortOrder, setTempSortOrder] = useState<'newest' | 'oldest' | 'lowest_health' | 'highest_health'>('newest');
+
+  const hasActiveFilters = statusFilter !== 'active' || selectedFilter !== 'all' || sortOrder !== 'newest';
+
+  const resetFilters = () => {
+    setStatusFilter('active');
+    setSelectedFilter('all');
+    setSortOrder('newest');
+  };
+
+  const getActiveFilterSummary = () => {
+    const parts = [];
+    if (statusFilter !== 'active') parts.push(statusFilter === 'resolved' ? 'Resolved' : 'All Statuses');
+    if (selectedFilter !== 'all') {
+      const labels: Record<string, string> = { healthy: 'Healthy', sick: 'Infected', unsynced: 'Unsynced' };
+      parts.push(labels[selectedFilter] || selectedFilter);
+    }
+    if (sortOrder !== 'newest') {
+      const sortLabels: Record<string, string> = {
+        oldest: 'Oldest First',
+        lowest_health: 'Lowest Health %',
+        highest_health: 'Highest Health %',
+      };
+      parts.push(sortLabels[sortOrder] || sortOrder);
+    }
+    return parts.length > 0 ? parts.join(' • ') : 'Active';
+  };
 
   // Animated values for entrance animations
   const headerAnim = useRef(new Animated.Value(0)).current;
   const searchAnim = useRef(new Animated.Value(0)).current;
-  const statusFilterAnim = useRef(new Animated.Value(0)).current;
-  const chipsAnim = useRef(new Animated.Value(0)).current;
   const syncAnim = useRef(new Animated.Value(0)).current;
   const listOpacity = useRef(new Animated.Value(0)).current;
-
-  // Sliding Pill Animation
-  const [containerWidth, setContainerWidth] = useState(0);
-  const slidingAnim = useRef(new Animated.Value(0)).current;
 
   // Modals & Menu Actions
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -264,16 +291,6 @@ export default function HistoryScreen() {
         duration: 400,
         useNativeDriver: true,
       }),
-      Animated.timing(statusFilterAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      Animated.timing(chipsAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
       Animated.timing(syncAnim, {
         toValue: 1,
         duration: 400,
@@ -295,27 +312,13 @@ export default function HistoryScreen() {
       duration: 250,
       useNativeDriver: true,
     }).start();
-  }, [selectedFilter, statusFilter, searchQuery]);
-
-  // sliding pill target calculation
-  useEffect(() => {
-    let toValue = 0;
-    if (statusFilter === 'resolved') toValue = 1;
-    else if (statusFilter === 'all') toValue = 2;
-
-    Animated.spring(slidingAnim, {
-      toValue,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 8,
-    }).start();
-  }, [statusFilter]);
+  }, [selectedFilter, statusFilter, sortOrder, searchQuery]);
 
   // Hide bottom tab bar dynamically when modal is open
   useEffect(() => {
     navigation.setOptions({
       tabBarStyle: {
-        display: deleteModalVisible || resolveModalVisible || unresolveModalVisible ? 'none' : 'flex',
+        display: deleteModalVisible || resolveModalVisible || unresolveModalVisible || filterModalVisible ? 'none' : 'flex',
       },
     });
     return () => {
@@ -323,7 +326,7 @@ export default function HistoryScreen() {
         tabBarStyle: undefined,
       });
     };
-  }, [deleteModalVisible, resolveModalVisible, unresolveModalVisible, navigation]);
+  }, [deleteModalVisible, resolveModalVisible, unresolveModalVisible, filterModalVisible, navigation]);
 
   const handleSyncNow = async () => {
     if (!user || isSyncing) return;
@@ -425,42 +428,40 @@ export default function HistoryScreen() {
     }
   };
 
-  // Filter and Search logic
-  const filteredScans = scans.filter((scan) => {
-    // 1. Status Filter (Active / Resolved / All)
-    if (statusFilter === 'active' && scan.is_resolved === 1) return false;
-    if (statusFilter === 'resolved' && scan.is_resolved !== 1) return false;
+  // Filter, Search, and Sort logic
+  const filteredScans = scans
+    .filter((scan) => {
+      // 1. Status Filter (Active / Resolved / All)
+      if (statusFilter === 'active' && scan.is_resolved === 1) return false;
+      if (statusFilter === 'resolved' && scan.is_resolved !== 1) return false;
 
-    // 2. Search query
-    const matchesSearch =
-      scan.crop_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      scan.condition_name.toLowerCase().includes(searchQuery.toLowerCase());
+      // 2. Search query
+      const matchesSearch =
+        scan.crop_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        scan.condition_name.toLowerCase().includes(searchQuery.toLowerCase());
 
-    if (!matchesSearch) return false;
+      if (!matchesSearch) return false;
 
-    // 3. Condition Type Chips
-    const isHealthy = scan.severity === 'None' || scan.condition_name.toLowerCase().includes('healthy');
+      // 3. Condition Type Chips
+      const isHealthy = scan.severity === 'None' || scan.condition_name.toLowerCase().includes('healthy');
 
-    if (selectedFilter === 'healthy') return isHealthy;
-    if (selectedFilter === 'sick') return !isHealthy;
-    if (selectedFilter === 'unsynced') return scan.synced === 0;
-    return true;
-  });
-
-  // sliding pill dimensions
-  const pillPadding = 4;
-  const borderOffset = 1;
-  const innerWidth = containerWidth ? containerWidth - (pillPadding * 2) - (borderOffset * 2) : 0;
-  const pillWidth = innerWidth / 3;
-
-  const translateX = slidingAnim.interpolate({
-    inputRange: [0, 1, 2],
-    outputRange: [
-      pillPadding,
-      pillPadding + pillWidth,
-      pillPadding + 2 * pillWidth
-    ],
-  });
+      if (selectedFilter === 'healthy') return isHealthy;
+      if (selectedFilter === 'sick') return !isHealthy;
+      if (selectedFilter === 'unsynced') return scan.synced === 0;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortOrder === 'oldest') {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+      if (sortOrder === 'lowest_health') {
+        return a.health_score - b.health_score;
+      }
+      if (sortOrder === 'highest_health') {
+        return b.health_score - a.health_score;
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   // Modal Animations styles
   const deleteModalScale = deleteModalAnim.interpolate({
@@ -491,7 +492,7 @@ export default function HistoryScreen() {
       {/* Header */}
       <Animated.View
         style={{ opacity: headerAnim, transform: [{ translateY: getTranslateY(headerAnim) }] }}
-        className="mb-6"
+        className="mb-5"
       >
         <Text
           style={{ fontFamily: 'Fredoka_700Bold' }}
@@ -507,144 +508,87 @@ export default function HistoryScreen() {
         </Text>
       </Animated.View>
 
-      {/* Search Input Bar */}
+      {/* Integrated Search Input + Funnel Filter Button Bar */}
       <Animated.View
         style={{ opacity: searchAnim, transform: [{ translateY: getTranslateY(searchAnim) }] }}
-        className={`flex-row items-center px-4 py-2 rounded-2xl mb-4 border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200 shadow-sm'
-          }`}
+        className="flex-row items-center mb-3"
       >
-        <Ionicons name="search-outline" size={20} color="#78716c" />
-        <TextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search crops or diseases..."
-          placeholderTextColor="#a8a29e"
-          style={{ fontFamily: 'Fredoka_400Regular' }}
-          className={`flex-1 ml-2 text-sm ${isDark ? 'text-white' : 'text-stone-900'} py-2`}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={18} color="#78716c" />
-          </TouchableOpacity>
-        )}
-      </Animated.View>
-
-      {/* Status Section Label */}
-      <Animated.View
-        style={{ opacity: statusFilterAnim, transform: [{ translateY: getTranslateY(statusFilterAnim) }] }}
-        className="mb-2"
-      >
-        <Text
-          style={{ fontFamily: 'Fredoka_700Bold' }}
-          className={`text-[10px] uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
-        >
-          Status
-        </Text>
-      </Animated.View>
-
-      {/* Segmented Sliding Pill Filter Bar */}
-      <Animated.View
-        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-        style={{
-          opacity: statusFilterAnim,
-          transform: [{ translateY: getTranslateY(statusFilterAnim) }]
-        }}
-        className="bg-white border border-stone-200 shadow-sm rounded-[22px] h-11 p-1 relative items-center mb-4 flex-row"
-      >
-        {containerWidth > 0 && (
-          <Animated.View
-            style={{
-              position: 'absolute',
-              width: pillWidth,
-              height: 34,
-              backgroundColor: '#478b59', // crop-500
-              borderRadius: 17,
-              transform: [{ translateX }],
-            }}
-          />
-        )}
         <View
-          className="flex-row w-full h-full items-center z-10"
+          className={`flex-1 flex-row items-center px-4 py-2 rounded-2xl border ${
+            isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-200 shadow-sm'
+          }`}
         >
-          {(['active', 'resolved', 'all'] as const).map((status) => {
-            const isSelected = statusFilter === status;
-            const label = status === 'active' ? 'Active' : status === 'resolved' ? 'Resolved' : 'All';
-            const iconName = 
-              status === 'active' 
-                ? 'pulse-outline' 
-                : status === 'resolved' 
-                  ? 'checkmark-circle-outline' 
-                  : 'albums-outline';
-            return (
-              <TouchableOpacity
-                key={status}
-                onPress={() => setStatusFilter(status)}
-                activeOpacity={0.9}
-                className="flex-1 flex-row items-center justify-center h-full"
-                style={{ gap: 5 }}
-              >
-                <Ionicons 
-                  name={iconName} 
-                  size={14} 
-                  color={isSelected ? 'white' : '#78716c'} 
-                />
-                <Text
-                  style={{ fontFamily: isSelected ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
-                  className={`text-xs ${isSelected ? 'text-white' : 'text-stone-600'}`}
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          <Ionicons name="search-outline" size={20} color="#78716c" />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search crops or diseases..."
+            placeholderTextColor="#a8a29e"
+            style={{ fontFamily: 'Fredoka_400Regular' }}
+            className={`flex-1 ml-2 text-sm ${isDark ? 'text-white' : 'text-stone-900'} py-2`}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={18} color="#78716c" />
+            </TouchableOpacity>
+          )}
         </View>
+
+        {/* Funnel Filter Toggle Button */}
+        <TouchableOpacity
+          onPress={() => {
+            setTempStatusFilter(statusFilter);
+            setTempSelectedFilter(selectedFilter);
+            setTempSortOrder(sortOrder);
+            setFilterModalVisible(true);
+          }}
+          activeOpacity={0.8}
+          className={`ml-2.5 p-3.5 rounded-2xl border items-center justify-center relative ${
+            hasActiveFilters
+              ? 'bg-emerald-600 border-emerald-600 shadow-sm'
+              : isDark
+              ? 'bg-stone-900 border-stone-850'
+              : 'bg-white border-stone-200 shadow-sm'
+          }`}
+        >
+          <Ionicons
+            name="options-outline"
+            size={20}
+            color={hasActiveFilters ? '#ffffff' : isDark ? '#a8a29e' : '#57534e'}
+          />
+          {hasActiveFilters && (
+            <View className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white dark:border-stone-950" />
+          )}
+        </TouchableOpacity>
       </Animated.View>
 
-      {/* Type Section Label */}
-      <Animated.View
-        style={{ opacity: chipsAnim, transform: [{ translateY: getTranslateY(chipsAnim) }] }}
-        className="mb-2"
-      >
-        <Text
-          style={{ fontFamily: 'Fredoka_700Bold' }}
-          className={`text-[10px] uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
+      {/* Active Filter Indicator Strip */}
+      {hasActiveFilters && (
+        <Animated.View
+          style={{ opacity: listOpacity }}
+          className="flex-row items-center justify-between mb-4 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-2.5 rounded-2xl"
         >
-          Type
-        </Text>
-      </Animated.View>
-
-      {/* Scrollable Filter Chips */}
-      <Animated.View style={{ opacity: chipsAnim, transform: [{ translateY: getTranslateY(chipsAnim) }] }}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="flex-row mb-5"
-          contentContainerStyle={{ paddingRight: 24, gap: 8 }}
-        >
-          {FILTERS.map((f) => {
-            const isSelected = selectedFilter === f.key;
-            return (
-              <TouchableOpacity
-                key={f.key}
-                onPress={() => setSelectedFilter(f.key as any)}
-                activeOpacity={0.8}
-                className={`px-4 py-2 rounded-full border ${isSelected
-                    ? 'bg-emerald-600 border-emerald-600'
-                    : isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'
-                  }`}
-                style={{ marginRight: 6 }}
-              >
-                <Text
-                  style={{ fontFamily: isSelected ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
-                  className={`text-xs ${isSelected ? 'text-white' : isDark ? 'text-stone-300' : 'text-stone-600'}`}
-                >
-                  {f.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </Animated.View>
+          <View className="flex-row items-center flex-1 mr-2">
+            <Ionicons name="funnel-outline" size={14} color="#059669" />
+            <Text
+              style={{ fontFamily: 'Fredoka_400Regular' }}
+              className="text-xs text-emerald-800 dark:text-emerald-300 ml-2 font-medium"
+              numberOfLines={1}
+            >
+              Filter: <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="font-bold">{getActiveFilterSummary()}</Text>
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={resetFilters}
+            className="flex-row items-center bg-emerald-600/10 px-2.5 py-1 rounded-xl"
+          >
+            <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-[11px] text-emerald-600 font-bold mr-1">
+              Reset
+            </Text>
+            <Ionicons name="close-circle" size={14} color="#059669" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       {/* Sync Summary Alert */}
       {unsyncedCount > 0 && (
@@ -1021,6 +965,203 @@ export default function HistoryScreen() {
                 </TouchableOpacity>
               </View>
             </Animated.View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Funnel Filter Bottom Sheet Drawer Modal */}
+      {filterModalVisible && (
+        <Modal transparent visible={true} animationType="slide">
+          <View className="flex-1 justify-end">
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => setFilterModalVisible(false)}
+              className="flex-1 bg-black/50"
+            />
+            <View
+              className={`w-full rounded-t-[32px] p-6 border-t ${
+                isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200 shadow-2xl'
+              }`}
+            >
+              {/* Header */}
+              <View className="flex-row justify-between items-center mb-5 pb-3 border-b border-stone-200 dark:border-stone-800">
+                <View className="flex-row items-center">
+                  <Ionicons name="options-outline" size={20} color="#059669" />
+                  <Text
+                    style={{ fontFamily: 'Fredoka_700Bold' }}
+                    className={`text-lg font-bold ml-2 ${isDark ? 'text-white' : 'text-stone-900'}`}
+                  >
+                    Filter Diagnostics
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setFilterModalVisible(false)}
+                  className="p-1 rounded-full bg-stone-100 dark:bg-stone-800"
+                >
+                  <Ionicons name="close" size={20} color={isDark ? '#a8a29e' : '#78716c'} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Status Section */}
+              <View className="mb-5">
+                <Text
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
+                    isDark ? 'text-stone-400' : 'text-stone-500'
+                  }`}
+                >
+                  Status
+                </Text>
+                <View className="flex-row gap-2">
+                  {[
+                    { key: 'active', label: 'Active', icon: 'pulse-outline' },
+                    { key: 'resolved', label: 'Resolved', icon: 'checkmark-circle-outline' },
+                    { key: 'all', label: 'All', icon: 'albums-outline' },
+                  ].map((s) => {
+                    const isSel = tempStatusFilter === s.key;
+                    return (
+                      <TouchableOpacity
+                        key={s.key}
+                        onPress={() => setTempStatusFilter(s.key as any)}
+                        className={`flex-1 flex-row items-center justify-center py-2.5 px-3 rounded-2xl border ${
+                          isSel
+                            ? 'bg-emerald-600 border-emerald-600'
+                            : isDark
+                            ? 'bg-stone-850 border-stone-800'
+                            : 'bg-stone-50 border-stone-200'
+                        }`}
+                      >
+                        <Ionicons name={s.icon as any} size={14} color={isSel ? 'white' : '#78716c'} style={{ marginRight: 4 }} />
+                        <Text
+                          style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
+                          className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
+                        >
+                          {s.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Condition Type Section */}
+              <View className="mb-5">
+                <Text
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
+                    isDark ? 'text-stone-400' : 'text-stone-500'
+                  }`}
+                >
+                  Condition Type
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {[
+                    { key: 'all', label: 'All' },
+                    { key: 'healthy', label: 'Healthy' },
+                    { key: 'sick', label: 'Infected' },
+                    { key: 'unsynced', label: 'Unsynced' },
+                  ].map((f) => {
+                    const isSel = tempSelectedFilter === f.key;
+                    return (
+                      <TouchableOpacity
+                        key={f.key}
+                        onPress={() => setTempSelectedFilter(f.key as any)}
+                        className={`py-2 px-4 rounded-2xl border ${
+                          isSel
+                            ? 'bg-emerald-600 border-emerald-600'
+                            : isDark
+                            ? 'bg-stone-850 border-stone-800'
+                            : 'bg-stone-50 border-stone-200'
+                        }`}
+                      >
+                        <Text
+                          style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
+                          className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
+                        >
+                          {f.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Sort Order Section */}
+              <View className="mb-6">
+                <Text
+                  style={{ fontFamily: 'Fredoka_700Bold' }}
+                  className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
+                    isDark ? 'text-stone-400' : 'text-stone-500'
+                  }`}
+                >
+                  Sort Order
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {[
+                    { key: 'newest', label: 'Newest First' },
+                    { key: 'oldest', label: 'Oldest First' },
+                    { key: 'lowest_health', label: 'Lowest Health %' },
+                    { key: 'highest_health', label: 'Highest Health %' },
+                  ].map((so) => {
+                    const isSel = tempSortOrder === so.key;
+                    return (
+                      <TouchableOpacity
+                        key={so.key}
+                        onPress={() => setTempSortOrder(so.key as any)}
+                        className={`py-2 px-3.5 rounded-2xl border ${
+                          isSel
+                            ? 'bg-emerald-600 border-emerald-600'
+                            : isDark
+                            ? 'bg-stone-850 border-stone-800'
+                            : 'bg-stone-50 border-stone-200'
+                        }`}
+                      >
+                        <Text
+                          style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
+                          className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
+                        >
+                          {so.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Action Buttons */}
+              <View className="flex-row items-center gap-3 pt-3 border-t border-stone-200 dark:border-stone-800">
+                <TouchableOpacity
+                  onPress={() => {
+                    setTempStatusFilter('active');
+                    setTempSelectedFilter('all');
+                    setTempSortOrder('newest');
+                  }}
+                  className={`py-3.5 px-5 rounded-2xl border items-center justify-center ${
+                    isDark ? 'bg-stone-850 border-stone-800' : 'bg-stone-100 border-stone-200'
+                  }`}
+                >
+                  <Text
+                    style={{ fontFamily: 'Fredoka_700Bold' }}
+                    className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-600'}`}
+                  >
+                    Reset All
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setStatusFilter(tempStatusFilter);
+                    setSelectedFilter(tempSelectedFilter);
+                    setSortOrder(tempSortOrder);
+                    setFilterModalVisible(false);
+                  }}
+                  className="flex-1 py-3.5 bg-emerald-600 rounded-2xl items-center justify-center shadow-md shadow-emerald-600/20"
+                >
+                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white text-xs font-bold">
+                    Apply Filters
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </Modal>
       )}

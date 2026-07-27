@@ -165,37 +165,37 @@ export default function LoginScreen() {
       className={`flex-1 ${isDark ? 'bg-stone-950' : 'bg-stone-50'}`}
       showsVerticalScrollIndicator={false}
     >
-      <View className="flex-1 justify-center px-6 py-12">
+      <View className="flex-1 justify-center px-6 py-8">
         {/* Header Mascot Branding */}
-        <View className="items-center mb-10">
-          <View className="w-28 h-28 rounded-xl overflow-hidden shadow-md shadow-emerald-900/10 mb-4 bg-white items-center justify-center">
+        <View className="items-center mb-6">
+          <View className="w-20 h-20 rounded-2xl overflow-hidden shadow-sm mb-3 bg-white items-center justify-center border border-stone-100">
             <Image
               source={require('../../assets/images/mascot-logo.jpeg')}
               className="w-full h-full"
               resizeMode="cover"
             />
           </View>
-          <Text className={`text-3xl font-bold font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}>
+          <Text className={`text-2xl font-bold font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}>
             Bugsok
           </Text>
-          <Text className={`text-sm mt-1 font-medium font-fredoka tracking-wide ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+          <Text className={`text-xs mt-1 font-semibold font-fredoka tracking-wide ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
             AI Powered Crop Health Tracker
           </Text>
         </View>
 
-        {/* Form Container */}
-        <View className={`p-6 rounded-[32px] border ${isDark ? 'bg-stone-900 border-stone-850' : 'bg-white border-stone-100 shadow-sm'}`}>
-          <Text className={`text-lg font-bold mb-6 font-fredoka ${isDark ? 'text-white' : 'text-stone-700'}`}>
+        {/* Seamless Form Section */}
+        <View className="w-full">
+          <Text className={`text-xl font-bold mb-4 font-fredoka ${isDark ? 'text-white' : 'text-stone-850'}`}>
             Log in to your Account
           </Text>
 
           {/* Email input */}
-          <View className="mb-4">
-            <Text className={`text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+          <View className="mb-3.5">
+            <Text className={`text-xs font-bold uppercase tracking-wider mb-1.5 font-fredoka ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
               Email Address
             </Text>
-            <View className="flex-row items-center px-4 rounded-2xl border bg-stone-50 border-stone-200 dark:bg-stone-950 dark:border-stone-800">
-              <Mail size={20} color="#78716c" />
+            <View className="flex-row items-center px-4 rounded-2xl border bg-white border-stone-200 dark:bg-stone-900 dark:border-stone-800">
+              <Mail size={18} color="#78716c" />
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -203,19 +203,19 @@ export default function LoginScreen() {
                 placeholderTextColor="#a8a29e"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                className={`flex-1 py-4 px-2 text-base font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}
+                className={`flex-1 py-3.5 px-2.5 text-sm font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}
                 style={{ fontSize: 13 }}
               />
             </View>
           </View>
 
           {/* Password input */}
-          <View className="mb-3">
-            <Text className={`text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+          <View className="mb-2.5">
+            <Text className={`text-xs font-bold uppercase tracking-wider mb-1.5 font-fredoka ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
               Password
             </Text>
-            <View className="flex-row items-center px-4 rounded-2xl border bg-stone-50 border-stone-200 dark:bg-stone-950 dark:border-stone-800">
-              <Lock size={20} color="#78716c" />
+            <View className="flex-row items-center px-4 rounded-2xl border bg-white border-stone-200 dark:bg-stone-900 dark:border-stone-800">
+              <Lock size={18} color="#78716c" />
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -223,7 +223,7 @@ export default function LoginScreen() {
                 placeholderTextColor="#a8a29e"
                 secureTextEntry={!isPasswordVisible}
                 autoCapitalize="none"
-                className={`flex-1 py-4 px-2 text-base font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}
+                className={`flex-1 py-3.5 px-2.5 text-sm font-fredoka ${isDark ? 'text-white' : 'text-stone-900'}`}
                 style={{ fontSize: 13 }}
               />
               <TouchableOpacity
@@ -232,16 +232,16 @@ export default function LoginScreen() {
                 className="p-1"
               >
                 {isPasswordVisible ? (
-                  <EyeOff size={20} color="#78716c" />
+                  <EyeOff size={18} color="#78716c" />
                 ) : (
-                  <Eye size={20} color="#78716c" />
+                  <Eye size={18} color="#78716c" />
                 )}
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Forgot Password Link */}
-          <View className="items-end mb-6">
+          <View className="items-end mb-5">
             <TouchableOpacity
               onPress={() => {
                 console.log('Forgot Password pressed!');
@@ -249,7 +249,7 @@ export default function LoginScreen() {
               }}
               activeOpacity={0.7}
             >
-              <Text className="text-sm font-semibold text-emerald-600">
+              <Text className="text-sm font-semibold text-emerald-600 font-fredoka">
                 Forgot Password?
               </Text>
             </TouchableOpacity>
@@ -260,7 +260,7 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={isLoading || isToastVisible || cooldownTime > 0}
             activeOpacity={0.85}
-            className={`py-4 rounded-2xl items-center shadow-lg mb-5 ${cooldownTime > 0
+            className={`py-3.5 rounded-2xl items-center shadow-md mb-4 ${cooldownTime > 0
               ? 'bg-stone-300 dark:bg-stone-800 shadow-none'
               : (isLoading || isToastVisible)
                 ? 'bg-emerald-600/60 shadow-none'
@@ -284,12 +284,12 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           {/* OR Divider */}
-          <View className="flex-row items-center mb-5">
-            <View className={`flex-1 h-[1px] ${isDark ? 'bg-stone-850' : 'bg-stone-200'}`} />
-            <Text className={`mx-4 text-xs font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+          <View className="flex-row items-center mb-4">
+            <View className={`flex-1 h-[1px] ${isDark ? 'bg-stone-800' : 'bg-stone-200'}`} />
+            <Text className={`mx-4 text-xs font-bold uppercase tracking-wider font-fredoka ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
               OR
             </Text>
-            <View className={`flex-1 h-[1px] ${isDark ? 'bg-stone-850' : 'bg-stone-200'}`} />
+            <View className={`flex-1 h-[1px] ${isDark ? 'bg-stone-800' : 'bg-stone-200'}`} />
           </View>
 
           {/* Google Login Button */}
@@ -297,7 +297,7 @@ export default function LoginScreen() {
             onPress={handleGoogleLogin}
             disabled={isLoading || isToastVisible}
             activeOpacity={0.85}
-            className={`flex-row items-center justify-center py-4 rounded-2xl border mb-5 ${isDark
+            className={`flex-row items-center justify-center py-3.5 rounded-2xl border mb-5 ${isDark
                 ? 'bg-stone-900 border-stone-800 active:bg-stone-850'
                 : 'bg-white border-stone-200 active:bg-stone-50 shadow-sm'
               }`}
@@ -326,12 +326,12 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           {/* Link to Register */}
-          <View className="flex-row justify-center items-center">
-            <Text className={`text-sm ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+          <View className="flex-row justify-center items-center mb-4">
+            <Text className={`text-sm font-fredoka ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
               Don't have an account?{' '}
             </Text>
             <TouchableOpacity onPress={() => router.push('/register')}>
-              <Text className="text-emerald-500 font-bold text-sm">
+              <Text className="text-emerald-600 font-bold text-sm font-fredoka">
                 Sign Up
               </Text>
             </TouchableOpacity>
@@ -339,8 +339,8 @@ export default function LoginScreen() {
         </View>
 
         {/* Offline Disclaimer */}
-        <View className="mt-8 items-center">
-          <Text className={`text-xs text-center px-6 ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+        <View className="mt-2 items-center">
+          <Text className={`text-xs text-center px-4 font-fredoka ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
             An active internet connection is required to authenticate or register.
           </Text>
         </View>
