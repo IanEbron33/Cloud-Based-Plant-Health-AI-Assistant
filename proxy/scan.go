@@ -56,6 +56,7 @@ func handleScan(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to read image file: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	log.Printf("[Scan] Received scan image payload: %d KB (%s)\n", buf.Len()/1024, header.Filename)
 	base64Image := base64.StdEncoding.EncodeToString(buf.Bytes())
 
 	mimeType := header.Header.Get("Content-Type")

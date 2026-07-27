@@ -89,15 +89,16 @@ export function ScanProvider({ children }: ScanProviderProps) {
     startLoadingCaptionTimer();
 
     try {
-      // 1. Client-Side Image Compression using expo-image-manipulator
+      // 1. Client-Side Image Compression using expo-image-manipulator (720p Optimization)
       let compressedImageUri = imageUri;
       try {
         const manipResult = await ImageManipulator.manipulateAsync(
           imageUri,
-          [{ resize: { width: 1024 } }],
-          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+          [{ resize: { width: 720 } }],
+          { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
         );
         compressedImageUri = manipResult.uri;
+        console.log('[ScanContext] Image successfully pre-compressed to 720p:', compressedImageUri);
       } catch (manipErr) {
         console.warn('[ScanContext] Image compression failed, using original:', manipErr);
       }
