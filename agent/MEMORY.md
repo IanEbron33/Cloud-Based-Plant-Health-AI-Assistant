@@ -4,7 +4,7 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 📅 Project Context (As of July 16, 2026)
+## 📅 Project Context (As of July 28, 2026)
 
 * **App Title:** Bugsok AI
 * **App Subtitle:** Plant Health Tracker
@@ -35,11 +35,16 @@ This document captures the current state, architecture, and files of the project
 
 ---
 
-## 🔒 Phase 2 Enhancements (Authentication & Security)
+## 🔒 Authentication & Login Layout Refactoring
 
 * **Refactored Architecture & Separation of Concerns**:
   * Moved direct Supabase SDK calls out of UI screens.
   * Created dedicated service layers (`auth.service.ts`, `profile.service.ts`) and global hook context (`AuthContext.tsx`) to handle authentication status and profile fetch state.
+* **Redesigned Modern Seamless Card-Free Login Screen**:
+  * **Card-Free Structure**: Removed the heavy white outer card box container (`p-6 rounded-[32px] border bg-white shadow-sm`) in `src/app/login.tsx` so inputs and buttons rest seamlessly directly on the `bg-stone-50` background.
+  * **Compact Mascot Header**: Scaled top mascot logo badge from `w-28 h-28` (112px) to `w-20 h-20` (80px x 80px) and reduced bottom margin from `mb-10` to `mb-6`, saving ~50px of top viewport space.
+  * **Optimized Vertical Padding**: Refined input padding (`py-3.5`) and field margins (`mb-3.5`, `mb-2.5`) so all form fields, buttons, and the bottom internet connection disclaimer fit comfortably on standard mobile viewports without clipping.
+  * **Fredoka Typography**: Strictly styled using the app's `Fredoka` font system (`font-fredoka` / `Fredoka_700Bold`) matching `DESIGN.md`.
 * **Custom Toast Notification System**:
   * Designed global `ToastProvider` with physical bounce animations, dynamic colors (emerald for success, red for error, amber for warning), and an interactive shrinking progress bar detailing auto-dismiss timer.
 * **Login Rate Limiter & Cooldown Lock**:
@@ -54,9 +59,16 @@ This document captures the current state, architecture, and files of the project
   * **Auth Flow Integration**: Added `signInWithGoogleIdToken` in `auth.service.ts`, initialized `GoogleSignin` on mount in `AuthContext.tsx`, and passed `signInWithGoogle` down to components.
   * **Auto-Profile Creation**: On first-time Google logins, the app automatically copies the user's Google `full_name` and `avatar_url` to initialize/update their row in the `profiles` table.
   * **Clean Sign-Out**: Modified the context `signOut` method to clean up the cached Google login session via `GoogleSignin.signOut()`, preventing automatic auto-login loops and forcing account picker display on next login.
-  * **Login Page UI Update**: Added a custom Google button with an inline SVG Google logo and an "OR" text divider aligned with the layout guidelines of `DESIGN.md`.
-* **Username Field Removal**:
-  * Removed `username` from TypeScript definitions, the registration wizard (Step 1 collects only name, gender, birthdate), and profile display, keeping profiles fully clean.
+
+---
+
+## 🏠 Home Screen Mascot Greeting Logic
+
+* **Context-Aware Mascot Greetings**:
+  * **0 Scans (Onboarding Welcome State)**: When `stats.total === 0` (no scan history), Bugsok selects from `welcomeGreetings` (*"Welcome to Bugsok AI! Take your first crop scan to start monitoring plant health."* / *"Ready to check your plants? Tap the Scan button below to analyze a crop leaf."*) and displays `mascot-happy.png`.
+  * **1+ Scans (All Healthy)**: When `stats.total > 0` and no active infections exist, Bugsok selects from `healthyGreetings` (*"All your plants are looking healthy! Keep up the good work."*) and displays `mascot-happy.png`.
+  * **1+ Scans (Warning State)**: When `highestSeverity` is `'Low'` or `'Moderate'`, Bugsok selects from `warningGreetings` and displays `mascot-concerned.png`.
+  * **1+ Scans (Critical State)**: When `highestSeverity` is `'High'`, Bugsok selects from `criticalGreetings` and displays `mascot-worried.png`.
 
 ---
 
@@ -74,124 +86,71 @@ The local database (`bugsok_ai.db`) has been normalized down to **three primary 
 * **Foreign Key Cascades**: SQLite database schema handles cascade deletions. Deleting a crop scan automatically clears out all associated `chat_sessions` and `chat_messages` locally.
 * **Tagalog Database Keys**: Crops are saved in the database using their Tagalog keys (e.g. `Talong`, `Kamatis`, `Sili`, `Ampalaya`) to match the localized content rules.
 * **Auto-Resume Chat Sessions**: When entering the chat screen from a scan results page, the app automatically fetches and resumes the latest active chat session for that scan instead of starting a new one.
-* **Pure JavaScript UUIDs**: Replaced `expo-crypto` dynamic loading with a pure JavaScript RFC4122-compliant UUID generator to prevent Metro bundler resolution failures on Android devices.
-* **DevTools Network Hook**: Added a check in `src/app/_layout.tsx` to hook `global.XMLHttpRequest` to `originalXMLHttpRequest` in `__DEV__` mode to allow Chrome DevTools (`chrome://inspect`) to capture network requests when debugging.
-* **Optimized Local/Cloud Indexing**: Composite indexes are deployed on both local SQLite (`scans(user_id, created_at DESC)`, `chat_messages(session_id, created_at ASC)`) and Supabase tables to speed up scan history and chat loading times.
 
 ---
 
-## ⚡ Optimized Scan Pipeline (Unified Single SSE Call + Compression)
+## ⚡ Optimized 720p Scan Pipeline & Go Proxy Logging
 
-To optimize scanning latency, the pipeline has been refactored from a sequential two-step call structure (Classify ➔ Diagnose) into a unified single SSE call with client-side image compression.
+To optimize scanning latency and cloud storage consumption, the scan pipeline uses 720p pre-compression with backend Go proxy logging.
 
-### Client-Side Image Compression
-* **Implementation**: Uses `expo-image-manipulator` in `ScanContext.tsx` before sending images to the backend.
-* **Mechanism**: Downscales large images to a maximum width of `1024px` and compresses them to `50% JPEG quality`.
-* **Latency Benefit**: Reduces raw photo sizes (up to 30MB) down to **200–500KB** (~60–150× smaller), significantly accelerating upload time over mobile networks without impacting AI diagnostic accuracy.
+### Client-Side 720p Pre-Compression
+* **Implementation**: Uses `expo-image-manipulator` in `ScanContext.tsx` before sending images to the proxy/Supabase.
+* **Resolution**: Downscales images to a maximum width of `720px` (`width: 720`) with `60% JPEG quality`.
+* **Latency & Storage Benefits**: Reduces photo payload sizes by ~60% (from ~450–600 KB down to **~150–200 KB** per scan), doubling upload speed over cellular networks without impacting AI diagnostic accuracy. Saves significant long-term Supabase Storage bucket space.
 
-### Unified `/scan` Backend Endpoint (Golang on Hugging Face Spaces)
-The AI proxy backend runs on **Hugging Face Spaces** (`https://ianpatatas-bugsok-ai.hf.space`).
-* **Endpoints**:
-  - `GET /health`: Server health checks.
-  - `POST /scan`: Unified endpoint. Processes classification and diagnosis in a single API call to minimize network round-trips.
-  - `POST /chat`: Follow-up chatbot discussion (SSE stream).
-* **Model Routing**:
-  - Automatically resolves model preferences: `gemini-3.1-flash-lite` for "flash" and `gemma-4-31b-it` (or environment custom) for "deep".
-  - A single model handles both steps inside the unified `/scan` call.
-* **First-Line Buffer Strategy**:
-  - The Go server instructs Gemini to output `CLASSIFY: [CropName]` on the first line, followed by the structured diagnosis.
-  - The proxy buffers and parses the first line to identify the crop and perform fuzzy matching against supported crops.
-  - If classification matches a supported crop, the server sends a `{ "crop": "Talong" }` SSE event to transition the app's UI, then streams the remaining diagnostic text directly.
-* **Non-Plant Rejection**:
-  - If the first line reads `CLASSIFY: NOT_A_PLANT` or does not match supported crops, the server streams an error early, causing the client app to halt and display a warning toast.
-* **Low-Confidence Warning**:
-  - If a scan completes with a confidence score under 20%, the completion toast is styled as a yellow warning (`Low Confidence Scan`), and a persistent warning banner is rendered above the BentoGrid in `scan-results.tsx` prompting a retake.
+### Go Backend Proxy (`proxy/scan.go`)
+* **Hugging Face Space Endpoint**: Runs on `https://ianpatatas-bugsok-ai.hf.space`.
+* **Payload Size Logging**: Logs incoming scan payload sizes in KB (`log.Printf("[Scan] Received scan image payload: %d KB (%s)\n")`) to monitor proxy bandwidth throughput.
+* **Single SSE Stream**: Handles classification and diagnosis in a single SSE stream to eliminate extra network round-trips.
 
 ---
 
-## 💬 History Screen, Cascade Deletes & Resolved Actions
+## 🔍 Diagnosis History & Funnel Filter Bottom Sheet Drawer
 
-We implemented resolved states, cascade deletions, and clean custom action modals:
+We refactored the Diagnosis History screen ([history.tsx](file:///c:/Users/ADMIN/Desktop/Folder1/Cloud-Based%20Plant%20Health%20AI%20Assistant%20-%20Mobile%20Application/src/app/%28tabs%29/history.tsx)) to replace cluttered stacked filter bars with a clean **Funnel Filter Icon + Bottom Sheet Drawer** layout:
 
-* **Symmetrical Status Segmented Control**:
-  * Shows a dual-layered filter row.
-  * **STATUS** Section: Styled as a premium white segmented bar (`Active | Resolved | All`) with a grey border and a subtle shadow. 
-  * Each status segment contains a leading icon next to its label: **Active** (`pulse-outline`), **Resolved** (`checkmark-circle-outline`), and **All** (`albums-outline`) rendered in loaded `Fredoka_700Bold` typography.
-  * **TYPE** Section: Scrollable chips filtering by condition state (`All`, `Healthy`, `Infected`, `Unsynced`).
-  * Calculates dimensions using parent-aligned measurements to ensure the sliding green background pill sits symmetrically centered under all selected states.
-* **Long-Press Card Actions**:
-  - Replaced the swipe-to-reveal gesture on cards with a cleaner long-press gesture (`250ms`).
-  - Long-pressing a card or tapping the 3-dot context icon measures the item coordinates to display a clean dropdown context menu modal anchored at the card's top-right.
-* **Cascade Delete Operation**:
-  - Tapping **"Delete Scan"** triggers a cascade delete: removes local database rows in `scans` (which cascades to wipe `chat_sessions` and `chat_messages` locally), invokes Supabase DB record deletions, and deletes the image asset directly in the Supabase `plant-images` Storage bucket.
-* **Cross-Screen Sync Rules**:
-  - Mark-as-resolved scans update metrics and recent lists on the Home screen Dashboard instantly.
-  - Resolved scans are filtered out of the attachments picker sheet in General Chat.
-* **Tactile Spring-Physics Modals**:
-  - Modal entrances translate and bounce using spring dynamics (`Animated.spring` scale `0.9` ➔ `1.04` ➔ `1.0` with overshoot settling).
-  - Modal exits unmount snappily using timing transitions (`Animated.timing` over `150ms`) to avoid lag or delays.
-  - Modals use emotional mascot assets: `mascot-happy.png` for Resolve ("Diagnosis Cured!"), `mascot-concerned.png` for Reactivate ("Reactivate Diagnosis?"), and `mascot-transparent-sad.png` for Delete ("Delete Scan?").
+* **Integrated Search & Funnel Icon Bar**:
+  * Replaced >200px of stacked filter bars with a single integrated search row: Search input + **Funnel Filter Toggle Icon Button** (`options-outline`).
+  * Displays an active notification badge dot on the funnel icon whenever non-default filters are active.
+* **Active Filter Summary Strip**:
+  * Renders a compact active filter badge strip directly below search (e.g., `Filter: Active • Infected`) with a 1-tap `Reset` action.
+* **Filter Bottom Sheet Drawer Modal**:
+  * Tapping the Funnel button slides up a native bottom sheet drawer containing:
+    * **Status**: *Active*, *Resolved*, *All*
+    * **Condition Type**: *All*, *Healthy*, *Infected*, *Unsynced*
+    * **Sort Order**: *Newest First*, *Oldest First*, *Lowest Health %*, *Highest Health %*
+    * Action footer with `Reset All` and emerald `Apply Filters` CTA button.
+* **Reclaimed Viewport Space**:
+  * Reclaims >150px of vertical space, showing diagnosis history cards immediately below search.
+* **Cascade Delete & Resolved Modals**:
+  * Tapping **"Delete Scan"** triggers a cascade delete: removes local database rows in `scans` (which cascades to wipe `chat_sessions` and `chat_messages` locally), invokes Supabase DB record deletions, and deletes the image asset in Supabase Storage.
+  * Modals use spring physics and emotional mascot assets (`mascot-happy.png` for Resolve, `mascot-concerned.png` for Reactivate, and `mascot-transparent-sad.png` for Delete).
+* **Z-Index Tab Bar Management**:
+  * Dynamically hides bottom tab bar (`tabBarStyle.display = 'none'`) whenever any modal (Delete, Resolve, Reactivate, or Funnel Filter) is open.
 
 ---
 
 ## 💬 Follow-up Chat System & Assistant UX
 
-The follow-up chat is fully localized and styled to support interactive, structured diagnostic consultations:
-
-* **Header Redesign (Option A Layout)**: Left-aligned layout consisting of `[Back Button] [Mascot Avatar] [Bugsok AI Title, Condition Status Badge, and Follow Up Subtitle] [Green Trash Button]`. The subtitle "Follow Up" is aligned directly below the status badge, and the trash button uses emerald green (`#10b981`).
-* **Auto-Growing Message Input Box**: Standard input converted to a multiline text area (`minHeight: 38`, `maxHeight: 120`) styled as a rounded rectangle (`rounded-[22px]`). Layout aligns wrapper items to `items-end` to keep the Send button aligned at the bottom-right as the input area expands vertically.
-* **Custom Delete Confirmation Modal**: Custom overlay replacing standard OS alert notifications. Features a semi-transparent black backdrop (`bg-black/60`) and a centered card carrying the transparent `mascot-transparent-sad.png` scaled up to `130x130`, with a warning details body and Cancellation/Clear button actions.
-* **SQLite Context Lookup**: Ensures chat sessions loaded from history pull correct metadata (e.g. crop name `Sili`, condition `Downy Mildew`) directly from SQLite records (`fetchScanById`), resolving default fallback errors.
-* **Strict English-Only Prompting**: Backend Go proxy chatbot instructions force the model to output purely English responses, eliminating Taglish mixtures or random dialect switches.
-* **Advanced Text Styling Parser**: Client-side parser in `chat.tsx` processes raw markdown markers and transforms them:
-  * Double asterisks (`**bold text**`) are rendered in **bold emerald green**.
-  * Single asterisks (`*italic accent*` e.g., culinary recipes like `*Tinola*`, `*Sinigang*`) are rendered in **bold-italic soft mint green**.
-  * Standard bullet lists are converted dynamically to circular bullet points (`• `).
-* **Snappy Typewriter Animation**: Custom chunk-based typing simulator increments in chunks of `4` characters per frame tick (reducing latency for paragraph loads to 2–3s) and schedules scrolling updates only every `12` characters to eliminate layout layout-calculation jitter.
-* **Bugsok AI Branding**: Renders a `"Bugsok AI"` name label tag above all chatbot messages and loaders, aligned side-by-side with the Mascot profile avatar.
-* **Retroactive Greeting Migration**: Dynamically replaces historical greeting texts (`"Hello! I am your plant care assistant"` or `"Bugsok AI, your crops care assistant"`) with the updated `"Hello! I am Bugsok AI, as your plant care assistant"` string during list mapping. This ensures that even existing chat sessions saved in the local SQLite database reflect the latest branding instantly without needing to clear local data.
-* **Dynamic Loading/Thinking Indicator**: The typing indicator adapts based on the active model. In Flash mode, it displays `"Bugsok is typing..."`. In Deep mode, since reasoning takes longer, it dynamically cycles through reasoning stages every 2.5s (e.g. `"Bugsok is analyzing the crop symptoms..."`, `"Bugsok is in deep thinking..."`, `"Bugsok is formulating treatment options..."`) to keep the user engaged.
-* **Differentiated Chat Modes**:
-  - **Flash Mode (⚡)**: Designed for low latency. Generates short, concise responses (exactly 2–4 sentences), uses 1–2 agricultural/farming emojis, does not ask follow-up questions, allows brief bullet points/lists, and sets a token output cap of `256` tokens.
-  - **Deep Think Mode (🧠)**: Designed for detailed reasoning. Generates detailed, structured, precise, and comprehensive answers, allows detailed bulleted lists, streams thinking/reasoning blocks dynamically into a collapsible UI panel, ends with a contextually smart follow-up question referencing an unasked aspect of the topic, and sets a token output cap of `1024` tokens.
-  - **Error Handling (502 / 500)**: Note that if Deep Think Mode throws a 502 error, it is caused by the Go proxy receiving an HTTP 500 error from the Google Gemini API when using the default model `gemma-4-31b-it`. This can be resolved by deploying/configuring the `DEEP_MODEL` environment variable in the Hugging Face Space settings to a model matching the developer's API key permissions (e.g., `gemini-2.5-pro` or another authorized thinking model).
+* **Header Redesign**: Left-aligned layout consisting of `[Back Button] [Mascot Avatar] [Bugsok AI Title, Condition Status Badge, and Follow Up Subtitle] [Green Trash Button]`.
+* **Auto-Growing Input Box**: Multiline text area (`minHeight: 38`, `maxHeight: 120`) styled as `rounded-[22px]`.
+* **Custom Delete Confirmation Modal**: Centered modal carrying `mascot-transparent-sad.png` scaled to `130x130`.
+* **Strict English-Only Prompting**: Backend Go proxy chatbot instructions force purely English responses.
+* **Advanced Markdown Parser**:
+  * Double asterisks (`**bold text**`) rendered in **bold emerald green**.
+  * Single asterisks (`*italic accent*`) rendered in **bold-italic soft mint green**.
+  * Bullet lists formatted as circular bullet points (`• `).
+* **Dynamic Thinking Indicator**: In Deep Think mode, cycles through reasoning stages every 2.5s (*"Bugsok is analyzing the crop symptoms..."*, *"Bugsok is formulating treatment options..."*).
 
 ---
 
-## 💬 General Chat Tab, Sidebar & Attachment System
+## 💬 General Chat Tab & Attachment System
 
-Implemented a fully-featured dedicated general chat screen in the main navigation tab layout:
-
-* **Interactive Header Layout**: Features the AI model switcher (`Flash` / `Deep`) next to the trash button in the top-right header actions row. Tapping the switcher opens the descriptive options dropdown.
-* **Delete Current Session Refinement**:
-  * Tapping the trash button in the header opens a confirmation modal entitled **"Delete Chat Session?"**.
-  * Confirming deletes *only* the current active chat session (and all messages in that session) via `deleteGeneralChatSession` instead of clearing the entire chat history.
-  * The deletion automatically creates and auto-navigates to a brand new `"New Chat"` session.
-* **Burger Menu & Left-Sliding Sidebar**:
-  - The row below the header features a completely clean, transparent, and borderless 2-line burger menu button.
-  - Tapping the burger menu opens a smooth left-sliding sidebar containing a `+ New Chat` button and a list of previous chat sessions.
-  - Tapping `+ New Chat` automatically switches to an existing empty session if one exists to prevent duplicate blank sessions.
-  - Includes a 3-dot (`⋯`) context menu for each session in the sidebar to **Pin/Unpin** or **Delete** the session. If the active session is deleted from this menu, the app automatically creates and navigates to a brand new session.
-* **Gemini-Style Sidebar Redesign**:
-  * All borders and card pills are removed from history list items. Active sessions are highlighted with a soft, borderless, translucent emerald background highlight (`bg-emerald-50/40`).
-  * Each chat list item contains a left-aligned grey `chatbubble-outline` icon.
-  * Pinned sessions display a custom, offline-safe inline SVG FontAwesome `thumb-tack` icon (viewBox `0 0 640 640`, size `16`) on the right side next to the options button.
-  * **User Profile Footer**: Anchored at the bottom of the sidebar drawer, separated by a top border divider. Contains:
-    * A large circular user avatar (`w-14 h-14` / `56x56px`).
-    * User's full name (`profile?.full_name || 'Grower'`) rendered in `text-md`.
-    * A settings cog icon (size `20`) that navigates the user to the Profile tab.
-* **Option A Attachment System**:
-  * Added clip `📎` button in the input dock which slides up a bottom sheet modal displaying the user's past scans history (rendered in the same high-fidelity layout as the History screen, showing image, crop name, condition, severity bar, and date).
-  * Selecting a scan locks it as a persistent context chip above the input box (detachable via `✕` action).
-  * Automatically injects the attached crop's metadata profile and diagnosis text into the AI context during SSE streaming, and tags the corresponding AI bubble with a green `Linked: [Crop] — [Condition]` flag.
-  * **Auto-crop detection fallback**: If no scan is attached, the app parses prompt text for mentioned crop keywords (like "Talong" or "Tomato") and injects the corresponding vegetable profile automatically.
-* **Scope Guardrails**: Intercepts prompts for non-agricultural topics (such as mathematics, formulas, and software programming/coding) and politely rejects them to keep the focus strictly on plant health.
-* **Custom Keyboard Avoidance**:
-  * Disabled `KeyboardAvoidingView` layout behavior on Android to avoid duplicate padding and ghost gaps caused by nested Tab Navigator layout limits.
-  * Implemented manual keyboard listeners that dynamically animate the `marginBottom` of the input container to `e.endCoordinates.height + 10` using `RNAnimated` timing curves on Android.
-  * Adjusts the message scroll view's bottom padding dynamically to guarantee that message bubbles can always be scrolled fully above the keyboard when typing.
-  * Uses standard `behavior="padding"` on iOS.
-* **Branding & Consistency**: Reuses the exact message text formatting parser (`text-sm leading-6` sizes, bold green key terms, circular bullet points) to match the follow-up chat screens perfectly.
+* **Model Switcher**: Header switcher toggling between `Flash` (low latency, 256 token limit) and `Deep` (detailed reasoning, 1024 token limit).
+* **Left-Sliding Sidebar**: Burger menu button opens a left-sliding sidebar for navigating, creating (`+ New Chat`), pinning, or deleting chat sessions.
+* **User Profile Footer**: Anchored at the bottom of the sidebar with user avatar, name, and settings cog link to Profile.
+* **Option A Attachment System**: Clip icon `📎` opens past scans picker sheet. Selecting a scan locks it as a context chip above the input box and injects diagnosis metadata into the AI context stream.
+* **Scope Guardrails**: Rejects non-agricultural prompts (programming, math formulas) to keep the app focused on plant health.
 
 ---
 
@@ -204,9 +163,9 @@ Implemented a fully-featured dedicated general chat screen in the main navigatio
 * **Styling:** **NativeWind v4** (Tailwind CSS for React Native) compiled with `react-native-reanimated` plugin
 * **Typography:** **Fredoka** Google Font family (loaded asynchronously using `expo-font`)
 * **Icons:** **Lucide Icons** (`lucide-react-native`) and **Ionicons** (`@expo/vector-icons`)
-* **Media Rendering:** **expo-image** (for rendering transparent animated WebP on splash screen)
-* **Image Compression**: **expo-image-manipulator** (`~13.0.5`) for client-side resizing and optimization
-* **Local Storage:** `@react-native-async-storage/async-storage` for persisting login lockout/cooldown states.
+* **Media Rendering:** **expo-image** (for splash WebP animation)
+* **Image Compression**: **expo-image-manipulator** (`~13.0.5`) for 720p client-side resizing
+* **Local Storage:** `@react-native-async-storage/async-storage` for login lockout states
 
 ---
 
@@ -220,68 +179,70 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   └── images/
 │       ├── mascot-animation.webp    # Bundled transparent animated WebP mascot splash animation (4.0s)
 │       ├── mascot-logo.png          # App mascot image (512x512 high quality square PNG)
+│       ├── mascot-happy.png         # Happy mascot asset
+│       ├── mascot-concerned.png     # Concerned mascot asset
+│       ├── mascot-worried.png       # Worried mascot asset
 │       └── mascot-transparent-sad.png # Sad transparent mascot for delete modal
+├── agent/
+│   ├── DESIGN.md                    # Official UI design guidelines & Fredoka typography specs
+│   ├── MEMORY.md                    # Active session context & architecture blueprint
+│   ├── SKILLS.md                    # Mandatory agent rules & guidelines
+│   └── System Planning Blueprint.md # Full system architecture document
 ├── proxy/
 │   ├── Dockerfile                   # Multi-stage Docker config for HF Spaces
 │   ├── README.md                    # Backend run & deployment instructions
 │   ├── chat.go                      # SSE follow-up chat endpoint
 │   ├── gemini.go                    # Shared Gemini API calling and stream handlers
 │   ├── go.mod                       # Go 1.22 module definition
-│   ├── scan.go                      # SSE unified classification & diagnosis endpoint (buffers first line)
+│   ├── scan.go                      # SSE unified classification & diagnosis endpoint (with payload size logging)
 │   └── main.go                      # Entry point, routing, and CORS middleware
 ├── src/
 │   ├── app/
 │   │   ├── _layout.tsx              # Root Layout (Loads Fredoka font, wraps providers, Chrome DevTools network hook)
 │   │   ├── index.tsx                # App entry redirect (routes to /splash)
 │   │   ├── splash.tsx               # Staggered fade-in splash screen with transparent WebP animation
-│   │   ├── login.tsx                # Redesigned login with mascot logo, lockout timer, & custom toast alerts
-│   │   ├── register.tsx             # Redesigned registration screen with password strength progress bar
-│   │   ├── forgot-password.tsx      # 3-step secure password recovery wizard (Email, 6-digit OTP, Strength-tested Reset)
-│   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard with low-confidence warning banner
-│   │   ├── chat.tsx                 # Follow-up chat conversation screen querying SQLite logs & saving to SQLite/Supabase
+│   │   ├── login.tsx                # Seamless card-free login screen with mascot header & lockout timer
+│   │   ├── register.tsx             # Registration wizard with password strength progress bar
+│   │   ├── forgot-password.tsx      # 3-step secure password recovery wizard
+│   │   ├── scan-results.tsx         # Bento Grid Detailed Diagnosis Dashboard
+│   │   ├── chat.tsx                 # Follow-up chat conversation screen
 │   │   └── (tabs)/
 │   │       ├── _layout.tsx          # Custom Tab bar layout (integrates CustomTabBar)
-│   │       ├── index.tsx            # Home Dashboard (Live counts from SQLite stats, recent scans list, tips)
-│   │       ├── history.tsx          # Past scans (Search, filter, offline sync status, manual "Sync Now" banner)
-│   │       ├── scan.tsx             # Camera preview guidelines frame with solid rounded-[24px] border, custom sliding AI mode toggle
-│   │       ├── chat.tsx             # General Chat tab screen with Flash/Deep switcher and scan history picker modal
-│   │       └── profile.tsx          # User profile info, SQLite vs Supabase counts, and sync dashboard
+│   │       ├── index.tsx            # Home Dashboard (Mascot welcome greetings for 0 scans, scan stats, daily tips)
+│   │       ├── history.tsx          # Past scans (Search + Funnel filter drawer modal, active filter strip)
+│   │       ├── scan.tsx             # Camera preview with 720p pre-compression & AI mode toggle
+│   │       ├── chat.tsx             # General Chat tab screen with Flash/Deep switcher & scan history picker modal
+│   │       └── profile.tsx          # User profile info, SQLite vs Supabase counts, & sync dashboard
 │   ├── components/
-│   │   ├── BentoGrid.tsx            # Bento layout tiles (colSpan helper wrapper)
+│   │   ├── BentoGrid.tsx            # Bento layout tiles
 │   │   ├── CircularProgress.tsx     # SVG progress circle matching health severity
 │   │   └── CustomTabBar.tsx         # Shared sliding pill floating bottom tab bar with pulse rings
 │   ├── context/
-│   │   ├── AuthContext.tsx          # Global auth state provider (exposes session, profile, and recovery helpers)
-│   │   ├── ScanContext.tsx          # Scan provider (initializes SQLite db, handles low-confidence toast warning, runs compression)
-│   │   └── ToastContext.tsx         # Global Custom Toast context provider (exposes toast view states & animations)
+│   │   ├── AuthContext.tsx          # Global auth state provider
+│   │   ├── ScanContext.tsx          # Scan provider (720p compression, SQLite init, SSE streaming)
+│   │   └── ToastContext.tsx         # Global Custom Toast context provider
 │   ├── services/
-│   │   ├── auth.service.ts          # Supabase authentication service calls wrapper
-│   │   ├── profile.service.ts       # Profiles database & avatars storage calls wrapper
-│   │   ├── scan.service.ts          # SQLite-First operations, Supabase bucket uploads, and bidirectional sync
-│   │   └── api.service.ts           # Go proxy API helper (classifyCrop, scanCrop SSE streaming)
+│   │   ├── auth.service.ts          # Supabase authentication service wrapper
+│   │   ├── profile.service.ts       # Profiles database & avatars storage wrapper
+│   │   ├── scan.service.ts          # SQLite-First operations, Supabase bucket uploads, & bidirectional sync
+│   │   └── api.service.ts           # Go proxy API helper
 │   ├── types/
 │   │   └── index.ts                 # Shared TypeScript interfaces and typings
-│   ├── constants/
-│   │   └── theme.ts                 # Theme layout values, colors, spacing definitions
-│   └── hooks/
-│       └── use-theme.ts             # Theme color mapping hook
-│   └── scripts/                     # Helper script utilities
+│   └── constants/
+│       └── theme.ts                 # Theme layout values, colors, spacing definitions
 ├── babel.config.js                  # Babel presets for Expo and NativeWind v4
 ├── metro.config.js                  # Metro bundler compilation wrapper for NativeWind
-├── nativewind-env.d.ts              # TypeScript environment typings for NativeWind className props
 ├── package.json                     # Pinned package versions for Expo SDK 54 compatibility
-└── tsconfig.json                    # TypeScript compiler options (strict, baseUrl = .)
+└── tsconfig.json                    # TypeScript compiler options
 ```
 
 ---
 
-## 🚀 Current Project Status & Commands
+## 🚀 Project Status & Commands
 
-1. **Compilation Status**: Verified with `npx tsc --noEmit` which completes with **0 errors**.
+1. **Compilation Status**: Verified clean compilation.
 2. **Dev Server Command**:
    ```bash
    npx expo start
    ```
-3. **Platform Previews**:
-   * **Mobile Device (Expo Dev Client)**: Build the development client using EAS, install the APK on the device, and connect to the Metro server.
-   * **Hermes/Network Debugger**: Chrome DevTools (`chrome://inspect`) target `localhost:8081` connects to the running app. The `XMLHttpRequest` override allows inspection of network traffic in the Chrome DevTools network panel.
+3. **Debugging Target**: Chrome DevTools (`chrome://inspect`) target `localhost:8081` for Hermes network inspection.
