@@ -42,6 +42,20 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.1234567890-placeholder"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Bugsok to access your camera to scan and diagnose plant leaves.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Bugsok to access your photos to select plant leaf images."
+        }
       ]
     ],
     "experiments": {
