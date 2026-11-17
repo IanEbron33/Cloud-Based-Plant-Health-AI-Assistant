@@ -7,6 +7,7 @@ import { parseDiagnosis } from '../services/diagnosis-parser';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
 import { initLocalDatabase, saveScan } from '../services/scan.service';
+import { sendSevereDiseaseNotification } from '../services/notification.service';
 import vegetablesDb from '../../assets/data/vegetables_db.json';
 
 const ScanContext = createContext<ScanContextValue | undefined>(undefined);
@@ -164,6 +165,15 @@ export function ScanProvider({ children }: ScanProviderProps) {
             diagnosisResult: parsedResult,
             lastSavedScanId: savedId,
           }));
+
+          // Send severe disease alert notification if high severity infection
+          if (parsedResult.severity === 'High') {
+            sendSevereDiseaseNotification(
+              parsedResult.cropLocalName || finalCrop,
+              parsedResult.condition,
+              parsedResult.severity
+            ).catch(() => {});
+          }
 
           if (parsedResult.confidenceScore < 20) {
             showToast({

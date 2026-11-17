@@ -2,14 +2,13 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import {
   View,
   TouchableOpacity,
-  Modal,
   FlatList,
-  Pressable,
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
 import { FredokaText as Text } from './themed-text';
+import { BottomSheet } from './ui/BottomSheet';
 import { Calendar, Check } from 'lucide-react-native';
 
 const ITEM_HEIGHT = 44;
@@ -216,145 +215,85 @@ export default function BirthdatePickerModal({
   };
 
   return (
-    <Modal
+    <BottomSheet
       visible={visible}
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      onRequestClose={onClose}
+      onClose={onClose}
+      title="Select Birthdate"
+      titleIcon={<Calendar size={20} color="#059669" />}
+      showCloseButton={true}
     >
-      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-        {/* Backdrop */}
-        <Pressable
-          onPress={onClose}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-          }}
-        />
-
-        {/* Modal Sheet */}
-        <View
-          style={{
-            backgroundColor: '#ffffff',
-            borderTopLeftRadius: 28,
-            borderTopRightRadius: 28,
-            paddingBottom: 36,
-            maxHeight: SCREEN_HEIGHT * 0.5,
-          }}
-        >
-          {/* Drag Handle */}
-          <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
-            <View
-              style={{
-                width: 40,
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: '#d6d3d1',
-              }}
-            />
-          </View>
-
-          {/* Title */}
+      <View style={{ paddingBottom: 28 }}>
+        {/* Picker Area */}
+        <View style={{ paddingHorizontal: 20 }}>
           <View
             style={{
               flexDirection: 'row',
+              height: PICKER_HEIGHT,
+              position: 'relative',
+            }}
+          >
+            {/* Center Highlight Bar */}
+            <View
+              style={{
+                position: 'absolute',
+                top: ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
+                left: 0,
+                right: 0,
+                height: ITEM_HEIGHT,
+                backgroundColor: 'rgba(5, 150, 105, 0.08)',
+                borderRadius: 12,
+                zIndex: -1,
+              }}
+            />
+
+            <WheelColumn
+              data={MONTHS}
+              selectedIndex={selectedMonth}
+              onSelect={setSelectedMonth}
+            />
+            <WheelColumn
+              data={days}
+              selectedIndex={selectedDay}
+              onSelect={setSelectedDay}
+            />
+            <WheelColumn
+              data={YEARS}
+              selectedIndex={selectedYear}
+              onSelect={setSelectedYear}
+            />
+          </View>
+        </View>
+
+        {/* Confirm Button */}
+        <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+          <TouchableOpacity
+            onPress={handleConfirm}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: '#059669',
+              paddingVertical: 16,
+              borderRadius: 16,
+              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              paddingVertical: 12,
-              paddingHorizontal: 24,
               gap: 8,
             }}
           >
-            <Calendar size={20} color="#059669" />
+            <Check size={20} color="#ffffff" />
             <Text
               style={{
-                fontSize: 18,
+                color: '#ffffff',
+                fontSize: 16,
                 fontWeight: '700',
-                color: '#1c1917',
                 fontFamily: 'Fredoka_700Bold',
+                letterSpacing: 0.5,
               }}
             >
-              Select Birthdate
+              Confirm
             </Text>
-          </View>
-
-          {/* Picker Area */}
-          <View style={{ paddingHorizontal: 20 }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                height: PICKER_HEIGHT,
-                position: 'relative',
-              }}
-            >
-              {/* Center Highlight Bar */}
-              <View
-                style={{
-                  position: 'absolute',
-                  top: ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
-                  left: 0,
-                  right: 0,
-                  height: ITEM_HEIGHT,
-                  backgroundColor: 'rgba(5, 150, 105, 0.08)',
-                  borderRadius: 12,
-                  zIndex: -1,
-                }}
-              />
-
-              <WheelColumn
-                data={MONTHS}
-                selectedIndex={selectedMonth}
-                onSelect={setSelectedMonth}
-              />
-              <WheelColumn
-                data={days}
-                selectedIndex={selectedDay}
-                onSelect={setSelectedDay}
-              />
-              <WheelColumn
-                data={YEARS}
-                selectedIndex={selectedYear}
-                onSelect={setSelectedYear}
-              />
-            </View>
-          </View>
-
-          {/* Confirm Button */}
-          <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
-            <TouchableOpacity
-              onPress={handleConfirm}
-              activeOpacity={0.85}
-              style={{
-                backgroundColor: '#059669',
-                paddingVertical: 16,
-                borderRadius: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-              }}
-            >
-              <Check size={20} color="#ffffff" />
-              <Text
-                style={{
-                  color: '#ffffff',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  fontFamily: 'Fredoka_700Bold',
-                  letterSpacing: 0.5,
-                }}
-              >
-                Confirm
-              </Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }

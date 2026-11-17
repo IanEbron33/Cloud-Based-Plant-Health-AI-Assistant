@@ -1,4 +1,5 @@
 import { FredokaText as Text } from '@/components/themed-text';
+import { BottomSheet } from '../../components/ui/BottomSheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -970,201 +971,174 @@ export default function HistoryScreen() {
       )}
 
       {/* Funnel Filter Bottom Sheet Drawer Modal */}
-      {filterModalVisible && (
-        <Modal transparent visible={true} animationType="slide">
-          <View className="flex-1 justify-end">
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => setFilterModalVisible(false)}
-              className="flex-1 bg-black/50"
-            />
-            <View
-              className={`w-full rounded-t-[32px] p-6 border-t ${
-                isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200 shadow-2xl'
+      <BottomSheet
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        title="Filter Diagnostics"
+        titleIcon={<Ionicons name="options-outline" size={20} color="#059669" />}
+      >
+        <View className="px-6 pt-2 pb-6">
+          {/* Status Section */}
+          <View className="mb-5">
+            <Text
+              style={{ fontFamily: 'Fredoka_700Bold' }}
+              className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
+                isDark ? 'text-stone-400' : 'text-stone-500'
               }`}
             >
-              {/* Header */}
-              <View className="flex-row justify-between items-center mb-5 pb-3 border-b border-stone-200 dark:border-stone-800">
-                <View className="flex-row items-center">
-                  <Ionicons name="options-outline" size={20} color="#059669" />
-                  <Text
-                    style={{ fontFamily: 'Fredoka_700Bold' }}
-                    className={`text-lg font-bold ml-2 ${isDark ? 'text-white' : 'text-stone-900'}`}
+              Status
+            </Text>
+            <View className="flex-row gap-2">
+              {[
+                { key: 'active', label: 'Active', icon: 'pulse-outline' },
+                { key: 'resolved', label: 'Resolved', icon: 'checkmark-circle-outline' },
+                { key: 'all', label: 'All', icon: 'albums-outline' },
+              ].map((s) => {
+                const isSel = tempStatusFilter === s.key;
+                return (
+                  <TouchableOpacity
+                    key={s.key}
+                    onPress={() => setTempStatusFilter(s.key as any)}
+                    className={`flex-1 flex-row items-center justify-center py-2.5 px-3 rounded-2xl border ${
+                      isSel
+                        ? 'bg-emerald-600 border-emerald-600'
+                        : isDark
+                        ? 'bg-stone-850 border-stone-800'
+                        : 'bg-stone-50 border-stone-200'
+                    }`}
                   >
-                    Filter Diagnostics
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => setFilterModalVisible(false)}
-                  className="p-1 rounded-full bg-stone-100 dark:bg-stone-800"
-                >
-                  <Ionicons name="close" size={20} color={isDark ? '#a8a29e' : '#78716c'} />
-                </TouchableOpacity>
-              </View>
-
-              {/* Status Section */}
-              <View className="mb-5">
-                <Text
-                  style={{ fontFamily: 'Fredoka_700Bold' }}
-                  className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
-                    isDark ? 'text-stone-400' : 'text-stone-500'
-                  }`}
-                >
-                  Status
-                </Text>
-                <View className="flex-row gap-2">
-                  {[
-                    { key: 'active', label: 'Active', icon: 'pulse-outline' },
-                    { key: 'resolved', label: 'Resolved', icon: 'checkmark-circle-outline' },
-                    { key: 'all', label: 'All', icon: 'albums-outline' },
-                  ].map((s) => {
-                    const isSel = tempStatusFilter === s.key;
-                    return (
-                      <TouchableOpacity
-                        key={s.key}
-                        onPress={() => setTempStatusFilter(s.key as any)}
-                        className={`flex-1 flex-row items-center justify-center py-2.5 px-3 rounded-2xl border ${
-                          isSel
-                            ? 'bg-emerald-600 border-emerald-600'
-                            : isDark
-                            ? 'bg-stone-850 border-stone-800'
-                            : 'bg-stone-50 border-stone-200'
-                        }`}
-                      >
-                        <Ionicons name={s.icon as any} size={14} color={isSel ? 'white' : '#78716c'} style={{ marginRight: 4 }} />
-                        <Text
-                          style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
-                          className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
-                        >
-                          {s.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {/* Condition Type Section */}
-              <View className="mb-5">
-                <Text
-                  style={{ fontFamily: 'Fredoka_700Bold' }}
-                  className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
-                    isDark ? 'text-stone-400' : 'text-stone-500'
-                  }`}
-                >
-                  Condition Type
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {[
-                    { key: 'all', label: 'All' },
-                    { key: 'healthy', label: 'Healthy' },
-                    { key: 'sick', label: 'Infected' },
-                    { key: 'unsynced', label: 'Unsynced' },
-                  ].map((f) => {
-                    const isSel = tempSelectedFilter === f.key;
-                    return (
-                      <TouchableOpacity
-                        key={f.key}
-                        onPress={() => setTempSelectedFilter(f.key as any)}
-                        className={`py-2 px-4 rounded-2xl border ${
-                          isSel
-                            ? 'bg-emerald-600 border-emerald-600'
-                            : isDark
-                            ? 'bg-stone-850 border-stone-800'
-                            : 'bg-stone-50 border-stone-200'
-                        }`}
-                      >
-                        <Text
-                          style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
-                          className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
-                        >
-                          {f.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {/* Sort Order Section */}
-              <View className="mb-6">
-                <Text
-                  style={{ fontFamily: 'Fredoka_700Bold' }}
-                  className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
-                    isDark ? 'text-stone-400' : 'text-stone-500'
-                  }`}
-                >
-                  Sort Order
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {[
-                    { key: 'newest', label: 'Newest First' },
-                    { key: 'oldest', label: 'Oldest First' },
-                    { key: 'lowest_health', label: 'Lowest Health %' },
-                    { key: 'highest_health', label: 'Highest Health %' },
-                  ].map((so) => {
-                    const isSel = tempSortOrder === so.key;
-                    return (
-                      <TouchableOpacity
-                        key={so.key}
-                        onPress={() => setTempSortOrder(so.key as any)}
-                        className={`py-2 px-3.5 rounded-2xl border ${
-                          isSel
-                            ? 'bg-emerald-600 border-emerald-600'
-                            : isDark
-                            ? 'bg-stone-850 border-stone-800'
-                            : 'bg-stone-50 border-stone-200'
-                        }`}
-                      >
-                        <Text
-                          style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
-                          className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
-                        >
-                          {so.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {/* Action Buttons */}
-              <View className="flex-row items-center gap-3 pt-3 border-t border-stone-200 dark:border-stone-800">
-                <TouchableOpacity
-                  onPress={() => {
-                    setTempStatusFilter('active');
-                    setTempSelectedFilter('all');
-                    setTempSortOrder('newest');
-                  }}
-                  className={`py-3.5 px-5 rounded-2xl border items-center justify-center ${
-                    isDark ? 'bg-stone-850 border-stone-800' : 'bg-stone-100 border-stone-200'
-                  }`}
-                >
-                  <Text
-                    style={{ fontFamily: 'Fredoka_700Bold' }}
-                    className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-600'}`}
-                  >
-                    Reset All
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setStatusFilter(tempStatusFilter);
-                    setSelectedFilter(tempSelectedFilter);
-                    setSortOrder(tempSortOrder);
-                    setFilterModalVisible(false);
-                  }}
-                  className="flex-1 py-3.5 bg-emerald-600 rounded-2xl items-center justify-center shadow-md shadow-emerald-600/20"
-                >
-                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white text-xs font-bold">
-                    Apply Filters
-                  </Text>
-                </TouchableOpacity>
-              </View>
+                    <Ionicons name={s.icon as any} size={14} color={isSel ? 'white' : '#78716c'} style={{ marginRight: 4 }} />
+                    <Text
+                      style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
+                      className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
+                    >
+                      {s.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
-        </Modal>
-      )}
+
+          {/* Condition Type Section */}
+          <View className="mb-5">
+            <Text
+              style={{ fontFamily: 'Fredoka_700Bold' }}
+              className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
+                isDark ? 'text-stone-400' : 'text-stone-500'
+              }`}
+            >
+              Condition Type
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {[
+                { key: 'all', label: 'All' },
+                { key: 'healthy', label: 'Healthy' },
+                { key: 'sick', label: 'Infected' },
+                { key: 'unsynced', label: 'Unsynced' },
+              ].map((f) => {
+                const isSel = tempSelectedFilter === f.key;
+                return (
+                  <TouchableOpacity
+                    key={f.key}
+                    onPress={() => setTempSelectedFilter(f.key as any)}
+                    className={`py-2 px-4 rounded-2xl border ${
+                      isSel
+                        ? 'bg-emerald-600 border-emerald-600'
+                        : isDark
+                        ? 'bg-stone-850 border-stone-800'
+                        : 'bg-stone-50 border-stone-200'
+                    }`}
+                  >
+                    <Text
+                      style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
+                      className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
+                    >
+                      {f.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Sort Order Section */}
+          <View className="mb-6">
+            <Text
+              style={{ fontFamily: 'Fredoka_700Bold' }}
+              className={`text-xs font-bold uppercase tracking-wider mb-2.5 ${
+                isDark ? 'text-stone-400' : 'text-stone-500'
+              }`}
+            >
+              Sort Order
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {[
+                { key: 'newest', label: 'Newest First' },
+                { key: 'oldest', label: 'Oldest First' },
+                { key: 'lowest_health', label: 'Lowest Health %' },
+                { key: 'highest_health', label: 'Highest Health %' },
+              ].map((so) => {
+                const isSel = tempSortOrder === so.key;
+                return (
+                  <TouchableOpacity
+                    key={so.key}
+                    onPress={() => setTempSortOrder(so.key as any)}
+                    className={`py-2 px-3.5 rounded-2xl border ${
+                      isSel
+                        ? 'bg-emerald-600 border-emerald-600'
+                        : isDark
+                        ? 'bg-stone-850 border-stone-800'
+                        : 'bg-stone-50 border-stone-200'
+                    }`}
+                  >
+                    <Text
+                      style={{ fontFamily: isSel ? 'Fredoka_700Bold' : 'Fredoka_400Regular' }}
+                      className={`text-xs ${isSel ? 'text-white font-bold' : isDark ? 'text-stone-300' : 'text-stone-700'}`}
+                    >
+                      {so.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Action Buttons */}
+          <View className="flex-row items-center gap-3 pt-3 border-t border-stone-200 dark:border-stone-800">
+            <TouchableOpacity
+              onPress={() => {
+                setTempStatusFilter('active');
+                setTempSelectedFilter('all');
+                setTempSortOrder('newest');
+              }}
+              className={`py-3.5 px-5 rounded-2xl border items-center justify-center ${
+                isDark ? 'bg-stone-850 border-stone-800' : 'bg-stone-100 border-stone-200'
+              }`}
+            >
+              <Text
+                style={{ fontFamily: 'Fredoka_700Bold' }}
+                className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-600'}`}
+              >
+                Reset All
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setStatusFilter(tempStatusFilter);
+                setSelectedFilter(tempSelectedFilter);
+                setSortOrder(tempSortOrder);
+                setFilterModalVisible(false);
+              }}
+              className="flex-1 py-3.5 bg-emerald-600 rounded-2xl items-center justify-center shadow-md shadow-emerald-600/20"
+            >
+              <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-white text-xs font-bold">
+                Apply Filters
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </BottomSheet>
     </View>
   );
 }

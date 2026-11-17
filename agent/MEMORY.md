@@ -230,6 +230,8 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 │   │   └── index.ts                 # Shared TypeScript interfaces and typings
 │   └── constants/
 │       └── theme.ts                 # Theme layout values, colors, spacing definitions
+├── .easignore                       # EAS build archive ignore filters
+├── eas.json                         # EAS build profiles and cloud environment variables
 ├── babel.config.js                  # Babel presets for Expo and NativeWind v4
 ├── metro.config.js                  # Metro bundler compilation wrapper for NativeWind
 ├── package.json                     # Pinned package versions for Expo SDK 54 compatibility
@@ -238,11 +240,36 @@ Cloud-Based Plant Health AI Assistant - Mobile Application/
 
 ---
 
+## 📦 Standalone EAS Preview Build & OAuth Credentials (APK Pipeline)
+
+* **Build Target**: Standalone Android APK (`buildType: "apk"`) configured under the `preview` profile in `eas.json` with internal distribution.
+* **Environment Variables in EAS (`eas.json`)**:
+  * Embedded `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (`759852423330-bctoj8043kou21uvf7jed1g587ok5meb.apps.googleusercontent.com`) into both `development` and `preview` env blocks alongside Supabase credentials and Proxy URL.
+  * Guarantees cloud EAS build environments (which exclude local `.env` via `.gitignore`) have the required Google client ID baked into the bundle at build time.
+* **Native Permissions Configuration (`app.json`)**:
+  * Added `expo-camera` plugin with `cameraPermission` description (`"Allow Bugsok to access your camera to scan and diagnose plant leaves."`), setting `recordAudioAndroid: false` and `microphonePermission: false` to strictly restrict permissions to photography.
+  * Added `expo-image-picker` plugin with `photosPermission` description (`"Allow Bugsok to access your photos to select plant leaf images."`).
+* **Upload Optimization (`.easignore`)**:
+  * Created `.easignore` file to exclude `proxy/`, `supabase/`, `agent/`, and documentation (`*.docx`, `*.pdf`, `*.zip`, `*.pptx`) from EAS project archive packaging, preventing large payload sizes and avoiding GraphQL connection timeouts.
+* **Google Cloud Console OAuth Verification**:
+  * **Web Client ID**: `759852423330-bctoj8043kou21uvf7jed1g587ok5meb.apps.googleusercontent.com` (Used for Supabase OAuth ID token exchange).
+  * **Android Client ID**: Package name `com.anonymous.PlantHealthTracker` mapped to the EAS remote Keystore (`Build Credentials YruiJs5_iq (default)`) with SHA-1 fingerprint `81:1D:64:16:28:7F:B1:E3:45:FA:5D:DB:E3:08:F3:A4:5E:77:35:E6`.
+* **Latest EAS Build Job**:
+  * Run ID: `24e7a8fd-6463-4e2d-a433-fd1071558a57`
+  * Dashboard URL: `https://expo.dev/accounts/ianvincent/projects/Plant-Health-Tracker/builds/24e7a8fd-6463-4e2d-a433-fd1071558a57`
+
+---
+
 ## 🚀 Project Status & Commands
 
-1. **Compilation Status**: Verified clean compilation.
+1. **Compilation Status**: Verified clean compilation (`npx tsc --noEmit` clean).
 2. **Dev Server Command**:
    ```bash
    npx expo start
    ```
-3. **Debugging Target**: Chrome DevTools (`chrome://inspect`) target `localhost:8081` for Hermes network inspection.
+3. **EAS Android Preview Build Command**:
+   ```bash
+   npx eas build --profile preview --platform android
+   ```
+4. **Debugging Target**: Chrome DevTools (`chrome://inspect`) target `localhost:8081` for Hermes network inspection.
+

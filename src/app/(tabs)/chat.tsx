@@ -1,4 +1,5 @@
 import { FredokaText as Text } from '@/components/themed-text';
+import { BottomSheet } from '../../components/ui/BottomSheet';
 import { Ionicons } from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
 import { useNavigation, useRouter } from 'expo-router';
@@ -1218,136 +1219,110 @@ export default function ChatScreen() {
       </RNAnimated.View>
 
       {/* SCAN PICKER MODAL (Bottom Sheet overlay) */}
-      <Modal
+      <BottomSheet
         visible={pickerModalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setPickerModalVisible(false)}
+        onClose={() => setPickerModalVisible(false)}
+        title="Attach Diagnosis History"
+        titleIcon={<Ionicons name="attach-outline" size={20} color="#059669" />}
       >
-        <View className="flex-1 bg-black/50 justify-end">
-          {/* Backdrop Touch Clear */}
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => setPickerModalVisible(false)}
-            className="flex-1"
-          />
-
-          {/* Sheet Body Container */}
-          <View className="bg-white rounded-t-[32px] p-6 max-h-[75%] border-t border-stone-100">
-            {/* Header section */}
-            <View className="flex-row justify-between items-center pb-4 mb-4 border-b border-stone-100">
-              <View className="flex-row items-center">
-                <Ionicons name="attach-outline" size={18} color="#059669" />
-                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-stone-900 text-base font-bold ml-2">
-                  Attach Diagnosis History
+        <View className="px-6 pt-1 pb-6 max-h-[500px]">
+          {/* Scan Card History List */}
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            {scanHistory.length === 0 ? (
+              <View className="py-12 items-center justify-center">
+                <Ionicons name="leaf-outline" size={32} color="#a8a29e" />
+                <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-stone-400 text-xs mt-2 text-center">
+                  No Diagnoses Available
+                </Text>
+                <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-400 text-[10px] mt-0.5 text-center px-4 leading-4">
+                  Diagnose a crop leaf first using the 'Scan' screen to log history here.
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={() => setPickerModalVisible(false)}
-                className="w-7 h-7 bg-stone-100 rounded-full items-center justify-center"
-              >
-                <Ionicons name="close" size={14} color="#57534e" />
-              </TouchableOpacity>
-            </View>
+            ) : (
+              scanHistory.map((scan) => {
+                const getSeverityColors = (severity: string) => {
+                  if (severity === 'High') return { barColor: '#ef4444', textColor: '#ef4444' };
+                  if (severity === 'Moderate') return { barColor: '#f97316', textColor: '#f97316' };
+                  if (severity === 'Low') return { barColor: '#eab308', textColor: '#eab308' };
+                  return { barColor: '#10b981', textColor: '#10b981' };
+                };
 
-            {/* Scan Card History List */}
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-              {scanHistory.length === 0 ? (
-                <View className="py-12 items-center justify-center">
-                  <Ionicons name="leaf-outline" size={32} color="#a8a29e" />
-                  <Text style={{ fontFamily: 'Fredoka_700Bold' }} className="text-stone-400 text-xs mt-2 text-center">
-                    No Diagnoses Available
-                  </Text>
-                  <Text style={{ fontFamily: 'Fredoka_400Regular' }} className="text-stone-400 text-[10px] mt-0.5 text-center px-4 leading-4">
-                    Diagnose a crop leaf first using the 'Scan' screen to log history here.
-                  </Text>
-                </View>
-              ) : (
-                scanHistory.map((scan) => {
-                  const getSeverityColors = (severity: string) => {
-                    if (severity === 'High') return { barColor: '#ef4444', textColor: '#ef4444' };
-                    if (severity === 'Moderate') return { barColor: '#f97316', textColor: '#f97316' };
-                    if (severity === 'Low') return { barColor: '#eab308', textColor: '#eab308' };
-                    return { barColor: '#10b981', textColor: '#10b981' };
-                  };
+                const { barColor, textColor } = getSeverityColors(scan.severity);
 
-                  const { barColor, textColor } = getSeverityColors(scan.severity);
+                const formatDate = (dateStr: string) => {
+                  try {
+                    const d = new Date(dateStr);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                  } catch { return dateStr; }
+                };
 
-                  const formatDate = (dateStr: string) => {
-                    try {
-                      const d = new Date(dateStr);
-                      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    } catch { return dateStr; }
-                  };
+                const displayImage = scan.cloud_image_url || scan.local_image_path || null;
 
-                  const displayImage = scan.cloud_image_url || scan.local_image_path || null;
-
-                  return (
-                    <TouchableOpacity
-                      key={scan.id}
-                      activeOpacity={0.85}
-                      onPress={() => {
-                        setAttachedScan(scan);
-                        setPickerModalVisible(false);
-                      }}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        padding: 14,
-                        borderRadius: 20,
-                        borderWidth: 1,
-                        borderColor: '#f5f5f4',
-                        marginBottom: 10,
-                        backgroundColor: '#ffffff',
-                      }}
-                    >
-                      {/* Crop Image Thumbnail */}
-                      <View style={{ width: 56, height: 56, borderRadius: 14, overflow: 'hidden', marginRight: 14, backgroundColor: '#f5f5f4' }}>
-                        {displayImage ? (
-                          <Image
-                            source={{ uri: displayImage }}
-                            style={{ width: '100%', height: '100%' }}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                            <Ionicons name="leaf-outline" size={22} color="#a8a29e" />
-                          </View>
-                        )}
-                      </View>
-
-                      {/* Content details */}
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text style={{ fontFamily: 'Fredoka_700Bold', fontSize: 13, color: '#1c1917' }} numberOfLines={1}>
-                            {scan.crop_name}
-                          </Text>
-                          <Text style={{ fontFamily: 'Fredoka_700Bold', fontSize: 11, color: textColor }}>
-                            {scan.health_score}%
-                          </Text>
+                return (
+                  <TouchableOpacity
+                    key={scan.id}
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      setAttachedScan(scan);
+                      setPickerModalVisible(false);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 14,
+                      borderRadius: 20,
+                      borderWidth: 1,
+                      borderColor: '#f5f5f4',
+                      marginBottom: 10,
+                      backgroundColor: '#ffffff',
+                    }}
+                  >
+                    {/* Crop Image Thumbnail */}
+                    <View style={{ width: 56, height: 56, borderRadius: 14, overflow: 'hidden', marginRight: 14, backgroundColor: '#f5f5f4' }}>
+                      {displayImage ? (
+                        <Image
+                          source={{ uri: displayImage }}
+                          style={{ width: '100%', height: '100%' }}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                          <Ionicons name="leaf-outline" size={22} color="#a8a29e" />
                         </View>
+                      )}
+                    </View>
 
-                        <Text style={{ fontFamily: 'Fredoka_400Regular', fontSize: 11, color: '#78716c', marginTop: 2 }} numberOfLines={1}>
-                          {scan.condition_name}
+                    {/* Content details */}
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={{ fontFamily: 'Fredoka_700Bold', fontSize: 13, color: '#1c1917' }} numberOfLines={1}>
+                          {scan.crop_name}
                         </Text>
-
-                        {/* Mini health progress bar */}
-                        <View style={{ height: 3, backgroundColor: '#f5f5f4', borderRadius: 999, marginTop: 6, overflow: 'hidden' }}>
-                          <View style={{ width: `${scan.health_score}%`, height: '100%', backgroundColor: barColor, borderRadius: 999 }} />
-                        </View>
-
-                        <Text style={{ fontFamily: 'Fredoka_400Regular', fontSize: 9, color: '#a8a29e', marginTop: 4 }}>
-                          {formatDate(scan.created_at)}
+                        <Text style={{ fontFamily: 'Fredoka_700Bold', fontSize: 11, color: textColor }}>
+                          {scan.health_score}%
                         </Text>
                       </View>
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </ScrollView>
-          </View>
+
+                      <Text style={{ fontFamily: 'Fredoka_400Regular', fontSize: 11, color: '#78716c', marginTop: 2 }} numberOfLines={1}>
+                        {scan.condition_name}
+                      </Text>
+
+                      {/* Mini health progress bar */}
+                      <View style={{ height: 3, backgroundColor: '#f5f5f4', borderRadius: 999, marginTop: 6, overflow: 'hidden' }}>
+                        <View style={{ width: `${scan.health_score}%`, height: '100%', backgroundColor: barColor, borderRadius: 999 }} />
+                      </View>
+
+                      <Text style={{ fontFamily: 'Fredoka_400Regular', fontSize: 9, color: '#a8a29e', marginTop: 4 }}>
+                        {formatDate(scan.created_at)}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </ScrollView>
         </View>
-      </Modal>
+      </BottomSheet>
 
       {/* CONFIRM DELETE CONVERSATION MODAL OVERLAY */}
       {shouldRenderDeleteModal && (

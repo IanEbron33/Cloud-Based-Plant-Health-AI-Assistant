@@ -12,6 +12,7 @@ import * as SQLite from 'expo-sqlite';
 import { supabase } from '../lib/supabase';
 import { DiagnosisResult } from '../types';
 import { parseDiagnosis } from './diagnosis-parser';
+import { sendSyncCompleteNotification } from './notification.service';
 
 // Local DB instance getter with self-healing connection retry proxy
 let rawDbInstance: any = null;
@@ -635,6 +636,9 @@ export const syncData = async (userId: string): Promise<boolean> => {
     }
 
     console.log('[Scan Service] Bidirectional synchronization completed.');
+    if (unsyncedScans.length > 0) {
+      sendSyncCompleteNotification(unsyncedScans.length).catch(() => {});
+    }
     return true;
   } catch (err) {
     console.error('[Scan Service] syncData error:', err);

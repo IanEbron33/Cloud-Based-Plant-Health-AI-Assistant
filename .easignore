@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Expo & build outputs
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native build artifacts
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+/ios
+/android
+
+# Metro & debug logs
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# System & local env files
+.DS_Store
+*.pem
+.env
+.env*.local
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Non-mobile backend services & database migrations
+proxy/
+supabase/
+
+# Agent context, blueprints & office documentation
+agent/
+*.docx
+*.backup.docx
+*.pdf
+*.pptx
+*.zip

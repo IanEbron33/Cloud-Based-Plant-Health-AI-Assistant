@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Fredoka_400Regular, Fredoka_700Bold } from '@expo-google-fonts/fredoka';
@@ -97,12 +98,14 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <ScanProvider>
-          <RootNavigator />
-        </ScanProvider>
-      </ToastProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <ToastProvider>
+          <ScanProvider>
+            <RootNavigator />
+          </ScanProvider>
+        </ToastProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
